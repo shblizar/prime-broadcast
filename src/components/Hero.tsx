@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import cameraImage from '../assets/images/camera_operator_1780743339808.png';
 <img 
