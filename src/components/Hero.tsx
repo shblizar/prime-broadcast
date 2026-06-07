@@ -1,7 +1,10 @@
-import cameraImage from '../assets/images/camera_operator_1780743339808.png';
 
-<img src={cameraImage} alt="Prime Broadcast Studio Control Deck" />
 import React, { useState } from 'react';
+import cameraImage from '../assets/images/camera_operator_1780743339808.png';
+<img 
+  src={cameraImage} 
+  alt="Prime Broadcast Studio Control Deck" 
+  />
 import { Sparkles, CalendarRange, ArrowRight, Video, ShieldCheck, Activity, Layers, Cpu, Radio } from 'lucide-react';
 
 interface HeroProps {
