@@ -1,0 +1,6 @@
+{
+  "name": "Prime Broadcast",
+  "description": "Premium multi-camera live streaming and broadcast solutions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
