@@ -160,9 +160,23 @@ export default function Footer({ onViewChange }: FooterProps) {
             <span>© {new Date().getFullYear()} Prime Broadcast Indonesia. Hak Cipta Dilindungi Undang-Undang.</span>
           </div>
           <div className="flex gap-4">
-            <span className="hover:text-slate-400 cursor-help">Syarat Ketentuan Jasa</span>
+            <button
+              onClick={() => onViewChange('policies')}
+            className="hover:text-slate-400 cursor-help">
+              Syarat Ketentuan Jasa
+            </button>
             <span className="text-slate-700 font-bold">•</span>
-            <span className="hover:text-slate-400 cursor-help">Refund & Reschedule Policy</span>
+            <button
+              onClick={() => {
+                onViewChange('policies');
+                setTimeout(() => {
+                  const el = document.getElementById('sistem-pembayaran');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }}
+            className="hover:text-slate-400 cursor-help">
+              Refund & Reschedule Policy
+            </button>
           </div>
         </div>
 
