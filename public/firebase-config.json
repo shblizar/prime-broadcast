@@ -1,27 +1,9 @@
 {
-  "apiKey": "AIzaSyDiZodL2ALXo3WhzxKNtc6Bxt1AsIj_S-Q",
-  "authDomain": "unified-skyline-mk76w.firebaseapp.com",
-  "projectId": "unified-skyline-mk76w",
-  "storageBucket": "unified-skyline-mk76w.firebasestorage.app",
-  "messagingSenderId": "854237000238",
-  "appId": "1:854237000238:web:efacc050c3997ce336a5bf",
-  "adminPassword": "2808"
+  "apiKey": "",
+  "authDomain": "",
+  "projectId": "",
+  "storageBucket": "",
+  "messagingSenderId": "",
+  "appId": "",
+  "adminPassword": "admin"
 }
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDiZodL2ALXo3WhzxKNtc6Bxt1AsIj_S-Q",
-  authDomain: "unified-skyline-mk76w.firebaseapp.com",
-  projectId: "unified-skyline-mk76w",
-  storageBucket: "unified-skyline-mk76w.firebasestorage.app",
-  messagingSenderId: "854237000238",
-  appId: "1:854237000238:web:efacc050c3997ce336a5bf"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);

@@ -20,8 +20,8 @@ interface BookingFormProps {
   selectedDuration: number;
   selectedOvertimeHours: number;
   selectedAddOns: { [id: string]: number };
-  appliedVoucher?: { code: string; discount: number } | null;
-  onVoucherChange?: (voucher: { code: string; discount: number } | null) => void;
+  appliedVoucher?: { code: string; discount: number; packageId?: string } | null;
+  onVoucherChange?: (voucher: { code: string; discount: number; packageId?: string } | null) => void;
   onReset: () => void;
   preselectedDate?: string;
   onViewChange?: (view: string) => void;

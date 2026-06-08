@@ -40,7 +40,7 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
   // Voucher Code state
   const [voucherCode, setVoucherCode] = useState<string>('');
-  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number } | null>(appliedVoucherGlobal);
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number; packageId?: string } | null>(appliedVoucherGlobal || null);
   const [voucherError, setVoucherError] = useState<string>('');
   const [voucherSuccess, setVoucherSuccess] = useState<string>('');
   const [loadingVoucher, setLoadingVoucher] = useState<boolean>(false);
@@ -53,6 +53,17 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
     });
   }, []);
 
+  // Proactively release voucher if user switches to an incompatible package
+  useEffect(() => {
+    if (appliedVoucher && appliedVoucher.packageId && appliedVoucher.packageId !== 'all' && appliedVoucher.packageId !== selectedPkgId) {
+      const restrictedPkg = PACKAGES.find(p => p.id === appliedVoucher.packageId);
+      const restrictedName = restrictedPkg ? restrictedPkg.name : appliedVoucher.packageId;
+      setVoucherError(`Voucher ${appliedVoucher.code} dilepas karena hanya berlaku untuk ${restrictedName}`);
+      setAppliedVoucher(null);
+      setVoucherSuccess('');
+    }
+  }, [selectedPkgId, appliedVoucher]);
+
   // Validate voucher in real-time as requested using database cloud service
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;
@@ -64,7 +75,16 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       const match = await validateVoucherCode(codeUpper);
       
       if (match) {
-        setAppliedVoucher({ code: match.code, discount: Number(match.discount) });
+        const restrictedPkgId = match.packageId && match.packageId !== 'all' ? match.packageId : 'all';
+        if (restrictedPkgId !== 'all' && restrictedPkgId !== selectedPkgId) {
+          const restrictedPkg = PACKAGES.find(p => p.id === restrictedPkgId);
+          const restrictedName = restrictedPkg ? restrictedPkg.name : restrictedPkgId;
+          setVoucherError(`Kupon ${match.code} hanya berlaku untuk ${restrictedName}`);
+          setAppliedVoucher(null);
+          return;
+        }
+
+        setAppliedVoucher({ code: match.code, discount: Number(match.discount), packageId: restrictedPkgId });
         setVoucherSuccess(`Berhasil pasang kupon: ${match.code} (Diskon ${match.discount}%)`);
         setVoucherCode('');
       } else {

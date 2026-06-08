@@ -13,13 +13,14 @@ import {
 export interface Voucher {
   code: string;
   discount: number;
+  packageId?: string; // e.g., "all", "lite", "regular", "gold", "platinum"
 }
 
 // Fallback vouchers if Firestore config is not provided
 const FALLBACK_VOUCHERS: Voucher[] = [
-  { code: 'DISKON10', discount: 10 },
-  { code: 'PROMO20', discount: 20 },
-  { code: 'PRIMEKREATOR', discount: 15 }
+  { code: 'DISKON10', discount: 10, packageId: 'all' },
+  { code: 'PROMO20', discount: 20, packageId: 'all' },
+  { code: 'PRIMEKREATOR', discount: 15, packageId: 'all' }
 ];
 
 export interface FirebaseConfigStatus {
@@ -109,16 +110,17 @@ export async function fetchVouchers(): Promise<Voucher[]> {
         const data = docSnapshot.data();
         list.push({
           code: docSnapshot.id.toUpperCase(),
-          discount: Number(data.discount || 0)
+          discount: Number(data.discount || 0),
+          packageId: data.packageId || 'all'
         });
       });
       return list;
     } catch (error) {
       console.error("Firestore fetch failed, using local storage fallback", error);
-      return getLocalVouchers();
+      return getLocalVouchers().map(v => ({ ...v, packageId: v.packageId || 'all' }));
     }
   } else {
-    return getLocalVouchers();
+    return getLocalVouchers().map(v => ({ ...v, packageId: v.packageId || 'all' }));
   }
 }
 
@@ -136,23 +138,26 @@ export async function validateVoucherCode(code: string): Promise<Voucher | null>
         const data = snap.data();
         return {
           code: cleanCode,
-          discount: Number(data.discount || 0)
+          discount: Number(data.discount || 0),
+          packageId: data.packageId || 'all'
         };
       }
       return null;
     } catch (error) {
       console.error("Firestore get failed, checking local storage", error);
       const local = getLocalVouchers();
-      return local.find(v => v.code.toUpperCase() === cleanCode) || null;
+      const match = local.find(v => v.code.toUpperCase() === cleanCode);
+      return match ? { ...match, packageId: match.packageId || 'all' } : null;
     }
   } else {
     const local = getLocalVouchers();
-    return local.find(v => v.code.toUpperCase() === cleanCode) || null;
+    const match = local.find(v => v.code.toUpperCase() === cleanCode);
+    return match ? { ...match, packageId: match.packageId || 'all' } : null;
   }
 }
 
 // Add/Update a Voucher (Firestore or LocalStorage)
-export async function addVoucher(code: string, discount: number): Promise<void> {
+export async function addVoucher(code: string, discount: number, packageId: string = 'all'): Promise<void> {
   const cleanCode = code.trim().toUpperCase();
   if (!cleanCode) throw new Error("Kode kupon tidak boleh kosong");
   if (discount < 1 || discount > 100) throw new Error("Diskon harus berkisar antara 1 s/d 100%");
@@ -162,6 +167,7 @@ export async function addVoucher(code: string, discount: number): Promise<void> 
     const voucherDocRef = doc(firestoreInstance, 'vouchers', cleanCode);
     await setDoc(voucherDocRef, {
       discount: discount,
+      packageId: packageId || 'all',
       updatedAt: serverTimestamp()
     });
   } else {
@@ -169,8 +175,9 @@ export async function addVoucher(code: string, discount: number): Promise<void> 
     const existingIdx = local.findIndex(v => v.code === cleanCode);
     if (existingIdx >= 0) {
       local[existingIdx].discount = discount;
+      local[existingIdx].packageId = packageId || 'all';
     } else {
-      local.push({ code: cleanCode, discount });
+      local.push({ code: cleanCode, discount, packageId: packageId || 'all' });
     }
     saveLocalVouchers(local);
   }

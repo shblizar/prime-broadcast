@@ -24,7 +24,8 @@ service cloud.firestore {
       allow create, update: if isValidId(code) 
         && request.resource.data.discount is int 
         && request.resource.data.discount >= 1 
-        && request.resource.data.discount <= 100;
+        && request.resource.data.discount <= 100
+        && (!('packageId' in request.resource.data) || request.resource.data.packageId is string);
 
       // Admin delete operations
       allow delete: if isValidId(code);

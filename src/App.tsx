@@ -33,7 +33,7 @@ export default function App() {
   const [overtimeHours, setOvertimeHours] = useState<number>(0);
   const [addOnsMap, setAddOnsMap] = useState<{ [id: string]: number }>({});
   const [preselectedDate, setPreselectedDate] = useState<string>('');
-  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number } | null>(null);
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number; packageId?: string } | null>(null);
   
   // Transition to Booking and set parameters
   const handlePackageConfiguredChange = (
@@ -41,7 +41,7 @@ export default function App() {
     duration: number, 
     overtime: number, 
     addOns: { [id: string]: number },
-    voucher?: { code: string; discount: number } | null
+    voucher?: { code: string; discount: number; packageId?: string } | null
   ) => {
     setConfiguredPkg(pkg);
     setDurationHours(duration);

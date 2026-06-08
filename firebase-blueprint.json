@@ -8,6 +8,10 @@
         "discount": {
           "type": "integer",
           "description": "Discount percentage (1-100)"
+        },
+        "packageId": {
+          "type": "string",
+          "description": "Restricted package ID, or 'all'"
         }
       },
       "required": ["discount"]
