@@ -12,8 +12,10 @@ import {
   PhoneCall, 
   CheckCircle2, 
   Printer, 
-  RefreshCw 
+  RefreshCw,
+  FileDown
 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 interface BookingFormProps {
   selectedPkg: StreamPackage;
@@ -170,6 +172,258 @@ _Mohon konfirmasi ketersediaan kru kami untuk slot tanggal di atas. Terima kasih
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const downloadInvoicePDF = () => {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    // Top color strip
+    doc.setFillColor(37, 99, 235); // Blue-600
+    doc.rect(0, 0, 210, 8, 'F');
+
+    // Branding Header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text('PRIME BROADCAST', 15, 24);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text('Premium Live Streaming & Broadcasting Solutions', 15, 29);
+    
+    // Vendor Contact Info
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.text('WA: +62 851-5055-5195', 195, 20, { align: 'right' });
+    doc.text('Email: primebroadcast.id@gmail.com', 195, 25, { align: 'right' });
+    doc.text('Web: https://prime-broadcast.vercel.app/', 195, 30, { align: 'right' });
+
+    // Separator line
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.setLineWidth(0.4);
+    doc.line(15, 35, 195, 35);
+
+    // Title & Document Info
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(37, 99, 235); // Key blue
+    doc.text('RINCIAN ESTIMASI BIAYA & RESERVASI', 15, 45);
+
+    // Status box flag
+    doc.setFillColor(241, 245, 249); // slate-100
+    doc.rect(15, 50, 68, 7, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(71, 85, 105);
+    doc.text('STATUS: MENUNGGU TIM VALIDASI', 18, 54.5);
+
+    // Left Column Info Metadata
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('No Invoice:', 15, 65);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(assignedInvoiceId || 'PB-INV-PENDING', 42, 65);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 116, 139);
+    doc.text('Tanggal Cetak:', 15, 71);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }), 42, 71);
+
+    // Right Column Box - Client Target info
+    doc.setFillColor(248, 250, 252); // slate-50
+    doc.rect(110, 43, 85, 36, 'F');
+    doc.setDrawColor(241, 245, 249);
+    doc.rect(110, 43, 85, 36, 'S');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(100, 116, 139);
+    doc.text('DIPERSIAPKAN UNTUK KLIEN:', 115, 49);
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(37, 99, 235);
+    doc.text(formData.name, 115, 55);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Perusahaan: ${formData.company || 'Pribadi'}`, 115, 61);
+    doc.text(`WhatsApp: ${formData.whatsapp}`, 115, 67);
+    doc.text(`Email: ${formData.email}`, 115, 73);
+
+    // Event Info Section Header
+    doc.setFillColor(15, 23, 42); // Slate-900
+    doc.rect(15, 85, 180, 8, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.text('DETAIL TARGET PENYIARAN / EVENT', 18, 90.5);
+
+    // Event Info fields drawing
+    let runningY = 98;
+    const drawMetaDetail = (title: string, content: string) => {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text(title, 15, runningY);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(15, 23, 42);
+      
+      // Prevent long locations overflowing
+      const maxChar = 65;
+      const displayContent = content.length > maxChar ? content.slice(0, maxChar) + '...' : content;
+      doc.text(displayContent, 55, runningY);
+      runningY += 5.5;
+    };
+
+    drawMetaDetail('Paket Penyiaran:', `${selectedPkg.name} (${selectedDuration} Jam Siaran)`);
+    drawMetaDetail('Tanggal Agenda:', formData.eventDate);
+    drawMetaDetail('Jam Mulai Siaran:', `${formData.eventTime} WIB`);
+    drawMetaDetail('Lokasi Venue:', formData.eventLocation);
+    if (formData.eventNotes) {
+      drawMetaDetail('Catatan Tambahan:', formData.eventNotes);
+    }
+
+    runningY += 1.5;
+
+    // Services breakdown header
+    doc.setFillColor(241, 245, 249);
+    doc.rect(15, runningY, 180, 7, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(71, 85, 105);
+    doc.text('ITEM RINCIAN SEWA / SERVICE PENYIARAN', 18, runningY + 4.5);
+    doc.text('ESTIMASI SUB-TOTAL', 195, runningY + 4.5, { align: 'right' });
+    
+    runningY += 11;
+
+    // Render Table row items
+    const rowPrinter = (itemTitle: string, subDesc: string, costValue: number) => {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(15, 23, 42);
+      doc.text(itemTitle, 15, runningY);
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text(subDesc, 15, runningY + 3.5);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Rp ${costValue.toLocaleString('id-ID')}`, 195, runningY + 1.5, { align: 'right' });
+
+      doc.setDrawColor(241, 245, 249);
+      doc.line(15, runningY + 6.5, 195, runningY + 6.5);
+      runningY += 11.5;
+    };
+
+    // Draw row elements
+    rowPrinter(`Sewa Paket: ${selectedPkg.name}`, `Fasilitas unit lengkap durasi utama ${selectedDuration} Jam`, basePrice);
+    
+    if (selectedOvertimeHours > 0) {
+      rowPrinter(`Overtime Tambahan (+${selectedOvertimeHours} Jam)`, `Tambahan jam operasional kru siaran (tarif 15% / jam dari paket dasar)`, totalOvertimeCost);
+    }
+
+    if (activeAddOnsList.length > 0) {
+      activeAddOnsList.forEach(item => {
+        rowPrinter(`${item.name} (x${item.quantity})`, `Add-on peralatan atau kru pembantu tambahan`, item.totalPrice);
+      });
+    }
+
+    runningY += 1.5;
+
+    // Left container: Support details (Ketentuan Operasional)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('KETENTUAN OPERASIONAL PRIME BROADCAST:', 15, runningY + 3.5);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.8);
+    doc.text('• Klien di berikan waktu maksimal 3 hari setelah invoice ini keluar, jika tidak', 15, runningY + 7);
+    doc.text('  maka vendor menggangap jika klien membatalkan secara sepihak.', 15, runningY + 10);
+    doc.text('• Pembayaran DP sebesar 50% wajib dilakukan secepatnya H-7 konfirmasi', 15, runningY + 13.5);
+    doc.text('  siaran, dan pembayaran harus diselesaikan 100% H-1 Acara.', 15, runningY + 16.5);
+    doc.text('• Tim berhak membatalkan operasional jika venue dinilai membahayakan', 15, runningY + 20);
+    doc.text('  kru atau perangkat siaran kami.', 15, runningY + 23);
+    doc.text('• DP bersifat non-refundable, kecuali kesalahan dilakukan dari pihak kami.', 15, runningY + 26.5);
+
+    // Right container: Subtotal, Discount & Total Nett calculation
+    const rightBoxX = 110;
+    const summaryRowPrinter = (label: string, textPrice: string, isBig = false, isDiscountRow = false) => {
+      doc.setFont('helvetica', isBig ? 'bold' : 'normal');
+      doc.setFontSize(isBig ? 10.5 : 8.5);
+      
+      if (isDiscountRow) {
+        doc.setTextColor(22, 163, 74); // success green
+        doc.setFontSize(7.5);
+      } else if (isBig) {
+        doc.setTextColor(37, 99, 235); // Brand blue
+      } else {
+        doc.setTextColor(100, 116, 139); // Gray slate
+      }
+      
+      doc.text(label, rightBoxX, runningY + 3.5);
+      
+      doc.setFont('helvetica', 'bold');
+      if (isBig) {
+        doc.setFontSize(11);
+      } else if (isDiscountRow) {
+        doc.setFontSize(8.5);
+      } else {
+        doc.setFontSize(9);
+      }
+      doc.text(textPrice, 195, runningY + 3.5, { align: 'right' });
+      runningY += 5.5;
+    };
+
+    summaryRowPrinter('Subtotal Tagihan:', `Rp ${subtotalCost.toLocaleString('id-ID')}`);
+    
+    if (appliedVoucher) {
+      summaryRowPrinter(`Voucher (${appliedVoucher.code}):`, `-Rp ${discountAmount.toLocaleString('id-ID')}`, false, true);
+    }
+
+    doc.setDrawColor(226, 232, 240);
+    doc.line(rightBoxX, runningY + 1, 195, runningY + 1);
+    runningY += 5;
+
+    summaryRowPrinter('ESTIMASI TOTAL NETT:', `Rp ${totalNett.toLocaleString('id-ID')}`, true);
+
+    if (appliedVoucher) {
+      runningY += 1.5;
+      doc.setFillColor(240, 253, 244); // light green background
+      doc.setDrawColor(187, 247, 208); // light green border
+      doc.rect(rightBoxX, runningY, 85, 8.5, 'FD');
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(21, 128, 61); // dark forest green
+      doc.text(`ANDA HEMAT Rp ${discountAmount.toLocaleString('id-ID')}!`, rightBoxX + 4, runningY + 5.5);
+    }
+
+    doc.setDrawColor(241, 245, 249);
+    doc.line(15, 275, 195, 275);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(148, 163, 184); // slate-400
+    doc.text('Faktur ini adalah estimasi biaya pendaftaran digital otomatis. Silakan verifikasi untuk booking slot final.', 105, 281, { align: 'center' });
+    doc.text('Dukungan Teknis & Legalitas: Prime Broadcast Indonesia • wa.me/6285150555195', 105, 285, { align: 'center' });
+
+    doc.save(`Invoice-${assignedInvoiceId || 'PROP'}-${formData.name.replace(/\s+/g, '_')}.pdf`);
+  };
+
   const handleWhatsAppRedirect = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -300,25 +554,35 @@ _Mohon konfirmasi ketersediaan kru kami untuk slot tanggal di atas. Terima kasih
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <div className="flex flex-col gap-3 w-full">
               <button
-                onClick={copyToClipboard}
-                className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold p-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+                onClick={downloadInvoicePDF}
+                className="w-full flex items-center justify-center gap-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold p-4 rounded-xl shadow-xl shadow-blue-500/10 hover:shadow-blue-500/25 transition-all cursor-pointer text-sm"
               >
-                {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copied ? 'Berhasil Disalin!' : 'Salin Format Invoice'}</span>
+                <FileDown className="w-4 h-4" />
+                <span>Unduh PDF Invoice Terformat</span>
               </button>
 
-              <button
-                onClick={() => {
-                  const message = generateWhatsAppMessage();
-                  window.open(`https://wa.me/6285150555195?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer,noopener');
-                }}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold p-3.5 rounded-xl shadow-lg transition-all cursor-pointer"
-              >
-                <Send className="w-4 h-4" />
-                <span>Kirim Ulang via WhatsApp</span>
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                <button
+                  onClick={copyToClipboard}
+                  className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold p-3.5 rounded-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer text-xs"
+                >
+                  {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                  <span>{copied ? 'Berhasil Disalin!' : 'Salin Format Copy-Paste'}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const message = generateWhatsAppMessage();
+                    window.open(`https://wa.me/6285150555195?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer,noopener');
+                  }}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold p-3.5 rounded-xl shadow-lg transition-all cursor-pointer text-xs"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Ulang WhatsApp</span>
+                </button>
+              </div>
             </div>
 
             <button
