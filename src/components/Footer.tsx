@@ -34,7 +34,7 @@ export default function Footer({ onViewChange }: FooterProps) {
           <div className="md:col-span-4 flex flex-col gap-4">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onViewChange('home')}>
               <img
-                src="/src/assets/logo-prime.png"
+                src={logoPrime}
                 alt="Prime Broadcast Logo"
                 className="w-10 h-10 object-contain select-none transition-all duration-700 group-hover:rotate-6 group-hover:scale-105"
               />
