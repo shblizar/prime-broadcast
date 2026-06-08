@@ -8,8 +8,6 @@
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <!-- Using modern modular Firebase Web SDK via CDN Imports inside modular script -->
 
   <style>
     body {
@@ -113,7 +111,6 @@
         
         <!-- Live Connection Status -->
         <div id="dbStatusBadge" class="flex items-center gap-2 self-start md:self-auto">
-          <!-- Populated dynamically -->
           <span class="text-xs bg-slate-950 font-mono-code px-3 py-1.5 rounded-xl border border-white/10 text-slate-400">
             Checking storage status...
           </span>
@@ -261,10 +258,31 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { initializeFirestore, doc, setDoc, deleteDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Universal App State
-    let firebaseConfig = null;
-    let isConfigured = false;
+    // Kredensial Firebase yang Ditulis Langsung (Hardcoded) sesuai Instruksi User
+    const firebaseConfig = {
+      apiKey: "AIzaSyDiZodL2ALXo3WhzxKNtc6Bxt1AsIj_S-Q",
+      authDomain: "unified-skyline-mk76w.firebaseapp.com",
+      projectId: "unified-skyline-mk76w",
+      storageBucket: "unified-skyline-mk76w.firebasestorage.app",
+      messagingSenderId: "854237000238",
+      appId: "1:854237000238:web:efacc050c3997ce336a5bf",
+      adminPassword: "2808"
+    };
+
+    const isConfigured = true;
     let firestoreDB = null;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      // Inisialisasi Firestore dengan KUNCI databaseId spesifik
+      firestoreDB = initializeFirestore(app, {
+        databaseId: "ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e"
+      });
+      console.log("Firebase & Custom Database ID diinisialisasi sukses.");
+    } catch (err) {
+      console.error("Gagal melakukan inisialisasi Firebase Firestore secara langsung:", err);
+    }
+
     let localVouchers = [
       { code: 'DISKON10', discount: 10, packageId: 'all' },
       { code: 'PROMO20', discount: 20, packageId: 'all' },
@@ -273,7 +291,7 @@
 
     const LS_KEY = 'pb_vouchers_database_v2';
 
-    // Check Local Storage Values
+    // Check Local Storage Values Fallback
     function getStoredLocalVouchers() {
       const stored = localStorage.getItem(LS_KEY);
       if (stored) {
@@ -294,7 +312,7 @@
       localStorage.setItem(LS_KEY, JSON.stringify(arr));
     }
 
-    // High quality timeout helper so we don't hang if user's firestore is unprovisioned or network is blocked
+    // High quality timeout helper so we don't hang if database is blocked or unprovisioned
     function withTimeout(promise, ms, errorMsg) {
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error(errorMsg)), ms);
@@ -303,37 +321,6 @@
           (err) => { clearTimeout(timer); reject(err); }
         );
       });
-    }
-
-    // 1. LOAD CONFIGURATION FIRST
-    async function loadConfig() {
-      try {
-        const res = await fetch('/firebase-config.json');
-        if (res.ok) {
-          firebaseConfig = await res.json();
-          isConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
-          
-          if (isConfigured) {
-            // Initialize Modular SDK
-            const app = initializeApp({
-              apiKey: firebaseConfig.apiKey,
-              authDomain: firebaseConfig.authDomain,
-              projectId: firebaseConfig.projectId,
-              storageBucket: firebaseConfig.storageBucket,
-              messagingSenderId: firebaseConfig.messagingSenderId,
-              appId: firebaseConfig.appId
-            });
-            firestoreDB = initializeFirestore(app, {
-              databaseId: "ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e"
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Gagal memuat konfigurasi Firebase, fallback ke LocalStorage", err);
-      }
-      
-      // Auto checking session login on load
-      checkSession();
     }
 
     // 2. CHECK SESSION LOGIN
@@ -359,7 +346,7 @@
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const inputPass = document.getElementById('adminPasswordInput').value;
-      const correctPass = (firebaseConfig && firebaseConfig.adminPassword) || 'admin';
+      const correctPass = firebaseConfig.adminPassword || '2808';
       const errMsg = document.getElementById('loginError');
 
       if (inputPass === correctPass) {
@@ -395,15 +382,15 @@
             Cloud Connected (Firestore)
           </span>
         `;
-        targetMetric.innerText = `Firestore: ${firebaseConfig.projectId}.firebaseapp.com`;
+        targetMetric.innerText = `DB ID: ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e`;
         tableSub.innerText = 'Tersinkronisasi otomatis dengan Cloud Firestore';
         
         try {
           const vouchersCol = collection(firestoreDB, 'vouchers');
           const snapshot = await withTimeout(
             getDocs(vouchersCol),
-            5000,
-            "Timeout memuat data dari Firestore! Database mungkin belum dibuat di console.firebase.google.com atau aturan keamanan memblokirnya."
+            6000,
+            "Timeout memuat data dari Firestore! Database mungkin belum dibuat di akun Firebase atau aturan keamanan (tab Rules) memblokirnya."
           );
           
           snapshot.forEach(docSnapshot => {
@@ -427,7 +414,7 @@
           </span>
         `;
         targetMetric.innerText = 'Penyimpanan Lokal Browser (LocalStorage)';
-        tableSub.innerText = 'Hubungkan Firebase Anda di "/public/firebase-config.json"';
+        tableSub.innerText = 'Gagal memuat database cloud, menggunakan fallback lokal browser.';
         vouchersList = getStoredLocalVouchers();
       }
 
@@ -547,7 +534,7 @@
           
           console.log("Firestore write success for:", codeVal);
         } else {
-          // Local storage save
+          // Local storage fallback save
           let list = getStoredLocalVouchers();
           const matchIdx = list.findIndex(v => v.code === codeVal);
           if (matchIdx >= 0) {
@@ -557,7 +544,7 @@
             list.push({ code: codeVal, discount: discountVal, packageId: packageIdVal });
           }
           saveStoredLocalVouchers(list);
-          console.log("Localstorage write success for:", codeVal);
+          console.log("Localstorage write success fallback for:", codeVal);
         }
 
         // Fresh retrieve
@@ -575,9 +562,9 @@
         if (err.message && (err.message.includes("permission-denied") || err.message.includes("permissions"))) {
           errorHint += "1. PERMISSIONS ERROR: Firestore Security Rules Anda menolak penulisan data. Konfigurasikan allow write pada path vouchers agar dapat diakses.\n2. Anda juga dapat menyalin konten 'firestore.rules' dari root proyek Anda.";
         } else if (err.message && err.message.includes("Firestore tidak merespons")) {
-          errorHint += "1. DATABASE TIDAK ADA: Buka console.firebase.google.com, pastikan di bagian 'Firestore Database' Anda sudah memilih 'Create Database'.\n2. Jika database belum dibuat sama sekali di konsol Firebase, SDK akan gantung tanpa melempar error langsung.";
+          errorHint += "1. DATABASE TIDAK ADA: Buka console.firebase.google.com, pastikan di bagian 'Firestore Database' Anda sudah memilih 'Create Database' dan membuatnya.\n2. Jika database belum dibuat sama sekali di konsol Firebase, SDK akan gantung tanpa melempar error langsung.";
         } else {
-          errorHint += "Harap verifikasi bahwa data di '/public/firebase-config.json' sudah diisi dengan API Key dan Project ID Anda yang valid.";
+          errorHint += "Harap verifikasi bahwa data kredensial Firestore Anda sudah benar.";
         }
         
         alert("GAGAL MENYIMPAN VOUCHER KE CLOUD!\n\nDetail Error: " + err.message + errorHint);
@@ -615,8 +602,8 @@
     // Assign global handler
     window.deleteVoucherFromServer = deleteVoucherFromServer;
 
-    // Bootstrap Entry
-    window.addEventListener('DOMContentLoaded', loadConfig);
+    // Bootstrap Entry immediately
+    checkSession();
   </script>
 </body>
 </html>
