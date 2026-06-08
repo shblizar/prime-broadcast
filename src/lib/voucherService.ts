@@ -18,6 +18,9 @@ export interface Voucher {
 
 // Fallback vouchers if Firestore config is not provided
 const FALLBACK_VOUCHERS: Voucher[] = [
+  { code: 'DISKON10', discount: 10, packageId: 'all' },
+  { code: 'PROMO20', discount: 20, packageId: 'all' },
+  { code: 'PRIMEKREATOR', discount: 15, packageId: 'all' },
   { code: 'LEBIHHEMAT', discount: 5, packageId: 'lite' },
   { code: 'CUMA10HARILAGI', discount: 10, packageId: 'regular' },
   { code: 'PRIMECODE12', discount: 12, packageId: 'gold' },

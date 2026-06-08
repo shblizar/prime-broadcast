@@ -108,14 +108,6 @@
             Data tersimpan secara instan di LocalStorage browser. Bebas hambatan, bebas kuota, dan langsung sinkron dengan kalkulator pemesanan.
           </p>
         </div>
-        
-        <!-- Offline Active Status Badge -->
-        <div id="dbStatusBadge" class="flex items-center gap-2 self-start md:self-auto">
-          <span class="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-sans font-bold">
-            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
-            Offline Mode (LocalStorage Active)
-          </span>
-        </div>
       </div>
 
       <!-- Quick Metrics Grid -->
@@ -261,6 +253,9 @@
     const LS_KEY = 'pb_vouchers_database_v2';
 
     const defaultVouchers = [
+      { code: 'DISKON10', discount: 10, packageId: 'all' },
+      { code: 'PROMO20', discount: 20, packageId: 'all' },
+      { code: 'PRIMEKREATOR', discount: 15, packageId: 'all' },
       { code: 'LEBIHHEMAT', discount: 5, packageId: 'lite' },
       { code: 'CUMA10HARILAGI', discount: 10, packageId: 'regular' },
       { code: 'PRIMECODE12', discount: 12, packageId: 'gold' },
@@ -273,8 +268,7 @@
       if (stored) {
         try { 
           const list = JSON.parse(stored);
-          const hasOld = list.some(item => item.code === 'DISKON10' || item.code === 'PROMO20');
-          if (!hasOld && list.length > 0) {
+          if (Array.isArray(list) && list.length > 0) {
             return list.map(item => ({
               code: item.code.toUpperCase(),
               discount: Number(item.discount || 0),
