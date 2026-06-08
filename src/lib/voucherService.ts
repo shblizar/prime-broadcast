@@ -65,7 +65,7 @@ export async function getFirebaseConfig(): Promise<FirebaseConfigStatus> {
         } else {
           app = getApp();
         }
-        firestoreInstance = getFirestore(app);
+        firestoreInstance = getFirestore(app, "ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e");
       }
       return cachedConfig;
     }
@@ -164,12 +164,21 @@ export async function addVoucher(code: string, discount: number, packageId: stri
 
   const config = await getFirebaseConfig();
   if (config.isConfigured && firestoreInstance) {
-    const voucherDocRef = doc(firestoreInstance, 'vouchers', cleanCode);
-    await setDoc(voucherDocRef, {
-      discount: discount,
-      packageId: packageId || 'all',
-      updatedAt: serverTimestamp()
-    });
+    try {
+      const voucherDocRef = doc(firestoreInstance, 'vouchers', cleanCode);
+      await setDoc(voucherDocRef, {
+        discount: discount,
+        packageId: packageId || 'all',
+        updatedAt: serverTimestamp()
+      });
+      console.log(`[VoucherService] Successfully saved voucher ${cleanCode} to Firestore.`);
+    } catch (error: any) {
+      console.error("[VoucherService] Critical failure inserting voucher to Cloud Firestore:", error);
+      throw new Error(
+        `Firebase rejected saving voucher code. Detail: ${error?.message || error}. ` +
+        `Hint: Pastikan Firestore rules Anda sudah dideploy, dan Database sudah berstatus 'Created' di Firebase console.`
+      );
+    }
   } else {
     const local = getLocalVouchers();
     const existingIdx = local.findIndex(v => v.code === cleanCode);

@@ -9,9 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   
-  <!-- Firebase Compat Core SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Using modern modular Firebase Web SDK via CDN Imports inside modular script -->
 
   <style>
     body {
@@ -259,7 +257,10 @@
     </footer>
   </div>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, deleteDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     // Universal App State
     let firebaseConfig = null;
     let isConfigured = false;
@@ -293,6 +294,17 @@
       localStorage.setItem(LS_KEY, JSON.stringify(arr));
     }
 
+    // High quality timeout helper so we don't hang if user's firestore is unprovisioned or network is blocked
+    function withTimeout(promise, ms, errorMsg) {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error(errorMsg)), ms);
+        promise.then(
+          (val) => { clearTimeout(timer); resolve(val); },
+          (err) => { clearTimeout(timer); reject(err); }
+        );
+      });
+    }
+
     // 1. LOAD CONFIGURATION FIRST
     async function loadConfig() {
       try {
@@ -302,8 +314,8 @@
           isConfigured = !!(firebaseConfig.apiKey && firebaseConfig.projectId);
           
           if (isConfigured) {
-            // Initialize Firebase Compet SDK
-            firebase.initializeApp({
+            // Initialize Modular SDK
+            const app = initializeApp({
               apiKey: firebaseConfig.apiKey,
               authDomain: firebaseConfig.authDomain,
               projectId: firebaseConfig.projectId,
@@ -311,7 +323,7 @@
               messagingSenderId: firebaseConfig.messagingSenderId,
               appId: firebaseConfig.appId
             });
-            firestoreDB = firebase.firestore();
+            firestoreDB = getFirestore(app, "ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e");
           }
         }
       } catch (err) {
@@ -385,11 +397,17 @@
         tableSub.innerText = 'Tersinkronisasi otomatis dengan Cloud Firestore';
         
         try {
-          const snapshot = await firestoreDB.collection('vouchers').get();
-          snapshot.forEach(doc => {
-            const data = doc.data();
+          const vouchersCol = collection(firestoreDB, 'vouchers');
+          const snapshot = await withTimeout(
+            getDocs(vouchersCol),
+            5000,
+            "Timeout memuat data dari Firestore! Database mungkin belum dibuat di console.firebase.google.com atau aturan keamanan memblokirnya."
+          );
+          
+          snapshot.forEach(docSnapshot => {
+            const data = docSnapshot.data();
             vouchersList.push({
-              code: doc.id.toUpperCase(),
+              code: docSnapshot.id.toUpperCase(),
               discount: Number(data.discount || 0),
               packageId: data.packageId || 'all'
             });
@@ -397,7 +415,7 @@
         } catch (e) {
           console.error("Firestore get failed, falling back to LocalStorage on-the-fly", e);
           vouchersList = getStoredLocalVouchers();
-          tableSub.innerText = 'Koneksi gagal. Menggunakan penyimpanan offline';
+          tableSub.innerHTML = `<span class="text-red-400 font-bold">Gagal sinkron cloud (Offline fallback): ${e.message}</span>`;
         }
       } else {
         badge.innerHTML = `
@@ -512,12 +530,20 @@
 
       try {
         if (isConfigured && firestoreDB) {
-          // Cloud save to Firestore
-          await firestoreDB.collection('vouchers').doc(codeVal).set({
-            discount: discountVal,
-            packageId: packageIdVal,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
+          // Cloud save to Firestore using setDoc with modular direct call
+          const voucherDocRef = doc(firestoreDB, 'vouchers', codeVal);
+          
+          await withTimeout(
+            setDoc(voucherDocRef, {
+              discount: discountVal,
+              packageId: packageIdVal,
+              updatedAt: serverTimestamp()
+            }),
+            6000,
+            "Firestore tidak merespons dalam 6 detik. Masalah ini biasa terjadi jika Anda belum masuk ke Firebase Console dan belum membuat database Firestore (atau Rules di tab Rules masih diset 'locked' / default deny)."
+          );
+          
+          console.log("Firestore write success for:", codeVal);
         } else {
           // Local storage save
           let list = getStoredLocalVouchers();
@@ -529,6 +555,7 @@
             list.push({ code: codeVal, discount: discountVal, packageId: packageIdVal });
           }
           saveStoredLocalVouchers(list);
+          console.log("Localstorage write success for:", codeVal);
         }
 
         // Fresh retrieve
@@ -537,8 +564,21 @@
         discountInput.value = '';
         packageSelect.value = 'all';
         codeInput.focus();
+        
+        alert(`Sukses! Voucher "${codeVal}" berhasil disimpan dan langsung aktif.`);
       } catch (err) {
-        alert("Gagal menyimpan voucher: " + err.message);
+        console.error("GAGAL MENYIMPAN VOUCHER KE CLOUD:", err);
+        
+        let errorHint = "\n\nSaran Troubleshooting:\n";
+        if (err.message && (err.message.includes("permission-denied") || err.message.includes("permissions"))) {
+          errorHint += "1. PERMISSIONS ERROR: Firestore Security Rules Anda menolak penulisan data. Konfigurasikan allow write pada path vouchers agar dapat diakses.\n2. Anda juga dapat menyalin konten 'firestore.rules' dari root proyek Anda.";
+        } else if (err.message && err.message.includes("Firestore tidak merespons")) {
+          errorHint += "1. DATABASE TIDAK ADA: Buka console.firebase.google.com, pastikan di bagian 'Firestore Database' Anda sudah memilih 'Create Database'.\n2. Jika database belum dibuat sama sekali di konsol Firebase, SDK akan gantung tanpa melempar error langsung.";
+        } else {
+          errorHint += "Harap verifikasi bahwa data di '/public/firebase-config.json' sudah diisi dengan API Key dan Project ID Anda yang valid.";
+        }
+        
+        alert("GAGAL MENYIMPAN VOUCHER KE CLOUD!\n\nDetail Error: " + err.message + errorHint);
       } finally {
         submitBtn.innerText = 'Simpan ke Database Live';
         submitBtn.disabled = false;
@@ -546,22 +586,32 @@
     });
 
     // 6. DELETE A SPECIFIC VOUCHER IN REAL TIME
-    window.deleteVoucherFromServer = async function(code) {
+    async function deleteVoucherFromServer(code) {
       if (!confirm(`Konfirmasi: Ingin menghapus voucher ${code} dari database secara permanen?`)) return;
 
       try {
         if (isConfigured && firestoreDB) {
-          await firestoreDB.collection('vouchers').doc(code).delete();
+          const voucherDocRef = doc(firestoreDB, 'vouchers', code);
+          await withTimeout(
+            deleteDoc(voucherDocRef),
+            5000,
+            "Firestore tidak membalas dalam 5 detik. Periksa koneksi cloud Anda."
+          );
         } else {
           let list = getStoredLocalVouchers();
           list = list.filter(v => v.code !== code);
           saveStoredLocalVouchers(list);
         }
         await loadDataAndRender();
+        alert(`Voucher "${code}" berhasil dihapus.`);
       } catch (err) {
+        console.error("Gagal menghapus dari cloud:", err);
         alert("Gagal menghapus voucher: " + err.message);
       }
-    };
+    }
+    
+    // Assign global handler
+    window.deleteVoucherFromServer = deleteVoucherFromServer;
 
     // Bootstrap Entry
     window.addEventListener('DOMContentLoaded', loadConfig);
