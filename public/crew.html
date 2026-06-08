@@ -261,10 +261,10 @@
     const LS_KEY = 'pb_vouchers_database_v2';
 
     const defaultVouchers = [
-      { code: 'LLP76', discount: 5, packageId: 'lite' },
-      { code: 'PROMO20', discount: 20, packageId: 'all' },
-      { code: 'PRIMEKREATOR', discount: 15, packageId: 'all' }
-      { code: 'DUNIASATUNYA', discount: 45, packageId: 'all' }
+      { code: 'LEBIHHEMAT', discount: 5, packageId: 'lite' },
+      { code: 'CUMA10HARILAGI', discount: 10, packageId: 'regular' },
+      { code: 'PRIMECODE12', discount: 12, packageId: 'gold' },
+      { code: '15BROADCASTEVENT', discount: 15, packageId: 'platinum' }
     ];
 
     // Check Local Storage Values
@@ -273,11 +273,14 @@
       if (stored) {
         try { 
           const list = JSON.parse(stored);
-          return list.map(item => ({
-            code: item.code.toUpperCase(),
-            discount: Number(item.discount || 0),
-            packageId: item.packageId || 'all'
-          }));
+          const hasOld = list.some(item => item.code === 'DISKON10' || item.code === 'PROMO20');
+          if (!hasOld && list.length > 0) {
+            return list.map(item => ({
+              code: item.code.toUpperCase(),
+              discount: Number(item.discount || 0),
+              packageId: item.packageId || 'all'
+            }));
+          }
         } catch(e) {}
       }
       localStorage.setItem(LS_KEY, JSON.stringify(defaultVouchers));

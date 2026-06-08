@@ -690,6 +690,11 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                     <div className="text-2xl sm:text-3xl font-mono font-black text-blue-400 tracking-tight">
                       {formatIDR(calculations.finalTotal)}
                     </div>
+                    {appliedVoucher && (
+                      <div className="text-[10px] text-green-400 font-bold mt-1">
+                        Anda Hemat {formatIDR(calculations.discountAmount)}!
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -126,7 +126,7 @@ export default function BookingForm({
       : '- Tidak ada';
 
     const voucherText = appliedVoucher 
-      ? `\n• Subtotal Biaya: Rp ${subtotalCost.toLocaleString('id-ID')}\n• Voucher Diskon (${appliedVoucher.code}): -${appliedVoucher.discount}% (Rp ${discountAmount.toLocaleString('id-ID')})`
+      ? `\n• Subtotal Biaya: Rp ${subtotalCost.toLocaleString('id-ID')}\n• Voucher Diskon (${appliedVoucher.code} ${appliedVoucher.discount}%): -Rp ${discountAmount.toLocaleString('id-ID')}\n• Anda Hemat: Rp ${discountAmount.toLocaleString('id-ID')}!`
       : '';
 
     return `*RESERVASI LIVE STREAMING | PRIME BROADCAST*
@@ -154,7 +154,7 @@ ${addOnsText}
 • Paket Dasar: Rp ${basePrice.toLocaleString('id-ID')}
 • Biaya Overtime: Rp ${totalOvertimeCost.toLocaleString('id-ID')}
 • Total Add-on: Rp ${totalAddOnsCost.toLocaleString('id-ID')}${voucherText}
-• *Total Estimasi Nett: Rp ${totalNett.toLocaleString('id-ID')}*
+• *Total Estimasi Nett: ${appliedVoucher ? `~Rp ${subtotalCost.toLocaleString('id-ID')}~ ➔ Rp ${totalNett.toLocaleString('id-ID')} (Anda Hemat Rp ${discountAmount.toLocaleString('id-ID')}!)` : `Rp ${totalNett.toLocaleString('id-ID')}`}*
 
 *Catatan Tambahan:*
 "${formData.eventNotes || 'Tidak ada catatan.'}"
@@ -273,8 +273,29 @@ _Mohon konfirmasi ketersediaan kru kami untuk slot tanggal di atas. Terima kasih
                   <span className="text-white font-semibold">{selectedPkg.name}</span>
                 </div>
                 <div className="flex justify-between border-t border-white/5 pt-2 mt-2">
-                  <span className="text-slate-400">Total Nett:</span>
-                  <span className="text-blue-400 font-extrabold font-mono text-sm">Rp {totalNett.toLocaleString('id-ID')}</span>
+                  <span>Total Harga (Subtotal):</span>
+                  <span className="text-white font-semibold">Rp {subtotalCost.toLocaleString('id-ID')}</span>
+                </div>
+                {appliedVoucher && (
+                  <div className="flex justify-between text-green-400">
+                    <span>Potongan Voucher ({appliedVoucher.code}):</span>
+                    <span>-{appliedVoucher.discount}% (-Rp {discountAmount.toLocaleString('id-ID')})</span>
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-white/10 pt-2 mt-1 items-center">
+                  <span className="text-slate-400 font-bold">Total Nett:</span>
+                  <div className="text-right">
+                    {appliedVoucher ? (
+                      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-1.5">
+                        <span className="text-slate-500 line-through text-[11px]">Rp {subtotalCost.toLocaleString('id-ID')}</span>
+                        <span className="text-blue-400 font-extrabold text-sm">
+                          Rp {totalNett.toLocaleString('id-ID')} <span className="text-green-500 font-bold text-[11px] font-sans">(Anda Hemat Rp {discountAmount.toLocaleString('id-ID')}!)</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-blue-400 font-extrabold text-sm">Rp {totalNett.toLocaleString('id-ID')}</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -603,6 +624,11 @@ _Mohon konfirmasi ketersediaan kru kami untuk slot tanggal di atas. Terima kasih
                       <div className="text-2xl font-mono font-black text-blue-400">
                         Rp {totalNett.toLocaleString('id-ID')}
                       </div>
+                      {appliedVoucher && (
+                        <div className="text-[10px] text-green-400 font-bold mt-1">
+                          Anda Hemat Rp {discountAmount.toLocaleString('id-ID')}!
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
