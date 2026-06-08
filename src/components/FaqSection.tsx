@@ -147,7 +147,7 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
               
               {/* Payment & Cancellation Policies */}
-              <div id="sistem-pembayaran" className="glass-panel-heavy p-6 rounded-2xl border-white/5 text-left">
+              <div className="glass-panel-heavy p-6 rounded-2xl border-white/5 text-left">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
                     <FileText className="w-5 h-5" />

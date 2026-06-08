@@ -19,16 +19,68 @@ import {
 } from 'lucide-react';
 
 interface PricingCalculatorProps {
-  onPackageSelect: (pkg: StreamPackage, duration: number, overtimeHours: number, selectedAddOns: { [id: string]: number }) => void;
+  onPackageSelect: (
+    pkg: StreamPackage, 
+    duration: number, 
+    overtimeHours: number, 
+    selectedAddOns: { [id: string]: number },
+    appliedVoucher?: { code: string; discount: number } | null
+  ) => void;
   initialPackageId?: string;
+  appliedVoucherGlobal?: { code: string; discount: number } | null;
 }
 
-export default function PricingCalculator({ onPackageSelect, initialPackageId = 'regular' }: PricingCalculatorProps) {
+export default function PricingCalculator({ onPackageSelect, initialPackageId = 'regular', appliedVoucherGlobal = null }: PricingCalculatorProps) {
   const [selectedPkgId, setSelectedPkgId] = useState<string>(initialPackageId);
   const [durationPreset, setDurationPreset] = useState<4 | 6>(4);
   const [overtimeHours, setOvertimeHours] = useState<number>(0);
   const [addOnQuantities, setAddOnQuantities] = useState<{ [id: string]: number }>({});
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
+
+  // Voucher Code state
+  const [voucherCode, setVoucherCode] = useState<string>('');
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number } | null>(appliedVoucherGlobal);
+  const [voucherError, setVoucherError] = useState<string>('');
+  const [voucherSuccess, setVoucherSuccess] = useState<string>('');
+  const [loadingVoucher, setLoadingVoucher] = useState<boolean>(false);
+
+  // Validate voucher in real-time as requested
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setLoadingVoucher(true);
+    setVoucherError('');
+    setVoucherSuccess('');
+    try {
+      const res = await fetch('/vouchers.json');
+      if (!res.ok) {
+        throw new Error('Gagal memuat kupon dari server');
+      }
+      const vouchers = await res.json();
+      const codeUpper = voucherCode.trim().toUpperCase();
+      const match = vouchers.find((v: any) => v.code.toUpperCase() === codeUpper);
+      
+      if (match) {
+        setAppliedVoucher({ code: match.code, discount: Number(match.discount) });
+        setVoucherSuccess(`Berhasil pasang kupon: ${match.code} (Diskon ${match.discount}%)`);
+        setVoucherCode('');
+      } else {
+        setVoucherError('Kode voucher tidak valid atau kedaluwarsa');
+        setAppliedVoucher(null);
+      }
+    } catch (err) {
+      setVoucherError('Gagal memvalidasi kode voucher.');
+      console.error(err);
+    } finally {
+      setLoadingVoucher(false);
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setVoucherCode('');
+    setVoucherSuccess('');
+    setVoucherError('');
+  };
 
   // Badge Customizer dynamic states
   const [badgeConfigs, setBadgeConfigs] = useState<{
@@ -48,10 +100,10 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       borderRadius: number;
     }
   }>({
-    lite: { text: 'LITE', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
-    regular: { text: 'REGULER', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
-    gold: { text: 'GOLD', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
-    platinum: { text: 'PLATINUM', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
+    lite: { text: 'Starter Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
+    regular: { text: 'Creator Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
+    gold: { text: 'Best Choice', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
+    platinum: { text: 'Supreme Event Solutions', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
   });
 
   const [activeDesignPkgId, setActiveDesignPkgId] = useState<string>('gold');
@@ -108,6 +160,8 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
     });
 
     const subtotal = basePrice + totalOvertimeCost + totalAddOnsCost;
+    const discountAmount = appliedVoucher ? Math.round((subtotal * appliedVoucher.discount) / 100) : 0;
+    const finalTotal = subtotal - discountAmount;
     
     return {
       basePrice,
@@ -115,12 +169,14 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       totalOvertimeCost,
       totalAddOnsCost,
       activeAddOnsList,
-      subtotal
+      subtotal,
+      discountAmount,
+      finalTotal
     };
-  }, [selectedPackage, durationPreset, overtimeHours, addOnQuantities]);
+  }, [selectedPackage, durationPreset, overtimeHours, addOnQuantities, appliedVoucher]);
 
   const handleBookingRedirect = () => {
-    onPackageSelect(selectedPackage, durationPreset, overtimeHours, addOnQuantities);
+    onPackageSelect(selectedPackage, durationPreset, overtimeHours, addOnQuantities, appliedVoucher);
   };
 
   return (
@@ -489,6 +545,83 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                   </div>
                 )}
 
+                {/* Voucher Discount Info Row */}
+                {appliedVoucher && (
+                  <div className="flex justify-between items-start text-sm mb-3 border-t border-white/5 pt-2">
+                    <div>
+                      <span className="font-bold text-green-400 block font-sans">
+                        Potongan Voucher ({appliedVoucher.code})
+                      </span>
+                      <span className="text-xs text-slate-400 font-sans">
+                        Diskon {appliedVoucher.discount}% dari Subtotal
+                      </span>
+                    </div>
+                    <span className="font-mono font-bold text-green-400">
+                      -{formatIDR(calculations.discountAmount)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Voucher Input and Application Panel */}
+                <div className="border-t border-white/5 pt-3.5 mt-3">
+                  <span className="text-xs text-slate-400 font-bold block uppercase mb-1.5 font-sans">
+                    Kupon Voucher Diskon:
+                  </span>
+                  
+                  {appliedVoucher ? (
+                    <div className="p-2.5 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-between text-xs mb-2 transition-all">
+                      <div className="flex flex-col text-left">
+                        <span className="font-mono font-bold text-green-400 uppercase tracking-wide">
+                          {appliedVoucher.code} APPLIED
+                        </span>
+                        <span className="text-[10px] text-slate-400 mt-0.5 leading-none">
+                          Potongan harga sebesar {appliedVoucher.discount}%
+                        </span>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={handleRemoveVoucher}
+                        className="text-[10px] bg-slate-950/40 hover:bg-red-500/35 hover:text-white border border-white/10 text-slate-300 font-bold px-2 py-1 rounded transition-colors cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5 mb-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={voucherCode}
+                          onChange={(e) => setVoucherCode(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleApplyVoucher();
+                            }
+                          }}
+                          placeholder="INPUT KODE KUUPON"
+                          className="flex-1 bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 uppercase font-mono placeholder:text-slate-600"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyVoucher}
+                          disabled={loadingVoucher || !voucherCode.trim()}
+                          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white font-bold text-xs px-3 rounded-lg transition-all flex items-center justify-center cursor-pointer"
+                        >
+                          {loadingVoucher ? '...' : 'Pasang'}
+                        </button>
+                      </div>
+                      
+                      {voucherError && (
+                        <p className="text-[10px] text-red-400 font-semibold font-sans">{voucherError}</p>
+                      )}
+                      {voucherSuccess && (
+                        <p className="text-[10px] text-green-400 font-semibold font-sans">{voucherSuccess}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 {/* Policy Clauses Inside the Card */}
                 <div className="border-t border-white/10 pt-4 mt-4 bg-white/[0.02] p-3.5 rounded-xl border border-white/5 text-xs text-slate-400">
                   <span className="font-semibold text-slate-300 text-xs block mb-1">
@@ -511,8 +644,15 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                     </span>
                     <span className="text-[10px] text-slate-500">Estimasi Nett • Belum PPN</span>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-mono font-black text-blue-400 tracking-tight">
-                    {formatIDR(calculations.subtotal)}
+                  <div className="text-right">
+                    {appliedVoucher && (
+                      <div className="text-xs font-mono line-through text-slate-500 mb-0.5">
+                        {formatIDR(calculations.subtotal)}
+                      </div>
+                    )}
+                    <div className="text-2xl sm:text-3xl font-mono font-black text-blue-400 tracking-tight">
+                      {formatIDR(calculations.finalTotal)}
+                    </div>
                   </div>
                 </div>
 

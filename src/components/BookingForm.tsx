@@ -20,6 +20,8 @@ interface BookingFormProps {
   selectedDuration: number;
   selectedOvertimeHours: number;
   selectedAddOns: { [id: string]: number };
+  appliedVoucher?: { code: string; discount: number } | null;
+  onVoucherChange?: (voucher: { code: string; discount: number } | null) => void;
   onReset: () => void;
   preselectedDate?: string;
   onViewChange?: (view: string) => void;
@@ -30,6 +32,8 @@ export default function BookingForm({
   selectedDuration, 
   selectedOvertimeHours, 
   selectedAddOns, 
+  appliedVoucher = null,
+  onVoucherChange,
   onReset,
   preselectedDate = '',
   onViewChange
@@ -79,7 +83,9 @@ export default function BookingForm({
     }
   });
 
-  const totalNett = basePrice + totalOvertimeCost + totalAddOnsCost;
+  const subtotalCost = basePrice + totalOvertimeCost + totalAddOnsCost;
+  const discountAmount = appliedVoucher ? Math.round((subtotalCost * appliedVoucher.discount) / 100) : 0;
+  const totalNett = subtotalCost - discountAmount;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -119,6 +125,10 @@ export default function BookingForm({
       ? activeAddOnsList.map(a => `- ${a.name} (x${a.quantity}): Rp ${a.totalPrice.toLocaleString('id-ID')}`).join('\n')
       : '- Tidak ada';
 
+    const voucherText = appliedVoucher 
+      ? `\n• Subtotal Biaya: Rp ${subtotalCost.toLocaleString('id-ID')}\n• Voucher Diskon (${appliedVoucher.code}): -${appliedVoucher.discount}% (Rp ${discountAmount.toLocaleString('id-ID')})`
+      : '';
+
     return `*RESERVASI LIVE STREAMING | PRIME BROADCAST*
 ------------------------------------------------
 ID Unit: PB-REQ-${Math.floor(1000 + Math.random() * 9000)}
@@ -143,7 +153,7 @@ ${addOnsText}
 *RINCIAN ESTIMASI BIAYA:*
 • Paket Dasar: Rp ${basePrice.toLocaleString('id-ID')}
 • Biaya Overtime: Rp ${totalOvertimeCost.toLocaleString('id-ID')}
-• Total Add-on: Rp ${totalAddOnsCost.toLocaleString('id-ID')}
+• Total Add-on: Rp ${totalAddOnsCost.toLocaleString('id-ID')}${voucherText}
 • *Total Estimasi Nett: Rp ${totalNett.toLocaleString('id-ID')}*
 
 *Catatan Tambahan:*
@@ -547,6 +557,23 @@ _Mohon konfirmasi ketersediaan kru kami untuk slot tanggal di atas. Terima kasih
                     </div>
                   )}
 
+                  {/* Voucher display row if applied */}
+                  {appliedVoucher && (
+                    <div className="flex justify-between items-start text-sm border-t border-white/5 pt-3">
+                      <div>
+                        <span className="font-bold text-green-400 block font-sans">
+                          Potongan Voucher ({appliedVoucher.code})
+                        </span>
+                        <span className="text-xs text-slate-400 font-sans">
+                          Diskon {appliedVoucher.discount}% dari Subtotal
+                        </span>
+                      </div>
+                      <span className="font-mono font-bold text-green-400">
+                        -Rp {discountAmount.toLocaleString('id-ID')}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Direct Terms summary reminder */}
                   <div className="border-t border-white/10 pt-4 mt-4 bg-slate-950 p-4 rounded-xl border border-white/5">
                     <span className="block text-xs font-bold text-[#aec6ff] uppercase mb-1">
@@ -567,8 +594,15 @@ _Mohon konfirmasi ketersediaan kru kami untuk slot tanggal di atas. Terima kasih
                       </span>
                       <span className="text-[10px] text-slate-500">Harga belum termasuk PPN 11%</span>
                     </div>
-                    <div className="text-2xl font-mono font-black text-blue-400">
-                      Rp {totalNett.toLocaleString('id-ID')}
+                    <div className="text-right">
+                      {appliedVoucher && (
+                        <div className="text-xs font-mono line-through text-slate-500 mb-0.5">
+                          Rp {subtotalCost.toLocaleString('id-ID')}
+                        </div>
+                      )}
+                      <div className="text-2xl font-mono font-black text-blue-400">
+                        Rp {totalNett.toLocaleString('id-ID')}
+                      </div>
                     </div>
                   </div>
                 </div>

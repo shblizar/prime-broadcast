@@ -1,0 +1,14 @@
+[
+  {
+    "code": "DISKON10",
+    "discount": 10
+  },
+  {
+    "code": "PROMO20",
+    "discount": 20
+  },
+  {
+    "code": "PRIMEKREATOR",
+    "discount": 15
+  }
+]

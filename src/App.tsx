@@ -33,18 +33,21 @@ export default function App() {
   const [overtimeHours, setOvertimeHours] = useState<number>(0);
   const [addOnsMap, setAddOnsMap] = useState<{ [id: string]: number }>({});
   const [preselectedDate, setPreselectedDate] = useState<string>('');
+  const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number } | null>(null);
   
   // Transition to Booking and set parameters
   const handlePackageConfiguredChange = (
     pkg: StreamPackage, 
     duration: number, 
     overtime: number, 
-    addOns: { [id: string]: number }
+    addOns: { [id: string]: number },
+    voucher?: { code: string; discount: number } | null
   ) => {
     setConfiguredPkg(pkg);
     setDurationHours(duration);
     setOvertimeHours(overtime);
     setAddOnsMap(addOns);
+    setAppliedVoucher(voucher || null);
     setCurrentView('checkout'); // Redirect to Checkout section
   };
 
@@ -52,6 +55,7 @@ export default function App() {
     setCurrentView('pricing');
     setOvertimeHours(0);
     setAddOnsMap({});
+    setAppliedVoucher(null);
   };
 
   const handleLiveChatTriggers = () => {
@@ -272,7 +276,10 @@ export default function App() {
         {/* VIEW 2: PACKAGES & LIVE ESTIMATOR */}
         {currentView === 'pricing' && (
           <div className="animate-in fade-in duration-300">
-            <PricingCalculator onPackageSelect={handlePackageConfiguredChange} />
+            <PricingCalculator 
+              onPackageSelect={handlePackageConfiguredChange} 
+              appliedVoucherGlobal={appliedVoucher}
+            />
           </div>
         )}
 
@@ -284,6 +291,8 @@ export default function App() {
               selectedDuration={durationHours}
               selectedOvertimeHours={overtimeHours}
               selectedAddOns={addOnsMap}
+              appliedVoucher={appliedVoucher}
+              onVoucherChange={setAppliedVoucher}
               onReset={handleResetConfiguration}
               preselectedDate={preselectedDate}
               onViewChange={setCurrentView}

@@ -60,3 +60,9 @@ export interface FAQItem {
   answer: string;
   category: string;
 }
+
+export interface Voucher {
+  code: string;
+  discount: number;
+}
+

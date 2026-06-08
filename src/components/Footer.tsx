@@ -1,5 +1,4 @@
 import React from 'react';
-import logoPrime from '../assets/images/logo-prime.png';
 import { 
   Video, 
   Mail, 
@@ -33,11 +32,49 @@ export default function Footer({ onViewChange }: FooterProps) {
           {/* Brand block */}
           <div className="md:col-span-4 flex flex-col gap-4">
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onViewChange('home')}>
-              <img
-                src={logoPrime}
-                alt="Prime Broadcast Logo"
-                className="w-10 h-10 object-contain select-none transition-all duration-700 group-hover:rotate-6 group-hover:scale-105"
-              />
+              <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 100 100" 
+                  className="w-8 h-8 select-none transition-all duration-700 group-hover:rotate-6 animate-pulse-slow"
+                >
+                  <defs>
+                    <linearGradient id="pb-grad-logo-footer" x1="0%" y1="100%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#ff2e2e" />
+                      <stop offset="48%" stopColor="#a825ff" />
+                      <stop offset="100%" stopColor="#0040ff" />
+                    </linearGradient>
+                    <filter id="pb-glow-footer" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="6" result="blur" />
+                      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                    </filter>
+                  </defs>
+
+                  {/* Glow underlay */}
+                  <g opacity="0.4" filter="url(#pb-glow-footer)">
+                    <path d="M 42,32 A 18,18 0 1,1 42,68 A 18,18 0 1,1 42,32" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="12" strokeLinecap="round" />
+                    <path d="M 24,32 L 24,72 A 10,10 0 0,1 14,82" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="12" strokeLinecap="round" />
+                    <path d="M 62,32 A 18,18 0 1,1 62,68 A 18,18 0 1,1 62,32" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="12" strokeLinecap="round" />
+                    <path d="M 44,68 L 44,28 A 10,10 0 0,1 54,18" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="12" strokeLinecap="round" />
+                  </g>
+
+                  {/* 1. Base b */}
+                  <path d="M 62,32 A 18,18 0 1,1 62,68 A 18,18 0 1,1 62,32" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="11" strokeLinecap="round" />
+                  <path d="M 44,68 L 44,28 A 10,10 0 0,1 54,18" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="11" strokeLinecap="round" />
+
+                  {/* 2. Base p */}
+                  <path d="M 24,32 L 24,72 A 10,10 0 0,1 14,82" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="11" strokeLinecap="round" />
+                  <path d="M 42,32 A 18,18 0 1,1 42,68 A 18,18 0 1,1 42,32" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="11" strokeLinecap="round" />
+
+                  {/* 3. Overlap 1 */}
+                  <path d="M 44,38 L 44,28 A 10,10 0 0,1 54,18" fill="none" stroke="#020617" strokeWidth="16" strokeLinecap="round" />
+                  <path d="M 44,38 L 44,28 A 10,10 0 0,1 54,18" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="11" strokeLinecap="round" />
+
+                  {/* 4. Overlap 2 */}
+                  <path d="M 42,68 A 18,18 0 0,0 58,54" fill="none" stroke="#020617" strokeWidth="16" strokeLinecap="round" />
+                  <path d="M 42,68 A 18,18 0 0,0 58,54" fill="none" stroke="url(#pb-grad-logo-footer)" strokeWidth="11" strokeLinecap="round" />
+                </svg>
+              </div>
               <span className="font-display font-bold text-lg tracking-wider text-white group-hover:text-blue-400 transition-colors">
                 PRIME BROADCAST
               </span>
@@ -123,23 +160,9 @@ export default function Footer({ onViewChange }: FooterProps) {
             <span>© {new Date().getFullYear()} Prime Broadcast Indonesia. Hak Cipta Dilindungi Undang-Undang.</span>
           </div>
           <div className="flex gap-4">
-            <button
-              onClick={() => onViewChange('policies')}
-            className="hover:text-slate-400 cursor-help">
-              Syarat Ketentuan Jasa
-            </button>
+            <span className="hover:text-slate-400 cursor-help">Syarat Ketentuan Jasa</span>
             <span className="text-slate-700 font-bold">•</span>
-            <button
-              onClick={() => {
-                onViewChange('policies');
-                setTimeout(() => {
-                  const el = document.getElementById('sistem-pembayaran');
-                  el?.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-            }}
-            className="hover:text-slate-400 cursor-help">
-              Refund & Reschedule Policy
-            </button>
+            <span className="hover:text-slate-400 cursor-help">Refund & Reschedule Policy</span>
           </div>
         </div>
 
