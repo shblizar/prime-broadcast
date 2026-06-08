@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Video, Menu, X, CalendarRange, Flame } from 'lucide-react';
+import logoPrime from '../assets/images/logo-prime.png';
 
 interface NavbarProps {
   currentView: string;
@@ -27,12 +28,12 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
             className="flex items-center gap-3 cursor-pointer group"
           >
             <div className="p-2.5 bg-slate-950/60 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1px_2px_rgba(255,255,255,0.15)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 100 100" 
-                className="w-6 h-6 select-none transition-all duration-700 group-hover:rotate-6"
-              >
-                <defs>
+              <img 
+                src={logoPrime} 
+                alt="Prime Broadcast"
+                className="w-10 h-10 object-contain"
+              />
+            </div>
                   {/* Premium red-purple-blue flowing gradient */}
                   <linearGradient id="pb-grad-logo" x1="0%" y1="100%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#f33" /> {/* Red */}
