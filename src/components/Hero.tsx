@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
 import cameraImage from '../assets/images/camera_operator_1780743339808.png';
 
-export default function Hero() {
-  return (
-    <div>
-      <img
-        src={cameraImage}
-        alt="Prime Broadcast Studio Control Deck"
-      />
-    </div>
-  );
-}
-
 import { Sparkles, CalendarRange, ArrowRight, Video, ShieldCheck, Activity, Layers, Cpu, Radio } from 'lucide-react';
 
 interface HeroProps {
@@ -106,7 +95,7 @@ export default function Hero({ onViewChange }: HeroProps) {
               {/* The Live image hotlinked as requested */}
               <div className="relative aspect-video bg-black flex items-center justify-center group overflow-hidden">
                 <img 
-                  src="/src/assets/images/camera_operator_1780743339808.png" 
+                  src={cameraImage}
                   alt="Prime Broadcast Studio Control Deck" 
                   referrerPolicy="no-referrer"
                   className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${
