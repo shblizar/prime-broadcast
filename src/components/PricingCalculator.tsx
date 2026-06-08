@@ -48,10 +48,10 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       borderRadius: number;
     }
   }>({
-    lite: { text: 'Starter Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
-    regular: { text: 'Creator Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
-    gold: { text: 'Best Choice', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
-    platinum: { text: 'Supreme Event Solutions', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
+    lite: { text: 'LITE', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
+    regular: { text: 'REGULER', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
+    gold: { text: 'GOLD', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
+    platinum: { text: 'PLATINUM', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
   });
 
   const [activeDesignPkgId, setActiveDesignPkgId] = useState<string>('gold');
