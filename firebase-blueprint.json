@@ -1,0 +1,22 @@
+{
+  "entities": {
+    "Voucher": {
+      "title": "Voucher Coupon",
+      "description": "Stores details of discount coupons.",
+      "type": "object",
+      "properties": {
+        "discount": {
+          "type": "integer",
+          "description": "Discount percentage (1-100)"
+        }
+      },
+      "required": ["discount"]
+    }
+  },
+  "firestore": {
+    "vouchers/{code}": {
+      "schema": "Voucher",
+      "description": "Collection of all available vouchers."
+    }
+  }
+}

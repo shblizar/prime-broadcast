@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PACKAGES, ADD_ONS } from '../data';
 import { StreamPackage, AddOnOption } from '../types';
+import { validateVoucherCode, getFirebaseConfig } from '../lib/voucherService';
 import { 
   Check, 
   Plus, 
@@ -43,21 +44,24 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
   const [voucherError, setVoucherError] = useState<string>('');
   const [voucherSuccess, setVoucherSuccess] = useState<string>('');
   const [loadingVoucher, setLoadingVoucher] = useState<boolean>(false);
+  const [dbIsLive, setDbIsLive] = useState<boolean>(false);
 
-  // Validate voucher in real-time as requested
+  // Check database configuration status on mount
+  useEffect(() => {
+    getFirebaseConfig().then(cfg => {
+      setDbIsLive(cfg.isConfigured);
+    });
+  }, []);
+
+  // Validate voucher in real-time as requested using database cloud service
   const handleApplyVoucher = async () => {
     if (!voucherCode.trim()) return;
     setLoadingVoucher(true);
     setVoucherError('');
     setVoucherSuccess('');
     try {
-      const res = await fetch('/vouchers.json');
-      if (!res.ok) {
-        throw new Error('Gagal memuat kupon dari server');
-      }
-      const vouchers = await res.json();
       const codeUpper = voucherCode.trim().toUpperCase();
-      const match = vouchers.find((v: any) => v.code.toUpperCase() === codeUpper);
+      const match = await validateVoucherCode(codeUpper);
       
       if (match) {
         setAppliedVoucher({ code: match.code, discount: Number(match.discount) });
@@ -564,9 +568,22 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
                 {/* Voucher Input and Application Panel */}
                 <div className="border-t border-white/5 pt-3.5 mt-3">
-                  <span className="text-xs text-slate-400 font-bold block uppercase mb-1.5 font-sans">
-                    Kupon Voucher Diskon:
-                  </span>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs text-slate-400 font-bold block uppercase font-sans">
+                      Kupon Voucher Diskon:
+                    </span>
+                    {dbIsLive ? (
+                      <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full font-sans flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                        Cloud Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-sans flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                        Demo Mode (Local)
+                      </span>
+                    )}
+                  </div>
                   
                   {appliedVoucher ? (
                     <div className="p-2.5 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-between text-xs mb-2 transition-all">

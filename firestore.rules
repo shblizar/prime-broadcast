@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Global safety net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened ID helper to prevent resource injection
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // Voucher Match Block
+    match /vouchers/{code} {
+      // Clients can retrieve individual voucher details to check validation
+      allow get: if isValidId(code);
+      
+      // Prevent listing all coupon codes via client-side queries
+      allow list: if false;
+
+      // Admin write rules (create & update)
+      allow create, update: if isValidId(code) 
+        && request.resource.data.discount is int 
+        && request.resource.data.discount >= 1 
+        && request.resource.data.discount <= 100;
+
+      // Admin delete operations
+      allow delete: if isValidId(code);
+    }
+  }
+}
