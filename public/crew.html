@@ -103,16 +103,17 @@
       <!-- DB Status Alert & Overview -->
       <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/40 border border-white/5 backdrop-blur-sm">
         <div>
-          <h2 class="text-xl font-extrabold text-white">Sistem Sinkronisasi Voucher Otomatis</h2>
+          <h2 class="text-xl font-extrabold text-white">Sistem Manajemen Voucher Lokal</h2>
           <p class="text-slate-400 text-xs mt-1">
-            Data tersimpan langsung ke cloud database secara real-time dan terintegrasi otomatis ke kalkulator pembayaran klien.
+            Data tersimpan secara instan di LocalStorage browser. Bebas hambatan, bebas kuota, dan langsung sinkron dengan kalkulator pemesanan.
           </p>
         </div>
         
-        <!-- Live Connection Status -->
+        <!-- Offline Active Status Badge -->
         <div id="dbStatusBadge" class="flex items-center gap-2 self-start md:self-auto">
-          <span class="text-xs bg-slate-950 font-mono-code px-3 py-1.5 rounded-xl border border-white/10 text-slate-400">
-            Checking storage status...
+          <span class="text-xs bg-teal-500/10 text-teal-400 border border-teal-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-sans font-bold">
+            <span class="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse"></span>
+            Offline Mode (LocalStorage Active)
           </span>
         </div>
       </div>
@@ -124,12 +125,12 @@
           <span id="metricTotal" class="text-2xl font-mono-code font-black text-white mt-1 block">-</span>
         </div>
         <div class="bg-slate-900/30 border border-white/5 rounded-xl p-4">
-          <span class="text-xs text-slate-400 font-semibold block uppercase">Rata-Rata Rujuk</span>
+          <span class="text-xs text-slate-400 font-semibold block uppercase">Rata-Rata Diskon</span>
           <span id="metricAverage" class="text-2xl font-mono-code font-black text-teal-400 mt-1 block">-</span>
         </div>
-        <div class="bg-slate-900/30 border border-white/5 rounded-xl p-4">
+        <div class="bg-slate-300/5 border border-white/5 rounded-xl p-4">
           <span class="text-xs text-slate-400 font-semibold block uppercase">Target Database</span>
-          <span id="metricTarget" class="text-xs font-mono-code font-bold text-blue-400 mt-2 block break-all truncate">-</span>
+          <span id="metricTarget" class="text-xs font-mono-code font-bold text-blue-400 mt-2 block break-all truncate">Penyimpanan Lokal Browser (LocalStorage)</span>
         </div>
       </div>
 
@@ -196,16 +197,16 @@
                 id="submitBtn"
                 class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition-all active:scale-[0.98] cursor-pointer text-sm"
               >
-                Simpan ke Database Live
+                Simpan Voucher
               </button>
             </form>
           </div>
 
           <!-- Cloud Help Card -->
           <div class="bg-blue-950/10 border border-blue-500/15 rounded-2xl p-5 text-left text-xs text-blue-300 space-y-2">
-            <span class="font-bold block text-sm">Informasi Keamanan Otomatis</span>
+            <span class="font-bold block text-sm">Informasi Sandbox Lokal</span>
             <p class="leading-relaxed text-slate-300">
-              Setiap kali Anda menekan tombol simpan, data akan dipos ke Firestore atau Local storage Anda secara instan. Halaman reservasi klien dan kalkulator harga akan langsung mengambil data terbaru ini tanpa perlu kompilasi atau commit ulang di GitHub.
+              Sistem manajemen voucher ini berjalan 100% secara offline tanpa internet. Data langsung tersinkron secara instan di peramban Anda untuk menghemat kuota dan mempercepat pemrosesan.
             </p>
           </div>
         </section>
@@ -215,8 +216,8 @@
           <div class="bg-slate-900/60 border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden backdrop-blur-sm">
             <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
               <div>
-                <h3 class="text-base font-bold text-white">Daftar Voucher Live</h3>
-                <p id="tableSub" class="text-[11px] text-slate-400 mt-0.5">Memuat isi database...</p>
+                <h3 class="text-base font-bold text-white">Daftar Voucher Lokal</h3>
+                <p id="tableSub" class="text-[11px] text-slate-400 mt-0.5">Tersinkronisasi otomatis dengan LocalStorage</p>
               </div>
             </div>
 
@@ -233,7 +234,7 @@
                 <tbody id="vouchersTableBody" class="divide-y divide-white/5 font-mono-code">
                   <tr>
                     <td colspan="4" class="py-8 text-center text-slate-500 text-xs font-sans">
-                      Menghubungkan ke database...
+                      Menghubungkan ke database lokal...
                     </td>
                   </tr>
                 </tbody>
@@ -248,82 +249,45 @@
     <!-- Footer block -->
     <footer class="border-t border-white/5 py-6 bg-slate-950">
       <div class="max-w-5xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span>© 2026 Prime Broadcast Indonesia • Administrator Portal.</span>
+        <span>© 2026 Prime Broadcast Indonesia • Administrator Portal (LocalStorage Mode).</span>
         <span class="font-sans">Status Terklasifikasi • Akses Terpelihara</span>
       </div>
     </footer>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { initializeFirestore, doc, setDoc, deleteDoc, collection, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  <script>
+    // Universal App State
+    const adminPassword = "2808";
+    const LS_KEY = 'pb_vouchers_database_v2';
 
-    // Kredensial Firebase yang Ditulis Langsung (Hardcoded) sesuai Instruksi User
-    const firebaseConfig = {
-      apiKey: "AIzaSyDiZodL2ALXo3WhzxKNtc6Bxt1AsIj_S-Q",
-      authDomain: "unified-skyline-mk76w.firebaseapp.com",
-      projectId: "unified-skyline-mk76w",
-      storageBucket: "unified-skyline-mk76w.firebasestorage.app",
-      messagingSenderId: "854237000238",
-      appId: "1:854237000238:web:efacc050c3997ce336a5bf",
-      adminPassword: "2808"
-    };
-
-    const isConfigured = true;
-    let firestoreDB = null;
-
-    try {
-      const app = initializeApp(firebaseConfig);
-      // Inisialisasi Firestore dengan KUNCI databaseId spesifik
-      firestoreDB = initializeFirestore(app, {
-        databaseId: "ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e"
-      });
-      console.log("Firebase & Custom Database ID diinisialisasi sukses.");
-    } catch (err) {
-      console.error("Gagal melakukan inisialisasi Firebase Firestore secara langsung:", err);
-    }
-
-    let localVouchers = [
+    const defaultVouchers = [
       { code: 'DISKON10', discount: 10, packageId: 'all' },
       { code: 'PROMO20', discount: 20, packageId: 'all' },
       { code: 'PRIMEKREATOR', discount: 15, packageId: 'all' }
     ];
 
-    const LS_KEY = 'pb_vouchers_database_v2';
-
-    // Check Local Storage Values Fallback
+    // Check Local Storage Values
     function getStoredLocalVouchers() {
       const stored = localStorage.getItem(LS_KEY);
       if (stored) {
         try { 
           const list = JSON.parse(stored);
           return list.map(item => ({
-            code: item.code,
-            discount: item.discount,
+            code: item.code.toUpperCase(),
+            discount: Number(item.discount || 0),
             packageId: item.packageId || 'all'
           }));
         } catch(e) {}
       }
-      localStorage.setItem(LS_KEY, JSON.stringify(localVouchers));
-      return localVouchers;
+      localStorage.setItem(LS_KEY, JSON.stringify(defaultVouchers));
+      return defaultVouchers;
     }
 
     function saveStoredLocalVouchers(arr) {
       localStorage.setItem(LS_KEY, JSON.stringify(arr));
     }
 
-    // High quality timeout helper so we don't hang if database is blocked or unprovisioned
-    function withTimeout(promise, ms, errorMsg) {
-      return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(new Error(errorMsg)), ms);
-        promise.then(
-          (val) => { clearTimeout(timer); resolve(val); },
-          (err) => { clearTimeout(timer); reject(err); }
-        );
-      });
-    }
-
-    // 2. CHECK SESSION LOGIN
+    // Check Session Login
     function checkSession() {
       const parent = document.getElementById('adminContent');
       const cover = document.getElementById('loginOverlay');
@@ -333,7 +297,6 @@
         setTimeout(() => {
           cover.classList.add('hidden');
           parent.classList.remove('hidden');
-          // Load active data
           loadDataAndRender();
         }, 300);
       } else {
@@ -342,20 +305,18 @@
       }
     }
 
-    // 3. LOGIN SUBMIT
+    // Login Submit
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const inputPass = document.getElementById('adminPasswordInput').value;
-      const correctPass = firebaseConfig.adminPassword || '2808';
       const errMsg = document.getElementById('loginError');
 
-      if (inputPass === correctPass) {
+      if (inputPass === adminPassword) {
         errMsg.classList.add('hidden');
         sessionStorage.setItem('pb_admin_auth', 'true');
         checkSession();
       } else {
         errMsg.classList.remove('hidden');
-        // Shake feedback
         document.getElementById('adminPasswordInput').classList.add('border-red-500');
         setTimeout(() => document.getElementById('adminPasswordInput').classList.remove('border-red-500'), 500);
       }
@@ -367,57 +328,9 @@
       location.reload();
     });
 
-    // 4. FETCH DATA AND RENDER COMPONENT
-    async function loadDataAndRender() {
-      const badge = document.getElementById('dbStatusBadge');
-      const tableSub = document.getElementById('tableSub');
-      const targetMetric = document.getElementById('metricTarget');
-      
-      let vouchersList = [];
-
-      if (isConfigured && firestoreDB) {
-        badge.innerHTML = `
-          <span class="text-xs bg-green-500/10 text-green-400 border border-green-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-sans font-bold">
-            <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-            Cloud Connected (Firestore)
-          </span>
-        `;
-        targetMetric.innerText = `DB ID: ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e`;
-        tableSub.innerText = 'Tersinkronisasi otomatis dengan Cloud Firestore';
-        
-        try {
-          const vouchersCol = collection(firestoreDB, 'vouchers');
-          const snapshot = await withTimeout(
-            getDocs(vouchersCol),
-            6000,
-            "Timeout memuat data dari Firestore! Database mungkin belum dibuat di akun Firebase atau aturan keamanan (tab Rules) memblokirnya."
-          );
-          
-          snapshot.forEach(docSnapshot => {
-            const data = docSnapshot.data();
-            vouchersList.push({
-              code: docSnapshot.id.toUpperCase(),
-              discount: Number(data.discount || 0),
-              packageId: data.packageId || 'all'
-            });
-          });
-        } catch (e) {
-          console.error("Firestore get failed, falling back to LocalStorage on-the-fly", e);
-          vouchersList = getStoredLocalVouchers();
-          tableSub.innerHTML = `<span class="text-red-400 font-bold">Gagal sinkron cloud (Offline fallback): ${e.message}</span>`;
-        }
-      } else {
-        badge.innerHTML = `
-          <span class="text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-sans font-bold">
-            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-            Demo Mode (LocalStorage)
-          </span>
-        `;
-        targetMetric.innerText = 'Penyimpanan Lokal Browser (LocalStorage)';
-        tableSub.innerText = 'Gagal memuat database cloud, menggunakan fallback lokal browser.';
-        vouchersList = getStoredLocalVouchers();
-      }
-
+    // Load and Render
+    function loadDataAndRender() {
+      const vouchersList = getStoredLocalVouchers();
       renderTable(vouchersList);
       updateMetrics(vouchersList);
     }
@@ -457,19 +370,19 @@
 
         return `
         <tr class="hover:bg-white/[0.02] transition-colors border-b border-white/5">
-          <td class="py-3 px-3 text-white font-bold select-all flex items-center gap-1.5">
-            <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+          <td class="py-3 px-3 text-white font-bold select-all flex items-center gap-1.5 w-[40%]">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
             ${v.code}
           </td>
-          <td class="py-3 px-3 text-right font-bold text-teal-400 font-mono-code">
+          <td class="py-3 px-3 text-right font-bold text-teal-400 font-mono-code w-[20%]">
             ${v.discount}% Off
           </td>
-          <td class="py-3 px-3 text-center">
+          <td class="py-3 px-3 text-center w-[25%]">
             <span class="text-[10px] uppercase font-bold tracking-tight px-2 py-0.5 rounded-full border ${badgeColor}">
               ${pkgLabel}
             </span>
           </td>
-          <td class="py-3 px-3 text-center">
+          <td class="py-3 px-3 text-center w-[15%]">
             <button 
               onclick="deleteVoucherFromServer('${v.code}')"
               class="bg-red-500/10 hover:bg-red-500/25 border border-red-500/20 text-red-400 hover:text-white rounded-lg px-2.5 py-1 text-[11px] font-bold font-sans transition-colors cursor-pointer"
@@ -496,8 +409,8 @@
       document.getElementById('metricAverage').innerText = avg + '%';
     }
 
-    // 5. ADD A NEW VOUCHER IN REAL TIME
-    document.getElementById('voucherForm').addEventListener('submit', async function(e) {
+    // Add a new voucher
+    document.getElementById('voucherForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const codeInput = document.getElementById('code');
       const discountInput = document.getElementById('discount');
@@ -517,93 +430,42 @@
       submitBtn.innerText = 'Menyimpan...';
       submitBtn.disabled = true;
 
-      try {
-        if (isConfigured && firestoreDB) {
-          // Cloud save to Firestore using setDoc with modular direct call
-          const voucherDocRef = doc(firestoreDB, 'vouchers', codeVal);
-          
-          await withTimeout(
-            setDoc(voucherDocRef, {
-              discount: discountVal,
-              packageId: packageIdVal,
-              updatedAt: serverTimestamp()
-            }),
-            6000,
-            "Firestore tidak merespons dalam 6 detik. Masalah ini biasa terjadi jika Anda belum masuk ke Firebase Console dan belum membuat database Firestore (atau Rules di tab Rules masih diset 'locked' / default deny)."
-          );
-          
-          console.log("Firestore write success for:", codeVal);
+      setTimeout(() => {
+        let list = getStoredLocalVouchers();
+        const matchIdx = list.findIndex(v => v.code === codeVal);
+        if (matchIdx >= 0) {
+          list[matchIdx].discount = discountVal;
+          list[matchIdx].packageId = packageIdVal;
         } else {
-          // Local storage fallback save
-          let list = getStoredLocalVouchers();
-          const matchIdx = list.findIndex(v => v.code === codeVal);
-          if (matchIdx >= 0) {
-            list[matchIdx].discount = discountVal;
-            list[matchIdx].packageId = packageIdVal;
-          } else {
-            list.push({ code: codeVal, discount: discountVal, packageId: packageIdVal });
-          }
-          saveStoredLocalVouchers(list);
-          console.log("Localstorage write success fallback for:", codeVal);
+          list.push({ code: codeVal, discount: discountVal, packageId: packageIdVal });
         }
+        saveStoredLocalVouchers(list);
 
-        // Fresh retrieve
-        await loadDataAndRender();
+        loadDataAndRender();
         codeInput.value = '';
         discountInput.value = '';
         packageSelect.value = 'all';
         codeInput.focus();
-        
-        alert(`Sukses! Voucher "${codeVal}" berhasil disimpan dan langsung aktif.`);
-      } catch (err) {
-        console.error("GAGAL MENYIMPAN VOUCHER KE CLOUD:", err);
-        
-        let errorHint = "\n\nSaran Troubleshooting:\n";
-        if (err.message && (err.message.includes("permission-denied") || err.message.includes("permissions"))) {
-          errorHint += "1. PERMISSIONS ERROR: Firestore Security Rules Anda menolak penulisan data. Konfigurasikan allow write pada path vouchers agar dapat diakses.\n2. Anda juga dapat menyalin konten 'firestore.rules' dari root proyek Anda.";
-        } else if (err.message && err.message.includes("Firestore tidak merespons")) {
-          errorHint += "1. DATABASE TIDAK ADA: Buka console.firebase.google.com, pastikan di bagian 'Firestore Database' Anda sudah memilih 'Create Database' dan membuatnya.\n2. Jika database belum dibuat sama sekali di konsol Firebase, SDK akan gantung tanpa melempar error langsung.";
-        } else {
-          errorHint += "Harap verifikasi bahwa data kredensial Firestore Anda sudah benar.";
-        }
-        
-        alert("GAGAL MENYIMPAN VOUCHER KE CLOUD!\n\nDetail Error: " + err.message + errorHint);
-      } finally {
-        submitBtn.innerText = 'Simpan ke Database Live';
+
+        submitBtn.innerText = 'Simpan Voucher';
         submitBtn.disabled = false;
-      }
+        alert(`Sukses! Voucher "${codeVal}" berhasil disimpan ke LocalStorage.`);
+      }, 200);
     });
 
-    // 6. DELETE A SPECIFIC VOUCHER IN REAL TIME
-    async function deleteVoucherFromServer(code) {
-      if (!confirm(`Konfirmasi: Ingin menghapus voucher ${code} dari database secara permanen?`)) return;
+    // Delete a voucher
+    window.deleteVoucherFromServer = function(code) {
+      if (!confirm(`Konfirmasi: Ingin menghapus voucher "${code}" secara permanen?`)) return;
 
-      try {
-        if (isConfigured && firestoreDB) {
-          const voucherDocRef = doc(firestoreDB, 'vouchers', code);
-          await withTimeout(
-            deleteDoc(voucherDocRef),
-            5000,
-            "Firestore tidak membalas dalam 5 detik. Periksa koneksi cloud Anda."
-          );
-        } else {
-          let list = getStoredLocalVouchers();
-          list = list.filter(v => v.code !== code);
-          saveStoredLocalVouchers(list);
-        }
-        await loadDataAndRender();
-        alert(`Voucher "${code}" berhasil dihapus.`);
-      } catch (err) {
-        console.error("Gagal menghapus dari cloud:", err);
-        alert("Gagal menghapus voucher: " + err.message);
-      }
-    }
-    
-    // Assign global handler
-    window.deleteVoucherFromServer = deleteVoucherFromServer;
+      let list = getStoredLocalVouchers();
+      list = list.filter(v => v.code !== code);
+      saveStoredLocalVouchers(list);
+      loadDataAndRender();
+      alert(`Voucher "${code}" berhasil dihapus.`);
+    };
 
-    // Bootstrap Entry immediately
-    checkSession();
+    // Entry point on DOM ready
+    window.addEventListener('DOMContentLoaded', checkSession);
   </script>
 </body>
 </html>

@@ -36,45 +36,8 @@ let firestoreInstance: any = null;
 
 // Helper to fetch the config dynamically from the public directory
 export async function getFirebaseConfig(): Promise<FirebaseConfigStatus> {
-  if (cachedConfig) return cachedConfig;
-  try {
-    const res = await fetch('/firebase-config.json');
-    if (res.ok) {
-      const data = await res.json();
-      const isConfigured = !!(data.apiKey && data.projectId);
-      cachedConfig = {
-        isConfigured,
-        apiKey: data.apiKey || '',
-        projectId: data.projectId || '',
-        adminPassword: data.adminPassword || 'admin'
-      };
-      
-      if (isConfigured) {
-        // Initialize Firebase
-        const apps = getApps();
-        let app;
-        if (apps.length === 0) {
-          app = initializeApp({
-            apiKey: data.apiKey,
-            authDomain: data.authDomain,
-            projectId: data.projectId,
-            storageBucket: data.storageBucket,
-            messagingSenderId: data.messagingSenderId,
-            appId: data.appId
-          });
-        } else {
-          app = getApp();
-        }
-        firestoreInstance = getFirestore(app, "ai-studio-9fa16efd-ca61-4b30-8eaf-5b4177bbc8e0e");
-      }
-      return cachedConfig;
-    }
-  } catch (error) {
-    console.warn("Could not load /firebase-config.json, falling back to local storage.", error);
-  }
-
-  // Pure fallback if file download failed
-  cachedConfig = { isConfigured: false, adminPassword: 'admin' };
+  // Forced LocalStorage Mode permanently as requested
+  cachedConfig = { isConfigured: false, adminPassword: '2808' };
   return cachedConfig;
 }
 
