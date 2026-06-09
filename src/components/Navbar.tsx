@@ -26,8 +26,10 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
           {/* Logo Brand */}
           <div 
             onClick={() => onViewChange('home')} 
-            className="flex items-center gap-3 cursor-pointer group"
-            className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+            className="flex items-center gap-3 cursor-pointer group">
+          </div>
+            <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+            </div>
             <img
                 src={logoPrime}
                 alt="Prime Broadcast"
