@@ -22,28 +22,29 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
     <nav className="sticky top-0 z-50 glass-panel-heavy border-b border-white/10 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
+          
           {/* Logo Brand */}
           <div 
             onClick={() => onViewChange('home')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
-             <img
+            <img
                 src={logoPrime}
                 alt="Prime Broadcast"
-                 className="w-10 h-10 object-contain select-none transition-all duration-700 group-hover:rotate-6 group-hover:scale-105"
-                 />
-              <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
-                PRIME BROADCAST
-              </span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 live-pulse"></span>
-                <span className="text-[10px] font-mono tracking-widest text-[#9dcdff] font-medium uppercase">
-                  LIVE STREAMING SOLUTIONS
-                </span>
-              </div>
-            </div>
-          </div>
+                className="w-10 h-10 object-contain select-none transition-all duration-700 group-hover:rotate-6 group-hover:scale-105"
+            />
+        <div>
+          <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
+             PRIME BROADCAST
+        </span>
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-500 live-pulse"></span>
+          <span className="text-[10px] font-mono tracking-widest text-[#9dcdff] font-medium uppercase">
+            LIVE STREAMING SOLUTIONS
+          </span>
+        </div>
+      </div>
+    </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1.5">
