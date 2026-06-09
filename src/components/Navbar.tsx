@@ -31,9 +31,8 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
              <img
                 src={logoPrime}
                 alt="Prime Broadcast"
-                className="w-8 h-8 object-contain select-none transition-all duration-700 group-hover:rotate-6"
+                 className="w-10 h-10 object-contain select-none transition-all duration-700 group-hover:rotate-6 group-hover:scale-105"
                  />
-            </div>
             <div>
               <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
                 PRIME BROADCAST
