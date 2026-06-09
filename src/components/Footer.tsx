@@ -1,5 +1,5 @@
 import React from 'react';
-import studioImage from '../assets/images/nama-file-gambar.jpg';
+import studioImage from '../assets/images/logo-prime.png';
 import { 
   Video, 
   Mail, 
