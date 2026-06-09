@@ -11,7 +11,7 @@ export const PACKAGES: StreamPackage[] = [
     },
     camerasCount: 3,
     crewCount: 1,
-    badge: 'Starter Choice',
+    badge: 'LITE',
     features: [
       { name: 'Kamera: Sony NX-100 (3 Unit)', included: true },
       { name: 'Video Mixer: Tidak Termasuk', included: false },
@@ -33,7 +33,7 @@ export const PACKAGES: StreamPackage[] = [
     camerasCount: 4,
     crewCount: 2,
     highlighted: true,
-    badge: 'Creator Choice',
+    badge: 'REGULER',
     features: [
       { name: 'Kamera: Sony NX-100 (4 Unit)', included: true },
       { name: 'Video Mixer: Termasuk (✓)', included: true },
@@ -75,7 +75,7 @@ export const PACKAGES: StreamPackage[] = [
     },
     camerasCount: 5,
     crewCount: 4,
-    badge: 'Supreme Event Solutions',
+    badge: 'PLATINUM',
     features: [
       { name: 'Kamera: Sony NX-100 (5 Unit)', included: true },
       { name: 'Video Mixer: Termasuk (✓)', included: true },
