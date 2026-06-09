@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import studioImage from '../assets/images/camera_operator_1780743339808.png';
+import studioImage from '../assets/images/gambar stream deck.png';
 import { Sparkles, CalendarRange, ArrowRight, Video, ShieldCheck, Activity, Layers, Cpu, Radio } from 'lucide-react';
 
 interface HeroProps {
