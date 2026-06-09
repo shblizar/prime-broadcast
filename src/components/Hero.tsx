@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import studioImage from '../assets/images/gambar-stream-deck.png';
 import { Sparkles, CalendarRange, ArrowRight, Video, ShieldCheck, Activity, Layers, Cpu, Radio } from 'lucide-react';
-
+import studioImage from '../assets/images/gambar-stream-deck.png';
 interface HeroProps {
   onViewChange: (view: string) => void;
 }
