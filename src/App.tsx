@@ -26,6 +26,10 @@ import {
 
 export default function App() {
   const [currentView, setCurrentView] = useState<string>('home');
+  const handleViewChange = (view: string) => {
+  setCurrentView(view);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
   
   // Configured booking parameters
   const [configuredPkg, setConfiguredPkg] = useState<StreamPackage>(PACKAGES[1]); // Default to regular
@@ -67,7 +71,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
       
       {/* Persistent top navbar */}
-      <Navbar currentView={currentView} onViewChange={setCurrentView} />
+      <Navbar currentView={currentView} onViewChange={handleViewChange} />
 
       {/* Main Container Views Rendering */}
       <main className="flex-grow">
@@ -76,7 +80,7 @@ export default function App() {
         {currentView === 'home' && (
           <div className="animate-in fade-in duration-300">
             {/* Upper landing banner */}
-            <Hero onViewChange={setCurrentView} />
+            <Hero onViewChange={handleViewChange} />
 
             {/* BENTO GRID OF CORE JASA CAPABILITIES */}
             <section className="py-16 border-t border-white/5 relative bg-slate-950/40">
@@ -250,7 +254,7 @@ export default function App() {
 
                   <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-2">
                     <button
-                      onClick={() => setCurrentView('pricing')}
+                      onClick={() => handleViewChange('pricing')}
                       className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition-transform hover:scale-105 cursor-pointer"
                     >
                       <span>Mulai Atur Paket Anda</span>
@@ -334,7 +338,7 @@ export default function App() {
       </main>
 
       {/* Footer component */}
-      <Footer onViewChange={setCurrentView} />
+      <Footer onViewChange={handleViewChange} />
 
     </div>
   );
