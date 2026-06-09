@@ -136,13 +136,14 @@ export default function Footer({ onViewChange }: FooterProps) {
                 onViewChange('policies');
                 setTimeout(() => {
                   const el = document.getElementById('sistem-pembayaran');
-                  el?.scrollINtoView({ behavior: 'smooth' });
+                  el?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
               }}
              className="hover:text-slate-400 cursor-help">
               Refund & Reschedule Policy
             </button>
           </div>
+         </div>
       </div>
     </footer>
   );
