@@ -6,6 +6,8 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 
 // Load environmental variables
+import nodemailer from 'nodemailer';
+import { jsPDF } from 'jspdf';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -316,6 +318,196 @@ app.get('/api/bookings', (req, res) => {
 });
 
 // API: Booking submission trigger (Invokes Gemini SDK models & Inserts to Google Calendar)
+
+
+function generateInvoicePDFBuffer(bookingData: any): Buffer {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // Header strip biru
+  doc.setFillColor(37, 99, 235);
+  doc.rect(0, 0, 210, 8, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(22);
+  doc.setTextColor(15, 23, 42);
+  doc.text('PRIME BROADCAST', 15, 24);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Premium Live Streaming & Broadcasting Solutions', 15, 29);
+
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105);
+  doc.text('WA: +62 851-5055-5195', 195, 20, { align: 'right' });
+  doc.text('Email: primebroadcast.id@gmail.com', 195, 25, { align: 'right' });
+
+  doc.setDrawColor(226, 232, 240);
+  doc.setLineWidth(0.4);
+  doc.line(15, 35, 195, 35);
+
+  // Box info klien & event
+  doc.setFillColor(248, 250, 252);
+  doc.rect(15, 40, 85, 32, 'F');
+  doc.rect(110, 40, 85, 32, 'F');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(51, 65, 85);
+  doc.text('INFORMASI KLIEN:', 20, 46);
+  doc.text('DETAIL AGENDA SIARAN:', 115, 46);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text(`Nama: ${bookingData.clientName}`, 20, 52);
+  doc.text(`Perusahaan: ${bookingData.clientCompany || 'Pribadi'}`, 20, 57);
+  doc.text(`WhatsApp: ${bookingData.clientWhatsapp}`, 20, 62);
+  doc.text(`Email: ${bookingData.clientEmail}`, 20, 67);
+
+  doc.text(`Paket: ${bookingData.packageName}`, 115, 52);
+  doc.text(`Durasi: ${bookingData.packageDuration}`, 115, 57);
+  doc.text(`Jadwal: ${bookingData.eventDate} @ ${bookingData.eventTime} WIB`, 115, 62);
+  doc.text(`Lokasi: ${(bookingData.eventLocation || '').substring(0, 36)}`, 115, 67);
+
+  // Tabel items
+  doc.setFillColor(30, 41, 59);
+  doc.rect(15, 78, 180, 7.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text('Deskripsi', 18, 83);
+  doc.text('Total', 190, 83, { align: 'right' });
+
+  let itemY = 92;
+  const row = (desc: string, price: string) => {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(51, 65, 85);
+    doc.text(desc, 18, itemY);
+    doc.text(price, 190, itemY, { align: 'right' });
+    doc.setDrawColor(241, 245, 249);
+    doc.line(15, itemY + 2.5, 195, itemY + 2.5);
+    itemY += 7.5;
+  };
+
+  row(`${bookingData.packageName} (${bookingData.packageDuration})`, `Rp ${Number(bookingData.priceSubtotal || 0).toLocaleString('id-ID')}`);
+  if (bookingData.additionalOvertime && bookingData.additionalOvertime !== '0 Jam') {
+    row(`Overtime: ${bookingData.additionalOvertime}`, '-');
+  }
+  if (bookingData.voucherApplied && bookingData.voucherApplied !== 'Tanpa Voucher') {
+    row(`Voucher: ${bookingData.voucherApplied}`, `-Rp ${Number(bookingData.savingsDiscount || 0).toLocaleString('id-ID')}`);
+  }
+  row('Pajak PPN 1%', `Rp ${Number(bookingData.taxFee1Percent || 0).toLocaleString('id-ID')}`);
+
+  itemY += 5;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(37, 99, 235);
+  doc.text('TOTAL TAGIHAN NETT:', 18, itemY);
+  doc.text(`Rp ${Number(bookingData.grandTotalPriceNett || 0).toLocaleString('id-ID')}`, 190, itemY, { align: 'right' });
+
+  itemY += 15;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(148, 163, 184);
+  doc.text(`Invoice ID: ${bookingData.invoiceId}  |  Generated otomatis oleh sistem Prime Broadcast`, 105, itemY, { align: 'center' });
+
+  // Return sebagai Buffer Node.js
+  const pdfArrayBuffer = doc.output('arraybuffer');
+  return Buffer.from(pdfArrayBuffer);
+}
+
+
+async function sendInvoiceEmailToAdmin(bookingData: any, pdfBuffer: Buffer): Promise<void> {
+  const adminEmail = process.env.ADMIN_EMAIL; // e.g. primebroadcast.id@gmail.com
+  const gmailUser = process.env.GMAIL_USER;   // akun pengirim Gmail
+  const gmailPass = process.env.GMAIL_APP_PASSWORD; // Google App Password (bukan password biasa)
+
+  if (!adminEmail || !gmailUser || !gmailPass) {
+    console.warn('[Email] ADMIN_EMAIL / GMAIL_USER / GMAIL_APP_PASSWORD belum dikonfigurasi di .env. Skip kirim email.');
+    return;
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: gmailUser,
+      pass: gmailPass
+    }
+  });
+
+  const subject = `📋 Invoice Baru: ${bookingData.invoiceId} — ${bookingData.clientName}`;
+
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 24px; border-radius: 12px;">
+      <div style="background: #1e3a8a; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+        <h2 style="color: white; margin: 0; font-size: 18px;">PRIME BROADCAST — Invoice Baru Masuk</h2>
+      </div>
+      <div style="background: white; padding: 24px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <tr style="background: #f1f5f9;">
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569; width: 40%;">Invoice ID</td>
+            <td style="padding: 8px 12px; color: #1e40af; font-weight: bold;">${bookingData.invoiceId}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">Nama Klien</td>
+            <td style="padding: 8px 12px;">${bookingData.clientName}</td>
+          </tr>
+          <tr style="background: #f1f5f9;">
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">Perusahaan</td>
+            <td style="padding: 8px 12px;">${bookingData.clientCompany || 'Pribadi / Individu'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">WhatsApp</td>
+            <td style="padding: 8px 12px;">${bookingData.clientWhatsapp}</td>
+          </tr>
+          <tr style="background: #f1f5f9;">
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">Email Klien</td>
+            <td style="padding: 8px 12px;">${bookingData.clientEmail}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">Tanggal Event</td>
+            <td style="padding: 8px 12px;">${bookingData.eventDate} @ ${bookingData.eventTime} WIB</td>
+          </tr>
+          <tr style="background: #f1f5f9;">
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">Lokasi</td>
+            <td style="padding: 8px 12px;">${bookingData.eventLocation}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; font-weight: bold; color: #475569;">Paket</td>
+            <td style="padding: 8px 12px;">${bookingData.packageName} (${bookingData.packageDuration})</td>
+          </tr>
+          <tr style="background: #dbeafe;">
+            <td style="padding: 10px 12px; font-weight: bold; color: #1e40af; font-size: 14px;">TOTAL TAGIHAN</td>
+            <td style="padding: 10px 12px; font-weight: bold; color: #1e40af; font-size: 14px;">Rp ${Number(bookingData.grandTotalPriceNett || 0).toLocaleString('id-ID')}</td>
+          </tr>
+        </table>
+        <p style="font-size: 12px; color: #94a3b8; margin-top: 16px;">
+          Invoice PDF terlampir. Kirimkan ke klien secara manual setelah pembayaran selesai.
+        </p>
+      </div>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"Prime Broadcast System" <${gmailUser}>`,
+    to: adminEmail,
+    subject,
+    html: htmlBody,
+    attachments: [
+      {
+        filename: `Invoice-${bookingData.invoiceId}-${bookingData.clientName.replace(/\s+/g, '_')}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf'
+      }
+    ]
+  });
+
+  console.log(`[Email] Invoice ${bookingData.invoiceId} berhasil dikirim ke ${adminEmail}`);
+}
+
+    
 app.post('/api/booking/submit', async (req, res) => {
   const bookingData = req.body;
   if (!bookingData || !bookingData.invoiceId) {
@@ -446,6 +638,16 @@ app.post('/api/booking/submit', async (req, res) => {
   currentBookings.push(newBookingSlot);
   fs.writeFileSync(BOOKINGS_PATH, JSON.stringify(currentBookings, null, 2), 'utf-8');
   console.log(`Pemesanan berhasil disimpan lokal ke bookings.json.`);
+  // Kirim invoice PDF ke Gmail admin
+  try {
+    const pdfBuffer = generateInvoicePDFBuffer(bookingData);
+    await sendInvoiceEmailToAdmin(bookingData, pdfBuffer);
+  } catch (emailErr) {
+    console.error(
+      '[Email] Gagal mengirim invoice email ke admin:',
+      emailErr
+    );
+  }
 
   // 3. Optional: Insert the cleaned booking into Google Calendar if connection exists
   let googleSynced = false;
