@@ -10,6 +10,11 @@ import nodemailer from 'nodemailer';
 import { jsPDF } from 'jspdf';
 import dotenv from 'dotenv';
 dotenv.config();
+console.log("ENV CHECK:", {
+  ADMIN_EMAIL:process.env.ADMIN_EMAIL,
+  GMAIL_USER: process.env.GMAIL_USER,
+  GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD ? "ADA" : "KOSONG"
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
