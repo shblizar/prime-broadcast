@@ -420,9 +420,9 @@ function generateInvoicePDFBuffer(bookingData: any): Buffer {
 
 
 async function sendInvoiceEmailToAdmin(bookingData: any, pdfBuffer: Buffer): Promise<void> {
-  const adminEmail = process.env.ADMIN_EMAIL; // e.g. primebroadcast.id@gmail.com
-  const gmailUser = process.env.GMAIL_USER;   // akun pengirim Gmail
-  const gmailPass = process.env.GMAIL_APP_PASSWORD; // Google App Password (bukan password biasa)
+  const adminEmail = "bulzar27@gmail.com"; // e.g. primebroadcast.id@gmail.com
+  const gmailUser = "bulzar27@gmail.com";   // akun pengirim Gmail
+  const gmailPass = "rhehzkxdkvyqjdfe"; // Google App Password (bukan password biasa)
 
   if (!adminEmail || !gmailUser || !gmailPass) {
     console.warn('[Email] ADMIN_EMAIL / GMAIL_USER / GMAIL_APP_PASSWORD belum dikonfigurasi di .env. Skip kirim email.');
