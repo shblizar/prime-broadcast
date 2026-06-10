@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PACKAGES, ADD_ONS } from '../data';
-import { StreamPackage, AddOnOption } from '../types';
+import { PACKAGES, ADD_ONS, CAMERA_UPGRADE_OPTIONS } from '../data';
+import { StreamPackage, AddOnOption, CameraUpgradeOption } from '../types';
 import { validateVoucherCode, getFirebaseConfig } from '../lib/voucherService';
 import { 
   Check, 
@@ -25,7 +25,9 @@ interface PricingCalculatorProps {
     duration: number, 
     overtimeHours: number, 
     selectedAddOns: { [id: string]: number },
-    appliedVoucher?: { code: string; discount: number } | null
+    appliedVoucher?: { code: string; discount: number; packageId?: string } | null,
+    selectedCameraId?: string,
+    cameraCount?: number
   ) => void;
   initialPackageId?: string;
   appliedVoucherGlobal?: { code: string; discount: number } | null;
@@ -35,8 +37,21 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
   const [selectedPkgId, setSelectedPkgId] = useState<string>(initialPackageId);
   const [durationPreset, setDurationPreset] = useState<4 | 6>(4);
   const [overtimeHours, setOvertimeHours] = useState<number>(0);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>('nx100');
+  const [selectedCameraCount, setSelectedCameraCount] = useState<number>(1);
   const [addOnQuantities, setAddOnQuantities] = useState<{ [id: string]: number }>({});
   const [showMatrix, setShowMatrix] = useState<boolean>(false);
+
+  // Clamp selectedCameraCount when package changes
+  const selectedPackage = useMemo(() => {
+    return PACKAGES.find(p => p.id === selectedPkgId) || PACKAGES[1];
+  }, [selectedPkgId]);
+
+  useEffect(() => {
+    if (selectedCameraCount > selectedPackage.camerasCount) {
+      setSelectedCameraCount(selectedPackage.camerasCount);
+    }
+  }, [selectedPackage, selectedCameraCount]);
 
   // Voucher Code state
   const [voucherCode, setVoucherCode] = useState<string>('');
@@ -124,19 +139,14 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       borderRadius: number;
     }
   }>({
-    lite: { text: 'LITE', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
-    regular: { text: 'REGULER', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
+    lite: { text: 'Starter Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
+    regular: { text: 'Creator Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
     gold: { text: 'Best Choice', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
-    platinum: { text: 'PLATINUM', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
+    platinum: { text: 'Supreme Event Solutions', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
   });
 
   const [activeDesignPkgId, setActiveDesignPkgId] = useState<string>('gold');
   const [showBadgeDesigner, setShowBadgeDesigner] = useState<boolean>(true);
-
-  // Retrieve current active package based on selection ID
-  const selectedPackage = useMemo(() => {
-    return PACKAGES.find(p => p.id === selectedPkgId) || PACKAGES[1];
-  }, [selectedPkgId]);
 
   // Initial setup for add-on quantities
   const handleAddOnQuantityChange = (id: string, delta: number, max: number) => {
@@ -183,7 +193,11 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       }
     });
 
-    const subtotal = basePrice + totalOvertimeCost + totalAddOnsCost;
+    const cameraOpt = CAMERA_UPGRADE_OPTIONS.find(c => c.id === selectedCameraId) || CAMERA_UPGRADE_OPTIONS[0];
+    const isUpgraded = cameraOpt.id !== 'nx100';
+    const cameraUpgradeCost = isUpgraded ? cameraOpt.extraPrice * selectedCameraCount : 0;
+
+    const subtotal = basePrice + totalOvertimeCost + totalAddOnsCost + cameraUpgradeCost;
     const discountAmount = appliedVoucher ? Math.round((subtotal * appliedVoucher.discount) / 100) : 0;
     const finalTotal = subtotal - discountAmount;
     
@@ -193,14 +207,16 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       totalOvertimeCost,
       totalAddOnsCost,
       activeAddOnsList,
+      cameraUpgradeCost,
+      selectedCameraName: cameraOpt.name,
       subtotal,
       discountAmount,
       finalTotal
     };
-  }, [selectedPackage, durationPreset, overtimeHours, addOnQuantities, appliedVoucher]);
+  }, [selectedPackage, durationPreset, overtimeHours, addOnQuantities, appliedVoucher, selectedCameraId, selectedCameraCount]);
 
   const handleBookingRedirect = () => {
-    onPackageSelect(selectedPackage, durationPreset, overtimeHours, addOnQuantities, appliedVoucher);
+    onPackageSelect(selectedPackage, durationPreset, overtimeHours, addOnQuantities, appliedVoucher, selectedCameraId, selectedCameraCount);
   };
 
   return (
@@ -349,9 +365,20 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-400 leading-relaxed mb-5">
+                    <p className="text-xs text-slate-400 leading-relaxed mb-4">
                       {pkg.description}
                     </p>
+
+                    {/* Features list inclusion */}
+                    <div className="mb-5 space-y-1.5 border-t border-white/5 pt-3">
+                      <span className="text-[10px] font-mono tracking-wider font-bold text-slate-400 block uppercase">Inklusi Paket:</span>
+                      {pkg.features.map((feat, fIdx) => (
+                        <div key={fIdx} className="flex items-start gap-1.5 text-[11px] text-slate-300">
+                          <Check className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                          <span>{feat.name}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Highlights Spec tags */}
@@ -401,10 +428,99 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
           {/* Custom controls (Overtime slider & Custom Equipment list) */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             
+            {/* Camera Model Upgrade Options */}
+            <div className="glass-panel p-6 rounded-2xl text-left">
+              <h3 className="text-base font-display font-bold flex items-center gap-2 mb-3">
+                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">2</span>
+                Model Kamera Utama (Opsional Upgrade)
+              </h3>
+              <p className="text-xs text-slate-400 mb-4 font-sans leading-relaxed">
+                Setiap paket dilengkapi kamera bawaan <b>Sony NX-100</b>. Tingkatkan jenis kamera utama di bawah jika Anda memerlukan sensor 4K pro atau kedalaman warna yang lebih dramatis:
+              </p>
+
+              <div className="space-y-2.5">
+                {CAMERA_UPGRADE_OPTIONS.map((opt) => {
+                  const isSelected = selectedCameraId === opt.id;
+                  return (
+                    <div
+                      key={opt.id}
+                      onClick={() => setSelectedCameraId(opt.id)}
+                      className={`p-3 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-950/20 shadow-md ring-1 ring-blue-500/20'
+                          : 'border-white/5 bg-white/[0.01] hover:border-white/10 hover:bg-white/[0.03]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                          isSelected ? 'border-blue-500 bg-blue-500' : 'border-white/30'
+                        }`}>
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-xs sm:text-sm block text-slate-200">{opt.name}</span>
+                          <span className="text-[10px] text-slate-400 font-sans">
+                            {opt.id === 'nx100' ? 'Kamera bawaan paket default tanpa biaya tambahan' : `Sensor & format rekaman broadcast ultra-high definition`}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-blue-400 shrink-0 select-none">
+                        {opt.extraPrice === 0 ? 'Default / No Cost' : `+${formatIDR(opt.extraPrice)}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {selectedCameraId !== 'nx100' && (
+                <div className="mt-4 p-4 rounded-xl bg-blue-950/10 border border-blue-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-200">Jumlah Kamera Utama yang Diupgrade:</h4>
+                      <p className="text-[10px] text-slate-400">
+                        Upgradi porsi unit kamera bawaan ke model professional ini (Maks. {selectedPackage.camerasCount} unit untuk {selectedPackage.name})
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCameraCount(prev => Math.max(1, prev - 1))}
+                        disabled={selectedCameraCount <= 1}
+                        className="w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      
+                      <span className="w-8 text-center text-sm font-bold font-mono text-white">
+                        {selectedCameraCount}
+                      </span>
+                      
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCameraCount(prev => Math.min(selectedPackage.camerasCount, prev + 1))}
+                        disabled={selectedCameraCount >= selectedPackage.camerasCount}
+                        className="w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-2.5 pt-2 border-t border-white/5 flex justify-between items-center text-[11px] text-slate-400">
+                    <span>Tambahan Biaya Kamera Utama:</span>
+                    <span className="font-mono font-bold text-blue-400">
+                      {selectedCameraCount} unit x {formatIDR(CAMERA_UPGRADE_OPTIONS.find(c => c.id === selectedCameraId)?.extraPrice || 0)} = {formatIDR(calculations.cameraUpgradeCost)}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Live Slider for Overtime hours */}
             <div className="glass-panel p-6 rounded-2xl text-left">
               <h3 className="text-base font-display font-bold flex items-center gap-2 mb-4">
-                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">2</span>
+                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">3</span>
                 Tambahan Durasi Overtime (Jam)
               </h3>
               
@@ -445,7 +561,7 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
             {/* Live Addon Custom Checklist options */}
             <div className="glass-panel p-6 rounded-2xl text-left">
               <h3 className="text-base font-display font-bold flex items-center gap-2 mb-5">
-                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">3</span>
+                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">4</span>
                 Pilih Add-on Tambahan (Opsional)
               </h3>
 
@@ -569,6 +685,23 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                   </div>
                 )}
 
+                {/* Camera Upgrade Info */}
+                {calculations.cameraUpgradeCost > 0 && (
+                  <div className="flex justify-between items-start text-sm mb-3 border-t border-white/5 pt-2">
+                    <div>
+                      <span className="font-semibold text-slate-200 block">
+                        Upgrade Kamera (x{selectedCameraCount})
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {calculations.selectedCameraName}
+                      </span>
+                    </div>
+                    <span className="font-mono font-semibold text-white">
+                      +{formatIDR(calculations.cameraUpgradeCost)}
+                    </span>
+                  </div>
+                )}
+
                 {/* Voucher Discount Info Row */}
                 {appliedVoucher && (
                   <div className="flex justify-between items-start text-sm mb-3 border-t border-white/5 pt-2">
@@ -592,15 +725,10 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                     <span className="text-xs text-slate-400 font-bold block uppercase font-sans">
                       Kupon Voucher Diskon:
                     </span>
-                    {dbIsLive ? (
+                    {dbIsLive && (
                       <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full font-sans flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
                         Cloud Active
-                      </span>
-                    ) : (
-                      <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-sans flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                        Demo Mode (Local)
                       </span>
                     )}
                   </div>
