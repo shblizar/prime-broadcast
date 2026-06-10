@@ -66,8 +66,9 @@ export interface Voucher {
   discount: number;
 }
 
-declare module '*.png' {
-  const value: string;
-  export default value;
+export interface CameraUpgradeOption {
+  id: string;
+  name: string;
+  extraPrice: number;
 }
 
