@@ -31,6 +31,7 @@ interface BookedSlot {
 interface CalendarSectionProps {
   onSelectAvailableDate?: (date: string) => void;
   onViewChange?: (view: string) => void;
+  initialAdminMode?: boolean;
 }
 
 // Initial dummy dates for demo (placed around typical events in June / July 2026)
@@ -73,13 +74,13 @@ const INITIAL_BOOKINGS: BookedSlot[] = [
   }
 ];
 
-export default function CalendarSection({ onSelectAvailableDate, onViewChange }: CalendarSectionProps) {
+export default function CalendarSection({ onSelectAvailableDate, onViewChange, initialAdminMode = false }: CalendarSectionProps) {
   const [bookings, setBookings] = useState<BookedSlot[]>([]);
   const [selectedDateStr, setSelectedDateStr] = useState<string>('');
   const [currentDate, setCurrentDate] = useState<Date>(new Date(2026, 5, 1)); // Default focused around June 2026 (Month 5)
   
   // Admin Mode states
-  const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
+  const [isAdminMode, setIsAdminMode] = useState<boolean>(initialAdminMode);
   const [adminPin, setAdminPin] = useState<string>('');
   const [isPinVerified, setIsPinVerified] = useState<boolean>(false);
   const [pinError, setPinError] = useState<string>('');
@@ -95,24 +96,115 @@ export default function CalendarSection({ onSelectAvailableDate, onViewChange }:
   // Selected cell detail
   const [cellDetail, setCellDetail] = useState<BookedSlot | null>(null);
 
-  // Load from localStorage or initialize with defaults
-  useEffect(() => {
-    const stored = localStorage.getItem('pb_booked_dates');
-    if (stored) {
-      try {
-        setBookings(JSON.parse(stored));
-      } catch (e) {
-        setBookings(INITIAL_BOOKINGS);
+  // Google Calendar state
+  const [gcalStatus, setGcalStatus] = useState<{ connected: boolean; email?: string; name?: string }>({ connected: false });
+  const [checkingGcal, setCheckingGcal] = useState(false);
+
+  // Check Google Calendar connection status
+  const checkCalendarStatus = async () => {
+    setCheckingGcal(true);
+    try {
+      const res = await fetch('/api/calendar/status');
+      if (res.ok) {
+        const data = await res.json();
+        setGcalStatus(data);
       }
-    } else {
-      setBookings(INITIAL_BOOKINGS);
-      localStorage.setItem('pb_booked_dates', JSON.stringify(INITIAL_BOOKINGS));
+    } catch (e) {
+      console.error('Error checking Google Calendar status:', e);
+    } finally {
+      setCheckingGcal(false);
     }
+  };
+
+  // Google Calendar connect handler
+  const handleConnectGoogle = async () => {
+    try {
+      const res = await fetch('/api/auth/url');
+      if (res.ok) {
+        const data = await res.json();
+        // Popup-based Google Authorization Flow as instructed in system-oauth skill
+        const authWindow = window.open(data.url, 'oauth_popup', 'width=600,height=700');
+        if (!authWindow) {
+          alert('Mohon izinkan pop-up browser untuk menyelesaikan otentikasi Google Calendar.');
+        }
+      }
+    } catch (e) {
+      console.error('Failed to initiate Google Calendar URL:', e);
+    }
+  };
+
+  // Google Calendar disconnect handler
+  const handleDisconnectGoogle = async () => {
+    const confirmDis = window.confirm('Apakah Anda yakin ingin mematikan sinkronisasi dan memutuskan akun Google Calendar dari sistem?');
+    if (!confirmDis) return;
+
+    try {
+      const res = await fetch('/api/calendar/disconnect', { method: 'POST' });
+      if (res.ok) {
+        setGcalStatus({ connected: false });
+        alert('Koneksi Google Calendar berhasil diputus.');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Load bookings from server
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch('/api/bookings');
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data);
+        localStorage.setItem('pb_booked_dates', JSON.stringify(data));
+      } else {
+        const stored = localStorage.getItem('pb_booked_dates');
+        if (stored) {
+          setBookings(JSON.parse(stored));
+        } else {
+          setBookings(INITIAL_BOOKINGS);
+        }
+      }
+    } catch (e) {
+      const stored = localStorage.getItem('pb_booked_dates');
+      if (stored) setBookings(JSON.parse(stored));
+    }
+  };
+
+  // Load from server or fallback to localStorage on mount
+  useEffect(() => {
+    fetchBookings();
+    checkCalendarStatus();
+
+    // Listen for OAuth completion from popup handler
+    const handleOauthMessage = (event: MessageEvent) => {
+      const origin = event.origin;
+      if (!origin.endsWith('.run.app') && !origin.includes('localhost')) {
+        return;
+      }
+      if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
+        checkCalendarStatus();
+      }
+    };
+    window.addEventListener('message', handleOauthMessage);
 
     // Set today or first day
     const formattedToday = '2026-06-06';
     setSelectedDateStr(formattedToday);
+    
+    return () => window.removeEventListener('message', handleOauthMessage);
   }, []);
+
+  // Sync admin mode and auto-scroll if opened with admin-portal
+  useEffect(() => {
+    if (initialAdminMode) {
+      setIsAdminMode(true);
+      // Wait for layout to mount and scroll down to the Admin section smoothly
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight / 2, behavior: 'smooth' });
+      }, 350);
+    }
+  }, [initialAdminMode]);
 
   // Sync state to localStorage whenever bookings change
   const saveBookings = (updated: BookedSlot[]) => {
@@ -226,7 +318,7 @@ export default function CalendarSection({ onSelectAvailableDate, onViewChange }:
   };
 
   // Add a new manual booking (Admin)
-  const handleAddManualBooking = (e: React.FormEvent) => {
+  const handleAddManualBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!manualDate || !manualTitle.trim() || !manualClient.trim()) {
       alert('Semua bidang isian wajib lengkap.');
@@ -240,53 +332,84 @@ export default function CalendarSection({ onSelectAvailableDate, onViewChange }:
       return;
     }
 
-    const newBooking: BookedSlot = {
-      id: `PB-INV-MANUAL-${Math.floor(1000 + Math.random() * 9000)}`,
-      date: manualDate,
-      title: manualTitle,
-      clientName: manualClient,
-      isManual: true,
-      packageType: manualPkg,
-      time: manualTime
-    };
-
-    const updated = [...bookings, newBooking];
-    saveBookings(updated);
-    setSuccessMsg(`Berhasil menandai tanggal ${manualDate} sebagai BOOKED!`);
-    
-    // Reset manual fields
-    setManualTitle('');
-    setManualClient('');
-    
-    setTimeout(() => setSuccessMsg(''), 5000);
-  };
-
-  // Quick Single-Click toggle in Admin Mode
-  const handleQuickToggleBooking = (dateString: string) => {
-    const existing = getBookingForDate(dateString);
-    if (existing) {
-      // Toggle deletion
-      const filtered = bookings.filter(b => b.date !== dateString);
-      saveBookings(filtered);
-    } else {
-      // Toggle creation of quick book
-      const quickBooking: BookedSlot = {
+    try {
+      const res = await fetch('/api/admin/bookings/manual', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: manualDate,
+          title: manualTitle,
+          clientName: manualClient,
+          packageType: manualPkg,
+          time: manualTime
+        })
+      });
+      if (res.ok) {
+        fetchBookings();
+        setSuccessMsg(`Berhasil menandai tanggal ${manualDate} sebagai BOOKED!`);
+        setManualTitle('');
+        setManualClient('');
+        setTimeout(() => setSuccessMsg(''), 5000);
+      }
+    } catch (err) {
+      console.error(err);
+      // Fallback local save
+      const newBooking: BookedSlot = {
         id: `PB-INV-MANUAL-${Math.floor(1000 + Math.random() * 9000)}`,
-        date: dateString,
-        title: 'Acara Ditandai Manual oleh Admin',
-        clientName: 'Reservasi Admin',
+        date: manualDate,
+        title: manualTitle,
+        clientName: manualClient,
         isManual: true,
-        packageType: 'Prime Regular',
-        time: '08:00'
+        packageType: manualPkg,
+        time: manualTime
       };
-      saveBookings([...bookings, quickBooking]);
+      const updated = [...bookings, newBooking];
+      saveBookings(updated);
     }
   };
 
   // Delete booking slot (Admin)
-  const handleDeleteBooking = (id: string) => {
-    const filtered = bookings.filter(b => b.id !== id);
-    saveBookings(filtered);
+  const handleDeleteBooking = async (id: string) => {
+    const confirmed = window.confirm('Apakah Anda yakin ingin menghapus jadwal booking ini?');
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchBookings();
+      }
+    } catch (err) {
+      console.error(err);
+      const filtered = bookings.filter(b => b.id !== id);
+      saveBookings(filtered);
+    }
+  };
+
+  // Quick Single-Click toggle in Admin Mode
+  const handleQuickToggleBooking = async (dateString: string) => {
+    const existing = getBookingForDate(dateString);
+    if (existing) {
+      await handleDeleteBooking(existing.id);
+    } else {
+      try {
+        const res = await fetch('/api/admin/bookings/manual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: dateString,
+            title: 'Acara Ditandai Manual oleh Admin',
+            clientName: 'Reservasi Admin',
+            packageType: 'Prime Regular',
+            time: '08:00'
+          })
+        });
+        if (res.ok) {
+          fetchBookings();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   // Format Date layout to Indonesian text (e.g. 15 Juni 2026)
@@ -647,6 +770,56 @@ export default function CalendarSection({ onSelectAvailableDate, onViewChange }:
                       <div className="flex items-center gap-2 p-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10 text-[10px] text-slate-400 font-mono">
                         <Unlock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <span>Halo Admin! Anda dapat mengeklik tanggal di kalender atau menggunakan form di bawah.</span>
+                      </div>
+
+                      {/* Google Calendar Automated Sync Panel */}
+                      <div className="p-4 rounded-xl bg-slate-950 border border-white/5 space-y-3.5 text-xs">
+                        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                          <span className="font-mono text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <span className={`w-2 h-2 rounded-full ${gcalStatus.connected ? 'bg-green-500 live-pulse' : 'bg-red-500'}`}></span>
+                            INTEGRASI GOOGLE CALENDAR
+                          </span>
+                          <span className="text-[9px] font-mono text-slate-500">Auto-Refined by Gemini</span>
+                        </div>
+
+                        {gcalStatus.connected ? (
+                          <div className="space-y-2">
+                            <div className="p-3 bg-green-500/5 border border-green-500/10 rounded-lg flex items-start gap-2.5">
+                              <CheckCircle className="w-4 h-4 text-green-400 shrink-0 mt-0.5" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-white font-medium text-[11px]">Calendar Terhubung!</p>
+                                <p className="text-slate-400 text-[10px] mt-0.5 font-mono truncate">{gcalStatus.email}</p>
+                              </div>
+                            </div>
+                            <p className="text-[10px] text-slate-400 leading-relaxed">
+                              Setiap jadwal booking baru yang masuk dari website akan otomatis dikirim ke <b>Gemini AI Studio (gemini-3.5-flash)</b> untuk dirapikan format tanggal/jamnya, kemudian dimasukkan ke Google Calendar Anda secara otomatis.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={handleDisconnectGoogle}
+                              className="w-full py-2 bg-red-950/20 hover:bg-red-900/30 border border-red-500/20 hover:border-red-500/30 text-red-400 font-bold text-[10px] uppercase font-mono rounded-lg cursor-pointer transition-colors"
+                            >
+                              Putuskan Koneksi Google Calendar
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-lg">
+                              <p className="text-slate-300 font-medium text-[11px]">Belum Sinkron</p>
+                              <p className="text-slate-400 text-[10px] mt-1 leading-relaxed">
+                                Fitur otomatisasi Google Calendar belum diaktifkan. Klik tombol di bawah untuk memberikan otorisasi aman.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleConnectGoogle}
+                              className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-[11px] uppercase tracking-wider rounded-lg cursor-pointer shadow-md transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>Hubungkan Google Calendar</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       {/* Display Alert Message if any */}
