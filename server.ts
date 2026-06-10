@@ -1,4 +1,4 @@
-import express from 'express';
+ordimport express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -427,7 +427,7 @@ function generateInvoicePDFBuffer(bookingData: any): Buffer {
 async function sendInvoiceEmailToAdmin(bookingData: any, pdfBuffer: Buffer): Promise<void> {
   const adminEmail = "bulzar27@gmail.com"; // e.g. primebroadcast.id@gmail.com
   const gmailUser = "bulzar27@gmail.com";   // akun pengirim Gmail
-  const gmailPass = "rhehzkxdkvyqjdfe"; // Google App Password (bukan password biasa)
+  const gmailPass = "Shohibulizar_27"; // Google App Password (bukan password biasa)
 
   if (!adminEmail || !gmailUser || !gmailPass) {
     console.warn('[Email] ADMIN_EMAIL / GMAIL_USER / GMAIL_APP_PASSWORD belum dikonfigurasi di .env. Skip kirim email.');
