@@ -1,4 +1,4 @@
-import { StreamPackage, AddOnOption, FAQItem, ClientReview } from './types';
+import { StreamPackage, AddOnOption, FAQItem, ClientReview, CameraUpgradeOption } from './types';
 
 export const PACKAGES: StreamPackage[] = [
   {
@@ -10,16 +10,15 @@ export const PACKAGES: StreamPackage[] = [
       6: 7200000
     },
     camerasCount: 3,
-    crewCount: 1,
-    badge: 'starter choice',
+    crewCount: 5,
+    badge: 'Starter Choice',
     features: [
-      { name: 'Kamera: Sony NX-100 (3 Unit)', included: true },
-      { name: 'Video Mixer: Tidak Termasuk', included: false },
-      { name: 'Capture Card: Termasuk (✓)', included: true },
-      { name: 'Lighting: Tidak Termasuk', included: false },
-      { name: 'Laptop Client: Acer Nitro V15', included: true },
-      { name: 'Wireless Transmission: Tidak Termasuk', included: false },
-      { name: 'Output: Siaran ke 1 Platform + File Rekaman Master', included: true }
+      { name: 'Sony NX 100 (3 Set)', included: true },
+      { name: 'Video Mixer', included: true },
+      { name: 'Acer Nitro V15', included: true },
+      { name: 'Audio Soundcard', included: true },
+      { name: 'Output Siaran 1 Platform + File Rekaman Master', included: true },
+      { name: '5 Crew', included: true }
     ]
   },
   {
@@ -31,17 +30,16 @@ export const PACKAGES: StreamPackage[] = [
       6: 8100000
     },
     camerasCount: 4,
-    crewCount: 2,
+    crewCount: 6,
     highlighted: true,
-    badge: 'Starter Choice',
+    badge: 'Creator Choice',
     features: [
-      { name: 'Kamera: Sony NX-100 (4 Unit)', included: true },
-      { name: 'Video Mixer: Termasuk (✓)', included: true },
-      { name: 'Capture Card: Termasuk (✓)', included: true },
-      { name: 'Lighting: Tidak Termasuk', included: false },
-      { name: 'Laptop Client: Acer Nitro V15', included: true },
-      { name: 'Wireless Transmission: Tidak Termasuk', included: false },
-      { name: 'Output: Siaran ke 1 Platform + File Rekaman Master', included: true }
+      { name: 'Sony NX 100 (4 Set)', included: true },
+      { name: 'Video Mixer', included: true },
+      { name: 'Acer Nitro V15', included: true },
+      { name: 'Audio Soundcard', included: true },
+      { name: 'Output Siaran 1 Platform + File Rekaman Master', included: true },
+      { name: '6 Crew', included: true }
     ]
   },
   {
@@ -53,16 +51,16 @@ export const PACKAGES: StreamPackage[] = [
       6: 9300000
     },
     camerasCount: 5,
-    crewCount: 3,
+    crewCount: 7,
     badge: 'Best Choice',
     features: [
-      { name: 'Kamera: Sony NX-100 (5 Unit)', included: true },
-      { name: 'Video Mixer: Termasuk (✓)', included: true },
-      { name: 'Capture Card: Termasuk (✓)', included: true },
-      { name: 'Lighting: Tidak Termasuk', included: false },
-      { name: 'Laptop Client: Rog Zephyrus G16', included: true },
-      { name: 'Wireless Transmission: Termasuk (1 Unit)', included: true },
-      { name: 'Output: Siaran ke 2 Platform + File Rekaman Master', included: true }
+      { name: 'Sony NX 100 (5 Set)', included: true },
+      { name: 'Video Mixer', included: true },
+      { name: 'ROG Zephyrus G16 (2024)', included: true },
+      { name: 'Wireless Transmission (1 Unit)', included: true },
+      { name: 'Audio Soundcard', included: true },
+      { name: 'Output Siaran 1 Platform + File Rekaman Master', included: true },
+      { name: '7 Crew', included: true }
     ]
   },
   {
@@ -74,16 +72,17 @@ export const PACKAGES: StreamPackage[] = [
       6: 10700000
     },
     camerasCount: 5,
-    crewCount: 4,
+    crewCount: 7,
     badge: 'Supreme Event Solutions',
     features: [
-      { name: 'Kamera: Sony NX-100 (5 Unit)', included: true },
-      { name: 'Video Mixer: Termasuk (✓)', included: true },
-      { name: 'Capture Card: Termasuk (✓)', included: true },
-      { name: 'Lighting: 2 Unit Godox SL60W (Softbox/LED Light)', included: true },
-      { name: 'Laptop Client: Rog Zephyrus G16', included: true },
-      { name: 'Wireless Transmission: Termasuk (2 Unit)', included: true },
-      { name: 'Output: Siaran ke 2 Platform + File Rekaman Master', included: true }
+      { name: 'Sony NX 100 (5 Set)', included: true },
+      { name: 'Video Mixer', included: true },
+      { name: 'ROG Zephyrus G16 (2024)', included: true },
+      { name: 'Wireless Transmission (2 Unit)', included: true },
+      { name: 'Lightning Godox SL60W (2 Unit)', included: true },
+      { name: 'Audio Soundcard', included: true },
+      { name: 'Output Siaran 1 Platform + File Rekaman Master', included: true },
+      { name: '7 Crew', included: true }
     ]
   }
 ];
@@ -115,6 +114,15 @@ export const ADD_ONS: AddOnOption[] = [
     description: 'Sinyal feed tambahan menggunakan kabel HDMI berkualitas tinggi.',
     category: 'equipment',
     maxQty: 10
+  },
+  {
+    id: 'komputer_vix',
+    name: 'Komputer 1 Set (Lower Third / Videotron Display)',
+    price: 700000,
+    unit: 'Set',
+    description: 'Komputer 1 Set untuk kebutuhan lower third atau display videotron (Intel Core i7 Gen 10, GTX 1660 Super, Ram 16GB) - Include dengan Manpower.',
+    category: 'equipment',
+    maxQty: 3
   },
   {
     id: 'transport_akomodasi',
@@ -212,4 +220,12 @@ export const FAQS: FAQItem[] = [
     answer: 'Anda akan mendapatkan rekaman video final berformat MP4 (H.264) Full HD 1080p. File rekaman diproses di lokasi dan dapat ditransfer langsung via Harddisk eksternal atau diupload ke Google Drive dalam waktu 1-2 hari kerja.',
     category: 'Output'
   }
+];
+
+export const CAMERA_UPGRADE_OPTIONS: CameraUpgradeOption[] = [
+  { id: 'nx100', name: 'Sony NX-100 (Default)', extraPrice: 0 },
+  { id: 'z90v', name: 'Sony PXW-Z90V 4K', extraPrice: 200000 },
+  { id: 'z150', name: 'Sony PXW-Z150 4K XDCAM', extraPrice: 250000 },
+  { id: 'z190', name: 'Sony PXW-Z190 4K XDCAM Camcorder', extraPrice: 300000 },
+  { id: 'pmw300', name: 'Sony PMW-300 XDCAM', extraPrice: 450000 }
 ];
