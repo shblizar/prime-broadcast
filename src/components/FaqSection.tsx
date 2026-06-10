@@ -147,7 +147,7 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
               
               {/* Payment & Cancellation Policies */}
-              <div id="sistem-pembayaran" className="glass-panel-heavy p-6 rounded-2xl border-white/5 text-left">
+              <div className="glass-panel-heavy p-6 rounded-2xl border-white/5 text-left">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
                     <FileText className="w-5 h-5" />
@@ -366,7 +366,7 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
                         type="text" 
                         value={customName}
                         onChange={(e) => setCustomName(e.target.value)}
-                        placeholder="Nama koordinator..."
+                        placeholder="Nama..."
                         className="sm:col-span-1 bg-slate-900 border border-white/5 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                       <input 
