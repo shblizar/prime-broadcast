@@ -71,7 +71,7 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
         
         {/* ==================== ATURAN & KEBIJAKAN SECTION ==================== */}
         {isPoliciesMode && (
-          <div className="mb-14 animate-in fade-in duration-500">
+          <div id="syarat-ketentuan" className="mb-14 animate-in fade-in duration-500">
             <div className="text-center max-w-3xl mx-auto mb-10">
               <span className="text-xs font-bold font-mono tracking-widest text-blue-400 bg-blue-500/10 px-3 py-1.5 rounded-full uppercase border border-blue-500/20">
                 Regulasi & Kontrak Kerja
@@ -147,7 +147,7 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
               
               {/* Payment & Cancellation Policies */}
-              <div className="glass-panel-heavy p-6 rounded-2xl border-white/5 text-left">
+              <div id="refund-policy" className="glass-panel-heavy p-6 rounded-2xl border-white/5 text-left">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg">
                     <FileText className="w-5 h-5" />
@@ -414,4 +414,3 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
     </div>
   );
 }
-
