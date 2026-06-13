@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import logoPrime from ../src/images/logo-prime.png
 import { Video, Menu, X, CalendarRange, Flame } from 'lucide-react';
 
 interface NavbarProps {
