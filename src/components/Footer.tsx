@@ -1,5 +1,4 @@
 import React from 'react';
-import logoPrime from '../src/images/logo-prime.png';
 import { 
   Video, 
   Mail, 
@@ -10,6 +9,7 @@ import {
   Sparkles,
   PhoneCall
 } from 'lucide-react';
+import logoPrime from '../assets/images/logo-prime.png';
 
 interface FooterProps {
   onViewChange: (view: string) => void;
@@ -35,7 +35,7 @@ export default function Footer({ onViewChange }: FooterProps) {
             <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onViewChange('home')}>
               <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
                 <img 
-                  src={logoPrime}
+                  src={logoPrime} 
                   alt="Prime Broadcast Logo" 
                   className="w-8 h-8 select-none transition-all duration-700 group-hover:rotate-6 object-contain"
                 />
