@@ -1,5 +1,5 @@
 import React from 'react';
-impott logoPrime from '../src/images/logo-prime.png';
+import logoPrime from '../src/images/logo-prime.png';
 import { 
   Video, 
   Mail, 
