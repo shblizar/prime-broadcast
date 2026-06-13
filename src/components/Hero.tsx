@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, CalendarRange, ArrowRight, Video, ShieldCheck, Activity, Layers, Cpu, Radio } from 'lucide-react';
+import cameraStreamDeck from '../assets/images/camera_stream_deck.png';
 
 interface HeroProps {
   onViewChange: (view: string) => void;
@@ -90,12 +91,11 @@ export default function Hero({ onViewChange }: HeroProps) {
                 </div>
               </div>
 
-              {/* The Live image hotlinked as requested */}
+              {/* The Live image */}
               <div className="relative aspect-video bg-black flex items-center justify-center group overflow-hidden">
                 <img 
-                  src="/src/assets/images/camera_operator_1780743339808.png" 
+                  src={cameraStreamDeck} 
                   alt="Prime Broadcast Studio Control Deck" 
-                  referrerPolicy="no-referrer"
                   className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${
                     selectedQuality === '720p' 
                       ? 'blur-[0.6px] contrast-95 brightness-[0.98]' 
