@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import PricingCalculator from './components/PricingCalculator';
@@ -35,6 +35,12 @@ export default function App() {
   const [selectedCameraCount, setSelectedCameraCount] = useState<number>(1);
   const [preselectedDate, setPreselectedDate] = useState<string>('');
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number; packageId?: string } | null>(null);
+
+  // Scroll to top whenever the active view changes (navbar, pesan sekarang,
+  // checkout redirect, footer links, etc. all funnel through setCurrentView)
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [currentView]);
   
   // Transition to Booking and set parameters
   const handlePackageConfiguredChange = (
