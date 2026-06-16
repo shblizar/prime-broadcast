@@ -87,7 +87,7 @@ export default function App() {
         
         {/* VIEW 1: HOME/BERANDA */}
         {currentView === 'home' && (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-150">
             {/* Upper landing banner */}
             <Hero onViewChange={setCurrentView} />
 
@@ -288,7 +288,7 @@ export default function App() {
 
         {/* VIEW 2: PACKAGES & LIVE ESTIMATOR */}
         {currentView === 'pricing' && (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-150">
             <PricingCalculator 
               onPackageSelect={handlePackageConfiguredChange} 
               appliedVoucherGlobal={appliedVoucher}
@@ -298,7 +298,7 @@ export default function App() {
 
         {/* VIEW 3: DISPATCH / FORM PREVIEW & CHECKOUT INVOICE */}
         {currentView === 'checkout' && (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-150">
             <BookingForm 
               selectedPkg={configuredPkg} 
               selectedDuration={durationHours}
@@ -317,21 +317,21 @@ export default function App() {
 
         {/* VIEW 4: POLICIES CLASSIFICATIONS */}
         {currentView === 'policies' && (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-150">
             <FaqSection mode="policies" />
           </div>
         )}
 
         {/* VIEW 5: FAQS ACCORDION DIRECT */}
         {currentView === 'faq' && (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-150">
             <FaqSection mode="faq" />
           </div>
         )}
 
         {/* VIEW 6: DISPATCH CONTACT HANDLES */}
         {currentView === 'contact' && (
-          <div className="animate-in fade-in duration-300">
+          <div className="animate-in fade-in duration-150">
             <ContactSection />
           </div>
         )}
