@@ -38,9 +38,10 @@ export default function App() {
 
   // Scroll to top whenever the active view changes (navbar, pesan sekarang,
   // checkout redirect, footer links, etc. all funnel through setCurrentView)
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }, [currentView]);
+  const handleViewChange = view: string) => {
+    window.scrollTo(0, 0);
+    setCurrentView(view)
+  };
   
   // Transition to Booking and set parameters
   const handlePackageConfiguredChange = (
@@ -339,7 +340,7 @@ export default function App() {
       </main>
 
       {/* Footer component */}
-      <Footer onViewChange={setCurrentView} />
+      <Footer onViewChange={handleViewChange} />
 
     </div>
   );
