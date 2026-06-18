@@ -81,7 +81,7 @@ export default function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-blue-600 selection:text-white">
       
       {/* Persistent top navbar */}
-      <Navbar currentView={currentView} onViewChange={setCurrentView} />
+      <Navbar currentView={currentView} onViewChange={handleViewChange} />
 
       {/* Main Container Views Rendering */}
       <main className="flex-grow">
@@ -90,7 +90,7 @@ export default function App() {
         {currentView === 'home' && (
           <div className="animate-in fade-in duration-150">
             {/* Upper landing banner */}
-            <Hero onViewChange={setCurrentView} />
+            <Hero onViewChange={handleViewChange} />
 
             {/* BENTO GRID OF CORE JASA CAPABILITIES */}
             <section className="py-16 border-t border-white/5 relative bg-slate-950/40">
