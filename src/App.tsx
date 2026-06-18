@@ -264,7 +264,7 @@ export default function App() {
 
                   <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-2">
                     <button
-                      onClick={() => setCurrentView('pricing')}
+                      onClick={() => handleViewChange('pricing')}
                       className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-lg transition-transform hover:scale-105 cursor-pointer"
                     >
                       <span>Mulai Atur Paket Anda</span>
