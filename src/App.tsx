@@ -107,6 +107,19 @@ export default function App() {
                     Kami memadukan perangkat keras kelas broadcast andal dengan redundansi jaringan ganda untuk memastikan siaran berjalan tanpa hambatan.
                   </p>
                 </div>
+                <div classname="flex justify-center mb-14">
+                  <div className="relative w-full max-w-sm rounded 2x1 overflow-hidden border border-white/10 shadow-lg shadow-black/40">
+                    <div className="aspect-vidio">
+                    <iframe
+                      src="https://www.youtube.com/embed/NANTI CODENYA DI TARO SINI"
+                      tittle="Prime Broadcasr Showreel"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullCreen
+                      className="w-full h-full"
+                    />
+                  <div/>
+                </div>
+              </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
                   
