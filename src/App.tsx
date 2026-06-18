@@ -111,7 +111,7 @@ export default function App() {
                   <div className="relative w-full max-w-sm rounded 2x1 overflow-hidden border border-white/10 shadow-lg shadow-black/40">
                     <div className="aspect-vidio">
                     <iframe
-                      src="https://www.youtube.com/embed/NANTI CODENYA DI TARO SINI"
+                      src="https://www.youtube.com/embed/2ayRaQP7MYo"
                       tittle="Prime Broadcasr Showreel"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullCreen
