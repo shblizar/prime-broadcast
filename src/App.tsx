@@ -38,7 +38,7 @@ export default function App() {
 
   // Scroll to top whenever the active view changes (navbar, pesan sekarang,
   // checkout redirect, footer links, etc. all funnel through setCurrentView)
-  const handleViewChange = view: string) => {
+  const handleViewChange = (view: string) => {
     window.scrollTo(0, 0);
     setCurrentView(view)
   };
