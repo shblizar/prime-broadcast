@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import PricingCalculator from './components/PricingCalculator';
+import PortfolioSection from './components/PortfolioSection';
 import BookingForm from './components/BookingForm';
 import FaqSection from './components/FaqSection';
 import ContactSection from './components/ContactSection';
