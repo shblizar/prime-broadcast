@@ -108,9 +108,6 @@ export default function App() {
                     Kami memadukan perangkat keras kelas broadcast andal dengan redundansi jaringan ganda untuk memastikan siaran berjalan tanpa hambatan.
                   </p>
                 </div>
-                <div className="flex justify-center mb-14">
-                  <div className="relative w-full max-w-sm rounded-2xl overflow-hidden border border-white/10 shadow-lg shadow-black/40">
-                    </div>
                   </div>
                 </div>
 
