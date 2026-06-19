@@ -16,6 +16,7 @@ const PORTFOLIO_VIDEOS: VideoMeta[] = [
   { id: 'i4kgj9pk49U', tag: 'Seminar',        badge: 'Highlight', title: '' },
   { id: 'wPomr-s8xW8', tag: 'Live Streaming', badge: 'Premium',   title: '' },
   { id: '78yBayHJBQQ', tag: 'Live Event',     badge: 'Terbaru',   title: '' },
+  { id: '2ayRaQP7MYo', tag: 'Live Event',     badge: 'Premium',   title: '' },
 ];
 
 async function fetchYouTubeTitle(id: string): Promise<string> {
