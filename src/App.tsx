@@ -205,6 +205,9 @@ export default function App() {
               </div>
             </section>
 
+            {/* PORTFOLIO SECTION */}
+            <PortfolioSection />
+
             {/* TESTIMONIAL CLIENT REVIEWS COMPONENT */}
             <section className="py-16 border-t border-white/5 relative">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
