@@ -110,14 +110,6 @@ export default function App() {
                 </div>
                 <div className="flex justify-center mb-14">
                   <div className="relative w-full max-w-sm rounded-2xl overflow-hidden border border-white/10 shadow-lg shadow-black/40">
-                    <div className="aspect-video">
-                      <iframe
-                        src="https://www.youtube.com/embed/2ayRaQP7MYo"
-                        title="Prime Broadcast Showreel"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="w-full h-full"
-                      />
                     </div>
                   </div>
                 </div>
