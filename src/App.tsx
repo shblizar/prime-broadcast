@@ -108,8 +108,7 @@ export default function App() {
                     Kami memadukan perangkat keras kelas broadcast andal dengan redundansi jaringan ganda untuk memastikan siaran berjalan tanpa hambatan.
                   </p>
                 </div>
-                  </div>
-                </div>
+          
 
                 <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
                   
