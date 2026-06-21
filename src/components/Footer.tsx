@@ -25,7 +25,7 @@ export default function Footer({ onViewChange }: FooterProps) {
   ];
 
   return (
-    <footer className="bg-slate-950 border-t border-white/10 text-white pt-16 pb-8 text-left relative z-10">
+    <footer className="bg-[#F4F5F5] border-t border-[#A7C4C2]/20 text-[#004F4A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 border-b border-white/5 pb-12 mb-10">
@@ -40,7 +40,7 @@ export default function Footer({ onViewChange }: FooterProps) {
                   className="w-8 h-8 select-none transition-all duration-700 group-hover:rotate-6 object-contain"
                 />
               </div>
-              <span className="font-display font-bold text-lg tracking-wider text-white group-hover:text-blue-400 transition-colors">
+              <span className="font-display font-bold text-lg tracking-wider text-white group-hover:text-#A7C4C2 transition-colors">
                 PRIME BROADCAST
               </span>
             </div>
@@ -99,7 +99,7 @@ export default function Footer({ onViewChange }: FooterProps) {
                     rel="noreferrer"
                     className={`flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 transition-all hover:bg-white/[0.04] scroll-smooth ${social.color}`}
                   >
-                    <div className="p-2 bg-slate-900 border border-white/10 rounded-lg text-slate-300">
+                    <div className="p-2 bg-#F4F5F5 border border-white/10 rounded-lg text-slate-#666666">
                       <IconComp className="w-4 h-4" />
                     </div>
                     <div>
