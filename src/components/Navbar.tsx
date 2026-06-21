@@ -27,7 +27,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
             onClick={() => onViewChange('home')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+            <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-[#A7C4C2]/30 group-hover:ring-[#004F4A]/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
               <img 
                 src={logoPrime} 
                 alt="Prime Broadcast Logo" 
@@ -35,7 +35,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
               />
             </div>
             <div>
-              <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
+              <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-[#004F4A] via-[#6b908d] to-[#A7C4C2] bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
                 PRIME BROADCAST
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
@@ -55,7 +55,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
                 onClick={() => onViewChange(item.id)}
                 className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   currentView === item.id
-                    ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/30'
+                    ? 'bg-[#A7C4C2]/20 text-[#004F4A] font-semibold border border-[#004F4A]/20'
                     : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
@@ -65,7 +65,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
 
             <button
               onClick={() => onViewChange('pricing')}
-              className="ml-2 flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="ml-2 flex items-center gap-2 bg-[#004F4A] hover:bg-[#00645e] text-white font-medium text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <CalendarRange className="w-4 h-4" />
               <span>Pesan Sekarang</span>
@@ -97,7 +97,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
                 }}
                 className={`w-full text-left block px-4 py-2.5 rounded-lg text-base font-medium transition-all ${
                   currentView === item.id
-                    ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/30'
+                    ? 'bg-[#A7C4C2]/20 text-[#004F4A] font-semibold border border-[#004F4A]/20'
                     : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
@@ -113,7 +113,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
                 className="w-full justify-center flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-base py-3 rounded-lg shadow-lg active:scale-95 transition-all"
               >
                 <CalendarRange className="w-5 h-5" />
-                <span>Pesan Sekarang</span>
+                <span>Book Now</span>
               </button>
             </div>
           </div>
