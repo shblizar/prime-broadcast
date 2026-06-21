@@ -38,14 +38,14 @@ export default function Hero({ onViewChange }: HeroProps) {
           
           {/* Tagline and core texts */}
           <div className="lg:col-span-7 flex flex-col gap-6 text-left">
-            <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs font-semibold uppercase tracking-wider backdrop-blur">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 self-start px-3 py-1.5 rounded-full bg-[#A7C4C2]/20 border border-[#004F4A]/20 text-xs font-semibold uppercase tracking-wider backdrop-blur">
+              <Sparkles className="w-3.5 h-3.5 text-[#004F4A] animate-pulse" />
               <span>Multi-Camera Streaming Solutions</span>
             </div>
             
-            <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.10] text-white">
+            <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.10] text-[#004F4A]">
               Broadcast Your <br />
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#004F4A] via-[#6b908d] to-[#A7C4C2]z bg-clip-text text-transparent">
                 Vision Without Limits
               </span>
             </h1>
@@ -57,7 +57,7 @@ export default function Hero({ onViewChange }: HeroProps) {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <button
                 onClick={() => onViewChange('pricing')}
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold px-8 py-4 rounded-xl shadow-xl shadow-blue-600/10 hover:shadow-blue-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 bg-[#004F4A] hover:bg-[#00645e] text-white font-bold px-8 py-4 rounded-xl shadow-xl transition-all cursor-pointer"
               >
                 <CalendarRange className="w-5 h-5" />
                 <span>Lihat Paket & Hitung Biaya</span>
@@ -66,7 +66,7 @@ export default function Hero({ onViewChange }: HeroProps) {
 
               <button
                 onClick={() => onViewChange('policies')}
-                className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-white/10 px-8 py-4 rounded-xl font-semibold transition-all hover:border-white/20 active:scale-95"
+                className="flex items-center justify-center gap-2 bg-[#F4F5F5] hover:bg-[#E8ECEB] text-[#004F4A] hover:bg-[#E8ECEB] border border-[#A7C4C2] px-8 py-4 rounded-xl font-semibold transition-all hover:bg-[#E8ECEB] active:scale-95"
               >
                 <span>Pelajari Kebijakan Transparansi</span>
               </button>
