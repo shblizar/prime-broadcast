@@ -76,10 +76,10 @@ export default function Hero({ onViewChange }: HeroProps) {
           {/* Interactive Live Monitor with Studio Cover Asset Image */}
           <div className="lg:col-span-5 w-full flex flex-col gap-4">
             
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-purple-500/10 border border-white/10 bg-slate-950">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-[#A7C4C2]/20 border border-[#A7C4C2]/20 bg-white">
               
               {/* Header simulator status */}
-              <div className="flex items-center justify-between px-4 py-3 bg-[#12141c] border-b border-white/5">
+              <div className="flex items-center justify-between px-4 py-3 bg-[#F4F5F5] border-b border-[#A7C4C2]/20">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-600 live-pulse"></span>
                   <span className="text-[11px] font-mono font-medium text-slate-400 tracking-wider">LIVE FEED: CONTROL_DECK_MAIN</span>
@@ -144,7 +144,7 @@ export default function Hero({ onViewChange }: HeroProps) {
                     onClick={() => setSelectedQuality('1080p')}
                     className={`py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer text-center ${
                       selectedQuality === '1080p'
-                        ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20'
+                        ? 'bg-[#004F4A] text-white shadow-xl shadow-[#004F4A]/20'
                         : 'text-slate-400 hover:text-white hover:bg-white/[0.02]'
                     }`}
                   >
