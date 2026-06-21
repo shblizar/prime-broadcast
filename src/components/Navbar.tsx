@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, CalendarRange } from 'lucide-react';
+import { Video, Menu, X, CalendarRange, Flame } from 'lucide-react';
 import logoPrime from '../assets/images/logo-prime.png';
 
 interface NavbarProps {
@@ -19,67 +19,66 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#f7f9fb]/90 backdrop-blur-md border-b border-gray-200/60 text-[#091426]">
+    <nav className="sticky top-0 z-50 glass-panel-heavy border-b border-white/10 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-
           {/* Logo Brand */}
-          <div
-            onClick={() => onViewChange('home')}
+          <div 
+            onClick={() => onViewChange('home')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="p-2 bg-[#006c49] rounded-xl flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-105">
-              <img
-                src={logoPrime}
-                alt="Prime Broadcast Logo"
-                className="w-7 h-7 select-none object-contain brightness-[10]"
+            <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-blue-500/20 group-hover:ring-purple-500/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
+              <img 
+                src={logoPrime} 
+                alt="Prime Broadcast Logo" 
+                className="w-8 h-8 select-none transition-all duration-700 group-hover:rotate-6 object-contain"
               />
             </div>
             <div>
-              <span className="font-serif text-xl font-bold tracking-tight text-[#091426] block leading-none">
-                Prime<span className="text-[#006c49]">Broadcast</span>
+              <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
+                PRIME BROADCAST
               </span>
-              <span className="text-[9px] font-sans font-semibold tracking-widest text-gray-400 uppercase block mt-0.5">
-                Live Streaming Solutions
-              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 live-pulse"></span>
+                <span className="text-[10px] font-mono tracking-widest text-[#9dcdff] font-medium uppercase">
+                  LIVE STREAMING SOLUTIONS
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Desktop Navigation — pill container style */}
-          <div className="hidden md:flex items-center gap-1 bg-gray-100/80 p-1.5 rounded-full border border-gray-200/60">
-            {navItems.map((item) => {
-              const isActive = currentView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => onViewChange(item.id)}
-                  className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-[#091426] font-semibold shadow-sm'
-                      : 'text-gray-500 hover:text-[#091426] hover:bg-white/50'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-1.5">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => onViewChange(item.id)}
+                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  currentView === item.id
+                    ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/30'
+                    : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
 
-          {/* CTA + Mobile toggle */}
-          <div className="flex items-center gap-3">
             <button
               onClick={() => onViewChange('pricing')}
-              className="hidden lg:flex items-center gap-2 bg-[#091426] hover:bg-[#006c49] text-white text-xs font-semibold tracking-wider uppercase px-5 py-3 rounded-xl shadow-sm transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+              className="ml-2 flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              <CalendarRange className="w-4 h-4 text-[#6cf8bb]" />
+              <CalendarRange className="w-4 h-4" />
               <span>Pesan Sekarang</span>
             </button>
+          </div>
 
+          {/* Mobile Menu Icon */}
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden w-10 h-10 flex items-center justify-center text-[#091426] hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+              className="p-2 rounded-lg hover:bg-white/[0.06] text-slate-300 hover:text-white transition-colors"
             >
-              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -87,8 +86,8 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
-          <div className="px-4 py-5 flex flex-col gap-2">
+        <div className="md:hidden glass-panel border-b border-white/10 animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="px-2 pt-2 pb-4 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -96,24 +95,24 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
                   onViewChange(item.id);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                className={`w-full text-left block px-4 py-2.5 rounded-lg text-base font-medium transition-all ${
                   currentView === item.id
-                    ? 'bg-[#006c49]/10 text-[#006c49] font-semibold'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-[#091426]'
+                    ? 'bg-blue-600/15 text-blue-400 font-semibold border border-blue-500/30'
+                    : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
                 {item.label}
               </button>
             ))}
-            <div className="pt-3 border-t border-gray-100 mt-1">
+            <div className="pt-2 px-4 flex flex-col gap-2.5">
               <button
                 onClick={() => {
                   onViewChange('pricing');
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center justify-center gap-2 bg-[#091426] text-white font-semibold text-sm py-3.5 rounded-xl cursor-pointer"
+                className="w-full justify-center flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-base py-3 rounded-lg shadow-lg active:scale-95 transition-all"
               >
-                <CalendarRange className="w-4 h-4 text-[#6cf8bb]" />
+                <CalendarRange className="w-5 h-5" />
                 <span>Pesan Sekarang</span>
               </button>
             </div>
