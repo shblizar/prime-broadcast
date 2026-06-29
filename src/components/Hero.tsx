@@ -133,41 +133,89 @@ export default function Hero({ onViewChange }: HeroProps) {
     {
       id: 'p1',
       name: 'GTV',
+      <img
+              src={logoGTV}
+              alt="GTV"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
      
     },
     {
       id: 'p2',
       name: 'MNC',
+      <img
+              src={logoMNC}
+              alt="MNC"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
 
     },
     {
       id: 'p3',
       name: 'MATAHATI',
+      <img
+              src={logoMatahati}
+              alt="Matahati"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
       
     },
     {
       id: 'p4',
       name: 'RCTI PLUS',
+      <img
+              src={logoRCTI}
+              alt="RCTI PLUs"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
       
     },
     {
       id: 'p5',
       name: 'NABAWI TV',
+      <img
+              src={logoNabawi}
+              alt="Nabawi TV"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
       
     },
     {
       id: 'p6',
       name: 'TV NU',
+      <img
+              src={logoTVNU}
+              alt="TV NU"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
       
     },
     {
       id: 'p7',
       name: 'CENTENNIAL Z',
+      <img
+              src={logoCentennial}
+              alt="CENTENNIAL"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
       
     },
     {
       id: 'p8',
       name: 'MIKTA',
+      <img
+              src={logoMikta}
+              alt="MIKTA"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
+            />
       
     }
   ];
