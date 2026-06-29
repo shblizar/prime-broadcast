@@ -93,7 +93,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Internet',
     price: 300000,
     unit: 'Unit',
-    description: 'Koneksi internet dedicated stabil untuk menjamin kelancaran live streaming.',
     category: 'equipment',
     maxQty: 3
   },
@@ -102,7 +101,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Proyektor',
     price: 300000,
     unit: 'Unit',
-    description: 'Proyektor multimedia tambahan untuk memproyeksikan video feed di venue.',
     category: 'equipment',
     maxQty: 3
   },
@@ -111,7 +109,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Kabel HDMI tambahan',
     price: 100000,
     unit: 'Unit',
-    description: 'Sinyal feed tambahan menggunakan kabel HDMI berkualitas tinggi.',
     category: 'equipment',
     maxQty: 10
   },
@@ -120,7 +117,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Komputer 1 Set (Lower Third / Videotron Display)',
     price: 700000,
     unit: 'Set',
-    description: 'Komputer 1 Set untuk kebutuhan lower third atau display videotron (Intel Core i7 Gen 10, GTX 1660 Super, Ram 16GB) - Include dengan Manpower.',
     category: 'equipment',
     maxQty: 3
   },
@@ -129,7 +125,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Transportasi dan Akomodasi',
     price: 0,
     unit: 'Ditanggung Klien',
-    description: 'Akomodasi, kebutuhan konsumsi, dan biaya transportasi tim ditanggung oleh pihak Klien.',
     category: 'service',
     maxQty: 1
   },
@@ -138,7 +133,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Design Grafis Custom (Logo, Lower third, Dsb)',
     price: 550000,
     unit: 'Paket',
-    description: 'Desain kustom meliputi logo eksklusif, lower third, frame layout siaran, dsb.',
     category: 'upgrade',
     maxQty: 1
   },
@@ -147,7 +141,6 @@ export const ADD_ONS: AddOnOption[] = [
     name: 'Motion Graphics Custom',
     price: 1200000,
     unit: 'Paket',
-    description: 'Animasi kustom profesional seperti opening intro, bumper transisi, dan outro stream.',
     category: 'upgrade',
     maxQty: 1
   }
@@ -227,5 +220,6 @@ export const CAMERA_UPGRADE_OPTIONS: CameraUpgradeOption[] = [
   { id: 'z90v', name: 'Sony PXW-Z90V 4K', extraPrice: 550000 },
   { id: 'z150', name: 'Sony PXW-Z150 4K XDCAM', extraPrice: 660000 },
   { id: 'z190', name: 'Sony PXW-Z190 4K XDCAM Camcorder', extraPrice: 750000 },
-  { id: 'pmw300', name: 'Sony PMW-300 XDCAM', extraPrice: 850000 }
+  { id: 'pmw300', name: 'Sony PMW-300 XDCAM', extraPrice: 850000 },
+  { id: 'FX-6',  name:  'Sony FX-6',  extraPrices: 2000000 }
 ];
