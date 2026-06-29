@@ -129,86 +129,48 @@ export default function Hero({ onViewChange }: HeroProps) {
   ];
 
   // 8 Partner mockups with grayscale-to-color hover transition
-  const PARTNERS: PartnerItem[] = [
-    {
-      id: 'p1',
-      name: 'GTV',
-      img: src={logoGTV}
-          alt="GTV"
-          className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-          draggable={false}
-    },
-    {
-      id: 'p2',
-      name: 'MNC',
-      img: src={logoMNC}
-           alt="MNC"
-           className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-           draggable={false}
-            
-
-    },
-    {
-      id: 'p3',
-      name: 'MATAHATI',
-      img: src={logoMatahati}
-           alt="Matahati"
-           className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-          draggable={false}
-           
-      
-    },
-    {
-      id: 'p4',
-      name: 'RCTI PLUS',
-      img: src={logoRCTI}
-           alt="RCTI PLUs"
-           className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-           draggable={false}
-            
-      
-    },
-    {
-      id: 'p5',
-      name: 'NABAWI TV',
-      img: src={logoNabawi}
-           alt="Nabawi TV"
-           className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-           draggable={false}
-        
-      
-    },
-    {
-      id: 'p6',
-      name: 'TV NU',
-      img: src={logoTVNU}
-           alt="TV NU"
-          className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-           draggable={false}
-           
-    },
-    {
-      id: 'p7',
-      name: 'CENTENNIAL Z',
-      img: src={logoCentennial}
-           alt="CENTENNIAL"
-           className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-           draggable={false}
-           
-      
-    },
-    {
-      id: 'p8',
-      name: 'MIKTA',
-      img: src={logoMikta}
-           alt="MIKTA"
-           className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
-           draggable={false}
-           
-      
-    }
-  ];
-
+  const PARTNERS = [
+  {
+    id: "p1",
+    name: "GTV",
+    img: logoGTV,
+  },
+  {
+    id: "p2",
+    name: "MNC",
+    img: logoMNC,
+  },
+  {
+    id: "p3",
+    name: "MATAHATI",
+    img: logoMatahati,
+  },
+  {
+    id: "p4",
+    name: "RCTI PLUS",
+    img: logoRCTI,
+  },
+  {
+    id: "p5",
+    name: "NABAWI TV",
+    img: logoNabawi,
+  },
+  {
+    id: "p6",
+    name: "TV NU",
+    img: logoTVNU,
+  },
+  {
+    id: "p7",
+    name: "CENTENNIAL Z",
+    img: logoCentennial,
+  },
+  {
+    id: "p8",
+    name: "MIKTA",
+    img: logoMikta,
+  },
+];
   return (
     <div className="bg-black text-white relative select-none font-sans overflow-hidden">
       
