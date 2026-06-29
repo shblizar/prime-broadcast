@@ -6,6 +6,7 @@ import {
   ShieldCheck, 
   Sparkles,
 } from 'lucide-react';
+import logoPrime from '../assets/images/logo-prime.png';
 
 interface FooterProps {
   onViewChange: (view: string) => void;
@@ -33,7 +34,7 @@ export default function Footer({ onViewChange }: FooterProps) {
               onClick={() => onViewChange('home')}
             >
               <img
-                src="/assets/images/logo-prime.png"
+                src={logoPrime}
                 alt="Prime Broadcast"
                 className="h-9 w-auto object-contain transition-opacity duration-300 group-hover:opacity-70 select-none"
                 draggable={false}
