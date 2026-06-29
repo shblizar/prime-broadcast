@@ -35,6 +35,16 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
               draggable={false}
             />
           </div>
+          <div>
+              <span className="font-display font-medium text-base tracking-widest text-[#f4f4f5] font-bold group-hover:text-zinc-300 transition-colors uppercase">
+                PRIME BROADCAST
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-1 h-1 rounded-full bg-zinc-500"></span>
+                <span className="text-[9px] font-sans tracking-[0.2em] text-zinc-500 font-medium uppercase font-mono">
+                  Live Production
+                </span>
+              </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
