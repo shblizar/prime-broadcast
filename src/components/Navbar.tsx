@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Video, Menu, X, CalendarRange, Flame } from 'lucide-react';
-import logoPrime from '../assets/images/logo-prime.png';
+import { Menu, X, CalendarRange } from 'lucide-react';
 
 interface NavbarProps {
   currentView: string;
@@ -14,12 +13,12 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
     { id: 'home', label: 'Beranda' },
     { id: 'pricing', label: 'Paket & Konfigurator' },
     { id: 'policies', label: 'Aturan & Kebijakan' },
-    { id: 'faq', label: 'Tanya Jawab (FAQ)' },
-    { id: 'contact', label: 'Call Center' }
+    { id: 'faq', label: 'FAQ' },
+    { id: 'contact', label: 'Hubungi Kami' }
   ];
 
   return (
-    <nav className="sticky top-0 z-50 glass-panel-heavy border-b border-white/10 text-white">
+    <nav className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-zinc-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo Brand */}
@@ -27,48 +26,124 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
             onClick={() => onViewChange('home')} 
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="p-2 bg-slate-950/65 backdrop-blur-sm rounded-2xl border border-white/10 shadow-[inset_0_1.5px_3px_rgba(255,255,255,0.2)] ring-1 ring-[#A7C4C2]/30 group-hover:ring-[#004F4A]/40 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
-              <img 
-                src={logoPrime} 
-                alt="Prime Broadcast Logo" 
-                className="w-8 h-8 select-none transition-all duration-700 group-hover:rotate-6 object-contain"
-              />
+            <div className="p-1.5 bg-zinc-900/80 rounded-xl border border-zinc-800 transition-all duration-300 flex items-center justify-center">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 100 100" 
+                className="w-7 h-7 select-none transition-transform duration-700 group-hover:rotate-3"
+              >
+                <defs>
+                  {/* Premium subtle gradient based on original brand identity */}
+                  <linearGradient id="pb-grad-logo" x1="0%" y1="100%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#ef4444" /> {/* Red */}
+                    <stop offset="50%" stopColor="#a855f7" /> {/* Violet */}
+                    <stop offset="100%" stopColor="#3b82f6" /> {/* Blue */}
+                  </linearGradient>
+                </defs>
+
+                {/* 1. Base Right Shape 'b' */}
+                <path 
+                  d="M 62,32 A 18,18 0 1,1 62,68 A 18,18 0 1,1 62,32" 
+                  fill="none" 
+                  stroke="url(#pb-grad-logo)" 
+                  strokeWidth="11" 
+                  strokeLinecap="round" 
+                />
+                <path 
+                  d="M 44,68 L 44,28 A 10,10 0 0,1 54,18" 
+                  fill="none" 
+                  stroke="url(#pb-grad-logo)" 
+                  strokeWidth="11" 
+                  strokeLinecap="round" 
+                />
+
+                {/* 2. Base Left Shape 'p' */}
+                <path 
+                  d="M 24,32 L 24,72 A 10,10 0 0,1 14,82" 
+                  fill="none" 
+                  stroke="url(#pb-grad-logo)" 
+                  strokeWidth="11" 
+                  strokeLinecap="round" 
+                />
+                <path 
+                  d="M 42,32 A 18,18 0 1,1 42,68 A 18,18 0 1,1 42,32" 
+                  fill="none" 
+                  stroke="url(#pb-grad-logo)" 
+                  strokeWidth="11" 
+                  strokeLinecap="round" 
+                />
+
+                {/* 3. Interlocking overlay cutouts */}
+                <path 
+                  d="M 44,38 L 44,28 A 10,10 0 0,1 54,18" 
+                  fill="none" 
+                  stroke="#18181b" 
+                  strokeWidth="16" 
+                  strokeLinecap="round" 
+                />
+                <path 
+                  d="M 44,38 L 44,28 A 10,10 0 0,1 54,18" 
+                  fill="none" 
+                  stroke="url(#pb-grad-logo)" 
+                  strokeWidth="11" 
+                  strokeLinecap="round" 
+                />
+
+                <path 
+                  d="M 42,68 A 18,18 0 0,0 58,54" 
+                  fill="none" 
+                  stroke="#18181b" 
+                  strokeWidth="16" 
+                  strokeLinecap="round" 
+                />
+                <path 
+                  d="M 42,68 A 18,18 0 0,0 58,54" 
+                  fill="none" 
+                  stroke="url(#pb-grad-logo)" 
+                  strokeWidth="11" 
+                  strokeLinecap="round" 
+                />
+              </svg>
             </div>
             <div>
-              <span className="font-display font-bold text-xl tracking-wider bg-gradient-to-r from-[#004F4A] via-[#6b908d] to-[#A7C4C2] bg-clip-text text-transparent group-hover:text-blue-400 transition-colors">
+              <span className="font-display font-medium text-base tracking-widest text-[#f4f4f5] font-bold group-hover:text-zinc-300 transition-colors uppercase">
                 PRIME BROADCAST
               </span>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 live-pulse"></span>
-                <span className="text-[10px] font-mono tracking-widest text-[#9dcdff] font-medium uppercase">
-                  LIVE STREAMING SOLUTIONS
+                <span className="w-1 h-1 rounded-full bg-zinc-500"></span>
+                <span className="text-[9px] font-sans tracking-[0.2em] text-zinc-500 font-medium uppercase font-mono">
+                  Live Production
                 </span>
               </div>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1.5">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onViewChange(item.id)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  currentView === item.id
-                    ? 'bg-[#A7C4C2]/20 text-[#004F4A] font-semibold border border-[#004F4A]/20'
-                    : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          <div className="hidden md:flex items-center gap-8">
+            <div className="flex items-center gap-6">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onViewChange(item.id)}
+                  className={`text-[13px] font-medium tracking-wide transition-all relative py-1.5 ${
+                    currentView === item.id
+                      ? 'text-zinc-100 font-semibold'
+                      : 'text-zinc-400 hover:text-zinc-100'
+                  }`}
+                >
+                  {item.label}
+                  {currentView === item.id && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-zinc-100 rounded-full" />
+                  )}
+                </button>
+              ))}
+            </div>
 
             <button
               onClick={() => onViewChange('pricing')}
-              className="ml-2 flex items-center gap-2 bg-[#004F4A] hover:bg-[#00645e] text-white font-medium text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="px-5 py-2.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium text-xs rounded-lg transition-all duration-300 hover:shadow-xl hover:shadow-white/5 font-display shadow-sm active:scale-95"
             >
-              <CalendarRange className="w-4 h-4" />
-              <span>Pesan Sekarang</span>
+              Hubungi Pemesanan
             </button>
           </div>
 
@@ -76,7 +151,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg hover:bg-white/[0.06] text-slate-300 hover:text-white transition-colors"
+              className="p-2 rounded-lg hover:bg-zinc-900 text-zinc-400 hover:text-white transition-colors"
             >
               {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -86,8 +161,8 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden glass-panel border-b border-white/10 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="px-2 pt-2 pb-4 space-y-1 sm:px-3">
+        <div className="md:hidden bg-zinc-950 border-b border-zinc-900 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="px-3 pt-2 pb-5 space-y-1">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -95,25 +170,25 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
                   onViewChange(item.id);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left block px-4 py-2.5 rounded-lg text-base font-medium transition-all ${
+                className={`w-full text-left block px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                   currentView === item.id
-                    ? 'bg-[#A7C4C2]/20 text-[#004F4A] font-semibold border border-[#004F4A]/20'
-                    : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
+                    ? 'bg-zinc-900 text-zinc-100 font-semibold border-l-2 border-white'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/50'
                 }`}
               >
                 {item.label}
               </button>
             ))}
-            <div className="pt-2 px-4 flex flex-col gap-2.5">
+            <div className="pt-3 px-4">
               <button
                 onClick={() => {
                   onViewChange('pricing');
                   setIsOpen(false);
                 }}
-                className="w-full justify-center flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium text-base py-3 rounded-lg shadow-lg active:scale-95 transition-all"
+                className="w-full justify-center flex items-center gap-2 bg-zinc-150 hover:bg-zinc-200 text-zinc-950 font-semibold text-sm py-3 rounded-lg shadow-lg active:scale-95 transition-all"
               >
-                <CalendarRange className="w-5 h-5" />
-                <span>Book Now</span>
+                <CalendarRange className="w-4 h-4" />
+                <span>Pesan Sekarang</span>
               </button>
             </div>
           </div>
