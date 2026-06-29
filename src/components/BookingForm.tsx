@@ -572,68 +572,68 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
   };
 
   return (
-    <div className="py-12 bg-slate-950 text-white text-left relative">
+    <div className="py-16 bg-zinc-950 text-white text-left relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* UPPER TAB META */}
-        <div className="mb-8 border-b border-white/5 pb-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-10 border-b border-zinc-900 pb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-xs text-blue-400 font-mono font-bold uppercase tracking-widest block mb-1">
+              <span className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase block mb-1">
                 Sistem Pendaftaran Digital Prime Broadcast
               </span>
-              <h2 className="text-2xl sm:text-3xl font-display font-black text-white">
-                Faktur Tagihan & Formulir Reservasi
+              <h2 className="text-xl sm:text-2xl font-serif text-white">
+                Formulir Reservasi & Detil Estimasi
               </h2>
             </div>
             <button
               onClick={onReset}
-              className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 hover:bg-slate-800 border border-white/10 hover:border-white/20 transition-all flex items-center gap-2 cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 transition-all flex items-center gap-2 cursor-pointer text-zinc-300"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Ganti Konfigurasi Tambahan</span>
+              <RefreshCw className="w-3.5 h-3.5 text-zinc-400" />
+              <span>Ganti Konfigurasi Paket</span>
             </button>
           </div>
         </div>
 
         {orderFinalized ? (
-          <div className="glass-panel p-8 rounded-3xl border-green-500/30 text-center flex flex-col items-center justify-center max-w-2xl mx-auto animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-400 mb-6 live-pulse">
-              <CheckCircle2 className="w-10 h-10" />
+          <div className="bg-zinc-900/10 border border-zinc-900 p-8 rounded-2xl text-center flex flex-col items-center justify-center max-w-2xl mx-auto animate-in fade-in zoom-in-95 duration-300">
+            <div className="w-14 h-14 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-100 mb-6">
+              <CheckCircle2 className="w-7 h-7 stroke-[1.5]" />
             </div>
 
-            <h3 className="text-2xl font-display font-black mb-2 text-green-400">
-              Pemesanan Berhasil Terkirim!
+            <h3 className="text-xl font-serif mb-2 text-white">
+              Pemesanan Berhasil Terkirim
             </h3>
             
-            <p className="text-slate-300 text-sm leading-relaxed max-w-lg mb-6">
-              Terima kasih! Invoice rincian Anda telah diteruskan ke WhatsApp Operasional Prime Broadcast. Tim kami akan segera mendaftarkan jadwal ke kru siaran. Anda juga dapat mengunduh salinan berkas invoice resmi berformat PDF di bawah ini.
+            <p className="text-zinc-400 text-xs leading-relaxed max-w-md mb-6">
+              Terima kasih. Rincian kebutuhan siaran Anda telah siap diteruskan. Untuk mendaftarkan jadwal kru secara langsung, silakan klik tombol hubungi WhatsApp di bawah. Anda juga dapat mengunduh berkas invoice resmi berformat PDF.
             </p>
 
-            <div className="w-full bg-slate-950 p-6 rounded-2xl border border-white/5 text-left mb-6 font-mono text-xs">
-              <div className="flex justify-between border-b border-white/10 pb-3 mb-3 text-slate-400">
-                <span>FAKTUR INVOICE NO:</span>
-                <span className="font-bold text-white">{formattedInvoiceId}</span>
+            <div className="w-full bg-zinc-950 p-6 rounded-xl border border-zinc-900 text-left mb-6 font-mono text-xs">
+              <div className="flex justify-between border-b border-zinc-900 pb-3 mb-3 text-zinc-500">
+                <span>NOMOR FAKTUR INVOICE:</span>
+                <span className="font-bold text-zinc-200">{formattedInvoiceId}</span>
               </div>
-              <div className="space-y-1.5 text-slate-300">
+              <div className="space-y-2 text-zinc-400">
                 <div className="flex justify-between">
                   <span>Nama Klien:</span>
-                  <span className="text-white font-semibold">{formData.name}</span>
+                  <span className="text-zinc-200">{formData.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tanggal Siaran:</span>
-                  <span className="text-white font-semibold">{formData.eventDate} ({formData.eventTime} WIB)</span>
+                  <span className="text-zinc-200">{formData.eventDate} ({formData.eventTime} WIB)</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Paket Utama:</span>
-                  <span className="text-white font-semibold">{localPkg.name}</span>
+                  <span className="text-zinc-200">{localPkg.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Total PPN 1%:</span>
-                  <span className="text-white font-semibold">Rp {taxAmount1Percent.toLocaleString('id-ID')}</span>
+                  <span>Pajak PPN 1%:</span>
+                  <span className="text-zinc-200">Rp {taxAmount1Percent.toLocaleString('id-ID')}</span>
                 </div>
-                <div className="flex justify-between border-t border-white/10 pt-2 mt-2 font-bold text-blue-400 text-sm">
-                  <span>Grand Total Nett:</span>
+                <div className="flex justify-between border-t border-zinc-900 pt-2.5 mt-2.5 font-bold text-zinc-100 text-sm">
+                  <span>Total Tagihan (Nett):</span>
                   <span>Rp {totalNettPrice.toLocaleString('id-ID')}</span>
                 </div>
               </div>
@@ -644,26 +644,26 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                 href={`https://api.whatsapp.com/send?phone=6285150555195&text=${encodeURIComponent(generateWhatsAppMessageText(formattedInvoiceId))}`}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="w-full flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black p-4 rounded-xl shadow-xl shadow-emerald-500/10 hover:shadow-emerald-500/25 active:scale-[0.98] transition-all text-sm uppercase text-center"
+                className="w-full flex items-center justify-center gap-2.5 bg-[#ffffff] hover:bg-zinc-200 text-zinc-950 font-medium p-3.5 rounded-lg transition-all text-xs"
               >
-                <Send className="w-4 h-4 text-slate-950" />
-                <span>Kirim Rincian Reservasi ke WhatsApp Admin</span>
+                <Send className="w-3.5 h-3.5" />
+                <span>Kirim Format Rincian ke WhatsApp Admin</span>
               </a>
 
               <button
                 onClick={downloadPremiumInvoicePDF}
-                className="w-full flex items-center justify-center gap-2.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold p-4 rounded-xl shadow-xl shadow-blue-500/10 hover:shadow-blue-500/25 transition-all cursor-pointer text-sm"
+                className="w-full flex items-center justify-center gap-2.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-100 font-medium p-3.5 rounded-lg transition-all cursor-pointer text-xs"
               >
-                <FileDown className="w-4 h-4" />
-                <span>Unduh Berkas Invoice PDF</span>
+                <FileDown className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Unduh Berkas Invoice PDF Resmi</span>
               </button>
 
               <button
                 onClick={copyCompleteClipboard}
-                className="w-full flex items-center justify-center gap-2 bg-slate-900 border border-white/10 hover:bg-slate-800 text-white font-semibold p-3 rounded-xl transition-all cursor-pointer text-xs"
+                className="w-full flex items-center justify-center gap-2 bg-zinc-950 border border-zinc-900 hover:bg-zinc-900 text-zinc-405 text-zinc-400 p-2.5 rounded-lg transition-all cursor-pointer text-[11px]"
               >
-                {copypasteCopied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copypasteCopied ? 'Rincian Berhasil Disalin!' : 'Salin Draf Laporan Copy-Paste'}</span>
+                {copypasteCopied ? <Check className="w-3.5 h-3.5 text-zinc-400" /> : <Copy className="w-3.5 h-3.5 text-zinc-500" />}
+                <span>{copypasteCopied ? 'Berhasil Menyalin Rincian!' : 'Salin Laporan Reservasi untuk Cadangan Manual'}</span>
               </button>
             </div>
 
@@ -672,7 +672,7 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                 setOrderFinalized(false);
                 onReset();
               }}
-              className="mt-6 text-xs text-slate-400 hover:text-white underline transition-colors"
+              className="mt-6 text-xs text-zinc-500 hover:text-zinc-305 hover:text-white underline transition-colors"
             >
               Buat Reservasi Baru
             </button>
@@ -681,30 +681,30 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
             
             {/* BOOKING INPUTS FORM CONTAINER */}
-            <form onSubmit={handleBookingSubmit} className="lg:col-span-7 glass-panel p-6 sm:p-8 rounded-2xl flex flex-col gap-5">
-              <h3 className="text-lg font-display font-bold text-white mb-2 flex items-center gap-2">
-                <PackageCheck className="w-5 h-5 text-blue-400" />
-                <span>Rincian Kontak & Formulir Reservasi</span>
+            <form onSubmit={handleBookingSubmit} className="lg:col-span-7 bg-zinc-900/10 border border-zinc-900 p-6 sm:p-8 rounded-2xl flex flex-col gap-5">
+              <h3 className="text-base font-sans font-medium text-white mb-2 flex items-center gap-3">
+                <PackageCheck className="w-5 h-5 text-zinc-400" />
+                <span>Informasi Reservasi & Kontak Klien</span>
               </h3>
 
               {/* Pre-configured Package Summary (Read-only as requested) */}
-              <div className="bg-blue-950/20 border border-blue-500/10 p-4.5 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="bg-zinc-900/20 border border-zinc-900 p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="text-[10px] text-blue-400 font-mono font-bold uppercase tracking-widest block mb-0.5">
+                  <span className="text-[9px] text-zinc-500 font-mono tracking-widest uppercase block mb-1">
                     Paket Konfigurasi Terpilih
                   </span>
-                  <span className="text-base font-black text-white block">
+                  <span className="text-sm font-semibold text-zinc-200 block">
                     {localPkg.name} ({localDuration} Jam Kontrak)
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-0.5">
-                    Telah dikalkulasi otomatis dari halaman konfigurator paket.
+                  <span className="text-[10px] text-zinc-500 block mt-1">
+                    Dihitung otomatis berdasarkan setting konfigurator penawaran.
                   </span>
                 </div>
-                <div className="text-left sm:text-right">
-                  <span className="text-xs text-slate-400 block">
+                <div className="text-left sm:text-right shrink-0">
+                  <span className="text-[10px] text-zinc-505 block text-zinc-500">
                     Tarif Dasar Paket
                   </span>
-                  <span className="text-base font-mono font-black text-blue-400">
+                  <span className="text-sm font-mono font-bold text-zinc-300">
                     Rp {basePrice.toLocaleString('id-ID')}
                   </span>
                 </div>
@@ -712,7 +712,7 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                     Nama Lengkap Pemesan <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -722,12 +722,12 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Hendrik Wijaya"
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full bg-zinc-950 border border-zinc-855 rounded-lg px-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors text-zinc-200 placeholder:text-zinc-700"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                     Nama Perusahaan / Lembaga (Opsional)
                   </label>
                   <input
@@ -736,14 +736,14 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                     value={formData.company}
                     onChange={handleInputChange}
                     placeholder="PT Penyiaran Media"
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full bg-zinc-950 border border-zinc-855 rounded-lg px-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors text-zinc-200 placeholder:text-zinc-700"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                     No. WhatsApp Aktif <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
@@ -754,14 +754,14 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                       value={formData.whatsapp}
                       onChange={handleInputChange}
                       placeholder="085150555195"
-                      className="w-full bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                      className="w-full bg-zinc-950 border border-zinc-855 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors text-zinc-200 placeholder:text-zinc-700"
                     />
-                    <PhoneCall className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                    <PhoneCall className="w-3.5 h-3.5 text-zinc-600 absolute left-3.5 top-3.5" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                     Alamat Email <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -771,7 +771,7 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="klien@gmail.com"
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full bg-zinc-950 border border-zinc-855 rounded-lg px-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors text-zinc-200 placeholder:text-zinc-700"
                   />
                 </div>
               </div>
@@ -779,8 +779,8 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
               {/* Calendar flatpickr field and time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Tanggal Siaran (Flatpickr Kalender) <span className="text-red-500">*</span>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                    Tanggal Siaran (Pilih Kalender) <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -790,14 +790,14 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                       required
                       readOnly
                       placeholder="Klik untuk pilih tanggal..."
-                      className="w-full bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors cursor-pointer text-white placeholder-slate-500"
+                      className="w-full bg-zinc-950 border border-zinc-855 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors cursor-pointer text-zinc-200 placeholder-zinc-700"
                     />
-                    <Calendar className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                    <Calendar className="w-3.5 h-3.5 text-zinc-600 absolute left-3.5 top-3.5" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                     Jam Mulai Siaran (WIB)
                   </label>
                   <div className="relative">
@@ -806,15 +806,15 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                       name="eventTime"
                       value={formData.eventTime}
                       onChange={handleInputChange}
-                      className="w-full bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors text-white"
+                      className="w-full bg-zinc-950 border border-zinc-855 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors text-zinc-200"
                     />
-                    <Clock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                    <Clock className="w-3.5 h-3.5 text-zinc-600 absolute left-3.5 top-3.5" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                   Alamat Lengkap Venue / Lokasi Event <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -825,15 +825,15 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                     value={formData.eventLocation}
                     onChange={handleInputChange}
                     placeholder="Gedung, Aula, Jalan, No, Kota"
-                    className="w-full bg-slate-900 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                    className="w-full bg-zinc-950 border border-zinc-855 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors text-zinc-200 placeholder:text-zinc-700"
                   />
-                  <MapPin className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
+                  <MapPin className="w-3.5 h-3.5 text-zinc-600 absolute left-3.5 top-3.5" />
                 </div>
               </div>
 
               {/* Dynamic Voucher code validator right inside the checkout */}
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-white/5 flex flex-col gap-2">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+              <div className="bg-zinc-950 border border-zinc-900 p-4 rounded-xl flex flex-col gap-2.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                   Kupon Voucher Diskon Pemotongan Harga:
                 </label>
                 <div className="flex gap-2">
@@ -841,14 +841,14 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                     type="text"
                     value={voucherCodeInput}
                     onChange={(e) => setVoucherCodeInput(e.target.value)}
-                    placeholder="Contoh: DISKON10, PROMO20, PRIMEKREATOR"
-                    className="flex-1 bg-slate-950 border border-white/10 rounded-xl px-4 py-2 text-xs focus:border-blue-500 focus:outline-none uppercase text-white font-mono"
+                    placeholder="Contoh: DISKON10, PROMO20"
+                    className="flex-1 bg-zinc-950 border border-zinc-855 rounded-lg px-3 py-2 text-xs focus:border-zinc-550 focus:outline-none uppercase text-zinc-200 font-mono placeholder:text-zinc-700"
                   />
                   {localVoucher ? (
                     <button
                       type="button"
                       onClick={handleRemoveVoucher}
-                      className="px-4 py-2 rounded-xl bg-red-600/10 text-red-400 text-xs font-bold hover:bg-red-600/20 active:scale-95 transition-all"
+                      className="px-4 py-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:bg-zinc-850 active:scale-95 transition-all"
                     >
                       Hapus
                     </button>
@@ -857,23 +857,23 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                       type="button"
                       onClick={triggerVoucherApply}
                       disabled={loadingVoucher || !voucherCodeInput.trim()}
-                      className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold disabled:opacity-50 active:scale-95 transition-all"
+                      className="px-5 py-2 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-950 text-xs font-semibold disabled:opacity-30 active:scale-95 transition-all"
                     >
                       {loadingVoucher ? '...' : 'Pasang'}
                     </button>
                   )}
                 </div>
-                {voucherError && <p className="text-[11px] text-red-400 font-medium">{voucherError}</p>}
-                {voucherSuccess && <p className="text-[11px] text-green-400 font-medium">{voucherSuccess}</p>}
+                {voucherError && <p className="text-[10px] text-zinc-500 font-mono">{voucherError}</p>}
+                {voucherSuccess && <p className="text-[10px] text-zinc-405 font-mono">{voucherSuccess}</p>}
                 {localVoucher && (
-                  <p className="text-[11px] text-green-400 font-mono font-bold">
+                  <p className="text-[10px] text-zinc-405 font-mono">
                     [AKTIF] Kupon {localVoucher.code} berhasil memberikan diskon {localVoucher.discount}%
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                   Catatan Tambahan (Opsional)
                 </label>
                 <textarea
@@ -882,21 +882,21 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                   value={formData.eventNotes}
                   onChange={handleInputChange}
                   placeholder="Grup layout visual, streaming multi-platform YouTube/Zoom dsb."
-                  className="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none transition-colors resize-none"
+                  className="w-full bg-zinc-950 border border-zinc-855 rounded-lg px-4 py-2.5 text-sm focus:border-zinc-550 focus:outline-none transition-colors resize-none text-zinc-200 placeholder:text-zinc-700"
                 />
               </div>
 
-              <div className="pt-4 border-t border-white/5">
+              <div className="pt-4 border-t border-zinc-900">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-[#128C7E] hover:bg-[#075E54] text-white font-bold py-4 rounded-xl shadow-xl shadow-emerald-500/15 transition-all hover:scale-[1.01] active:scale-95 cursor-pointer disabled:opacity-50 text-sm"
+                  className="w-full flex items-center justify-center gap-2 bg-[#ffffff] hover:bg-zinc-200 text-zinc-950 font-medium py-3.5 rounded-lg shadow-sm transition-all cursor-pointer disabled:opacity-50 text-xs"
                 >
-                  <Send className="w-5 h-5" />
-                  <span>{isSubmitting ? "Mengirimkan Reservasi..." : "Kirim Reservasi & Hubungi WhatsApp"}</span>
+                  <Send className="w-4 h-4" />
+                  <span>{isSubmitting ? "Mengkonfirmasi order..." : "Kirim Form & Hubungi WhatsApp Operasional"}</span>
                 </button>
-                <p className="text-[10px] text-center text-slate-400 mt-3 leading-relaxed">
-                  Pemrosesan instan! Menghubungkan formulir pemesanan dengan server dan mengalihkan Anda untuk pendaftaran jadwal siaran secara cepat di WhatsApp.
+                <p className="text-[10px] text-center text-zinc-500 mt-3 leading-relaxed">
+                  Secara instan mendaftarkan rincian agenda Anda dan mengalihkan ke WhatsApp Admin Prime Broadcast.
                 </p>
               </div>
             </form>
@@ -904,43 +904,43 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
             {/* LIVE BILLING BREAKDOWN CARD */}
             <div className="lg:col-span-5 flex flex-col gap-6">
               
-              <div className="glass-panel p-6 rounded-2xl border-white/10">
-                <div className="flex items-center gap-2 border-b border-white/10 pb-3 mb-4">
-                  <Printer className="w-4 h-4 text-slate-400" />
-                  <span className="text-xs font-mono font-bold tracking-widest text-slate-400 uppercase">
+              <div className="bg-zinc-900/10 border border-zinc-900 p-6 rounded-2xl">
+                <div className="flex items-center gap-2 border-b border-zinc-900 pb-3 mb-4">
+                  <Printer className="w-4 h-4 text-zinc-500" />
+                  <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
                     Kalkulator Nota Transaksi
                   </span>
                 </div>
 
-                <div className="space-y-4 text-slate-300">
+                <div className="space-y-4 text-zinc-400">
                   
                   {/* Selected Package Details */}
                   <div className="flex justify-between items-start text-sm">
                     <div>
-                      <span className="font-extrabold text-blue-400 block uppercase">
+                      <span className="font-semibold text-zinc-100 block">
                         {localPkg.name}
                       </span>
-                      <span className="text-xs text-slate-400">
-                        Kontrak Kerja: {localDuration} Jam Siaran
+                      <span className="text-xs text-zinc-500 mt-1 block">
+                        Durasi Utama: {localDuration} Jam Kontrak
                       </span>
                     </div>
-                    <span className="font-mono font-semibold text-white">
+                    <span className="font-mono text-zinc-200">
                       Rp {basePrice.toLocaleString('id-ID')}
                     </span>
                   </div>
 
                   {/* Overtime */}
                   {localOvertimeHours > 0 && (
-                    <div className="flex justify-between items-start text-sm border-t border-white/5 pt-3">
+                    <div className="flex justify-between items-start text-sm border-t border-zinc-900 pt-3.5">
                       <div>
-                        <span className="font-semibold text-slate-200 block">
+                        <span className="font-medium text-zinc-200 block">
                           Biaya Overtime (+{localOvertimeHours} Jam)
                         </span>
-                        <span className="text-xs text-slate-400">
-                          Tarif Lembur: Selisih 15% / jam dasar
+                        <span className="text-xs text-zinc-500 mt-1 block">
+                          Tarif Lembur: 15% dari tarif dasar
                         </span>
                       </div>
-                      <span className="font-mono font-semibold text-white">
+                      <span className="font-mono text-zinc-200">
                         Rp {totalOvertimeCost.toLocaleString('id-ID')}
                       </span>
                     </div>
@@ -948,16 +948,16 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
 
                   {/* Camera Upgrade */}
                   {cameraUpgradeCost > 0 && (
-                    <div className="flex justify-between items-start text-sm border-t border-white/5 pt-3">
+                    <div className="flex justify-between items-start text-sm border-t border-zinc-900 pt-3.5">
                       <div>
-                        <span className="font-semibold text-slate-200 block">
+                        <span className="font-medium text-zinc-200 block">
                           Upgrade Kamera Utama (x{localCameraCount})
                         </span>
-                        <span className="text-xs text-slate-400 animate-pulse">
+                        <span className="text-xs text-zinc-505 mt-1 block text-zinc-500">
                           Premium: {cameraOpt.name}
                         </span>
                       </div>
-                      <span className="font-mono font-semibold text-white">
+                      <span className="font-mono text-zinc-200">
                         Rp {cameraUpgradeCost.toLocaleString('id-ID')}
                       </span>
                     </div>
@@ -965,17 +965,17 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
 
                   {/* AddOn displays */}
                   {activeAddOnsList.length > 0 && (
-                    <div className="border-t border-white/5 pt-3">
-                      <span className="text-xs text-slate-400 font-bold block uppercase mb-2">
+                    <div className="border-t border-zinc-900 pt-3.5">
+                      <span className="text-[10px] text-zinc-500 font-mono tracking-wide block uppercase mb-2">
                         Pilihan Add-On Aktif:
                       </span>
                       <div className="space-y-2">
                         {activeAddOnsList.map((addon) => (
-                          <div key={addon.id} className="flex justify-between text-xs pl-2 border-l border-blue-500/40">
-                            <span className="text-slate-300">
-                              {addon.name} <b>(x{addon.quantity})</b>
+                          <div key={addon.id} className="flex justify-between text-xs pl-3 border-l border-zinc-800">
+                            <span className="text-zinc-400">
+                              {addon.name} <b className="text-zinc-500 font-normal font-mono">(x{addon.quantity})</b>
                             </span>
-                            <span className="font-mono font-semibold text-white">
+                            <span className="font-mono text-zinc-350">
                               Rp {addon.totalPrice.toLocaleString('id-ID')}
                             </span>
                           </div>
@@ -986,64 +986,64 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
 
                   {/* Voucher display row if applied */}
                   {localVoucher && (
-                    <div className="flex justify-between items-start text-sm border-t border-white/5 pt-3 text-green-400">
+                    <div className="flex justify-between items-start text-sm border-t border-zinc-900 pt-3.5 text-zinc-350">
                       <div>
-                        <span className="font-bold block">
+                        <span className="font-medium block">
                           Potongan Voucher ({localVoucher.code})
                         </span>
-                        <span className="text-xs text-slate-400">
-                          Diskon -{localVoucher.discount}% dari Biaya Paket
+                        <span className="text-xs text-zinc-500 mt-1 block">
+                          Diskon {localVoucher.discount}%
                         </span>
                       </div>
-                      <span className="font-mono font-bold">
+                      <span className="font-mono text-zinc-200">
                         -Rp {discountAmount.toLocaleString('id-ID')}
                       </span>
                     </div>
                   )}
 
                   {/* PPN 1% tax row */}
-                  <div className="flex justify-between items-start text-sm border-t border-white/5 pt-3 text-slate-300">
+                  <div className="flex justify-between items-start text-sm border-t border-zinc-900 pt-3.5 text-zinc-400">
                     <div>
-                      <span className="font-semibold block">
-                        Total PPN 1%
+                      <span className="font-medium block text-zinc-300">
+                        Pajak PPN 1%
                       </span>
-                      <span className="text-xs text-slate-400">
-                        Sistem perpajakan 1% real-time setelah voucher
+                      <span className="text-xs text-zinc-500 mt-1 block">
+                        PPN 1% setelah voucher
                       </span>
                     </div>
-                    <span className="font-mono font-semibold text-slate-200">
+                    <span className="font-mono text-zinc-300">
                       Rp {taxAmount1Percent.toLocaleString('id-ID')}
                     </span>
                   </div>
 
                   {/* Direct Terms summary reminder */}
-                  <div className="border-t border-white/10 pt-4 mt-4 bg-slate-950 p-4 rounded-xl border border-white/5">
-                    <span className="block text-xs font-bold text-[#aec6ff] uppercase mb-1 flex items-center gap-1">
-                      <ShieldCheck className="w-4 h-4 text-blue-400" />
-                      <span>Kebijakan Operasional Utama</span>
+                  <div className="border-t border-zinc-900 pt-4 mt-4 bg-zinc-950 p-4 rounded-xl border border-zinc-900 text-zinc-500">
+                    <span className="block text-[10px] font-mono tracking-wider uppercase mb-2 flex items-center gap-1 text-zinc-400">
+                      <ShieldCheck className="w-3.5 h-3.5 text-zinc-500" />
+                      <span>Aturan Operasional</span>
                     </span>
-                    <ul className="text-[10px] leading-relaxed text-slate-400 list-disc pl-4 space-y-1">
-                      <li>Penggantian tanggal atau reschedule harus diajukan maksimal H-7 acara.</li>
-                      <li>Setelah submit form, Anda akan langsung dialihkan ke WhatsApp kami untuk konfirmasi jadwal.</li>
-                      <li>Invoice berkas PDF gratis diunduh untuk kebutuhan pertanggungjawaban panitia/keuangan.</li>
+                    <ul className="text-[10px] leading-relaxed text-zinc-550 list-decimal pl-4 space-y-1">
+                      <li>Perubahan jadwal (reschedule) diajukan maksimal H-7 acara.</li>
+                      <li>Anda akan dialihkan ke WhatsApp untuk konfirmasi agenda formal.</li>
+                      <li>Unduh invoice PDF gratis di atas untuk keperluan penawaran panitia.</li>
                     </ul>
                   </div>
 
                   {/* Total calculation values */}
-                  <div className="border-t border-white/10 pt-4 mt-4 flex items-end justify-between">
+                  <div className="border-t border-zinc-900 pt-4 mt-4 flex items-end justify-between">
                     <div>
-                      <span className="text-xs font-bold text-slate-400 block uppercase">
+                      <span className="text-[10px] text-zinc-500 block font-mono uppercase tracking-wider">
                         ESTIMASI GRAND TOTAL
                       </span>
-                      <span className="text-[10px] font-semibold text-green-400">Sudah Termasuk PPN 1%</span>
+                      <span className="text-[10px] text-zinc-500 block mt-1">Sudah Termasuk PPN 1%</span>
                     </div>
                     <div className="text-right">
                       {localVoucher && (
-                        <div className="text-xs font-mono line-through text-slate-500 mb-0.5">
+                        <div className="text-xs font-mono line-through text-zinc-650 mb-0.5">
                           Rp {(subtotalCost + taxAmount1Percent).toLocaleString('id-ID')}
                         </div>
                       )}
-                      <div className="text-2xl font-mono font-black text-blue-400">
+                      <div className="text-xl font-mono font-semibold text-white">
                         Rp {totalNettPrice.toLocaleString('id-ID')}
                       </div>
                     </div>
@@ -1051,17 +1051,17 @@ _Mohon konfirmasi dan jadwalkan reservasi ini. Terima kasih!_`;
                 </div>
               </div>
 
-                  {/* Technical guarantee card */}
-                  <div className="p-4 rounded-xl bg-purple-950/10 border border-purple-500/20 text-xs text-slate-400">
-                    <span className="font-bold text-purple-300 block mb-1">Garansi Keandalan Prime Broadcast</span>
-                    <span>Seluruh siaran live streaming didukung oleh peralatan pemancar ganda, audio soundcard cadangan, serta sistem internet multi-network bonding berlatensi super rendah.</span>
-                  </div>
-                </div>
-
+              {/* Technical guarantee card */}
+              <div className="p-4 rounded-xl bg-zinc-950 border border-zinc-900 text-xs text-zinc-500 leading-relaxed">
+                <span className="font-medium text-zinc-400 block mb-1">Keandalan Teknis Siaran</span>
+                <span>Seluruh siaran ditopang pemancar live ganda, audio direct backup channel, serta internet multi-network cellular bonding latency rendah.</span>
               </div>
-            )}
+            </div>
 
           </div>
-        </div>
-      );
-    }
+        )}
+
+      </div>
+    </div>
+  );
+}
