@@ -139,10 +139,10 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
       borderRadius: number;
     }
   }>({
-    lite: { text: 'LITE', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
-    regular: { text: 'REGULER', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
-    gold: { text: 'BEST CHOICE', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
-    platinum: { text: 'PLATINUM', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
+    lite: { text: 'Starter Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#2563eb', colorText: '#ffffff', borderRadius: 4 },
+    regular: { text: 'Creator Choice', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#3b82f6', colorText: '#ffffff', borderRadius: 4 },
+    gold: { text: 'Best Choice', textSize: 10, paddingX: 10, paddingY: 3, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#f59e0b', colorText: '#0f172a', borderRadius: 6 },
+    platinum: { text: 'Supreme Event Solutions', textSize: 10, paddingX: 8, paddingY: 2, posX: 'right', posY: 'top', topOffset: 12, bottomOffset: 12, leftOffset: 12, rightOffset: 12, colorBg: '#9333ea', colorText: '#ffffff', borderRadius: 4 },
   });
 
   const [activeDesignPkgId, setActiveDesignPkgId] = useState<string>('gold');
@@ -220,43 +220,42 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
   };
 
   return (
-    <div className="py-12 text-white bg-slate-950 relative">
+    <div className="py-16 text-white bg-zinc-950 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Title */}
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-xs font-semibold uppercase mb-4">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-zinc-900 border border-zinc-800 rounded-full text-zinc-300 text-xs tracking-wider uppercase mb-4 font-normal">
             <Sliders className="w-3.5 h-3.5" />
             <span>Kalkulator & Konfigurator Live</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-display font-extrabold tracking-tight mb-4">
+          <h2 className="text-3xl sm:text-4xl font-serif tracking-tight text-white mb-4">
             Sesuaikan Paket Livestream Anda
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base">
-            Pilih paket broadcasting dasar di bawah, lalu tambahkan kamera ekstra, wireless system, atau tambahan jam kerja sesuai kebutuhan operasional event Anda.
+          <p className="text-zinc-405 text-sm leading-relaxed text-zinc-400 font-sans max-w-xl mx-auto">
+            Sistem kalkulator dinamis kami membantu Anda mengonfigurasi kebutuhan penyiaran secara realtime. Sesuaikan penambahan durasi siaran, tipe kamera utama, dan add-on operasional.
           </p>
         </div>
 
         {/* STEP 1: Main Base Package CARDS */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-display font-bold flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 rounded-md bg-blue-600/20 text-blue-400 text-xs">1</span>
+        <div className="mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <h3 className="text-lg font-sans font-medium flex items-center gap-3">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-mono">1</span>
               Pilih Paket Utama
             </h3>
             
             {/* Quick Pricing Switcher Duration */}
-            <div className="flex bg-slate-900 border border-white/5 p-1 rounded-xl">
+            <div className="flex bg-zinc-900 border border-zinc-800 p-1 rounded-lg self-start sm:self-auto">
               <button
                 onClick={() => {
                   setDurationPreset(4);
-                  // Reset overtime if changing preset for accuracy
                   setOvertimeHours(0);
                 }}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-4 py-2 text-xs font-medium rounded-md transition-all ${
                   durationPreset === 4
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[#ffffff] text-zinc-950 font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-100'
                 }`}
               >
                 Durasi 4 Jam
@@ -266,10 +265,10 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                   setDurationPreset(6);
                   setOvertimeHours(0);
                 }}
-                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
+                className={`px-4 py-2 text-xs font-medium rounded-md transition-all ${
                   durationPreset === 6
-                    ? 'bg-blue-600 text-white shadow'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-[#ffffff] text-zinc-950 font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-100'
                 }`}
               >
                 Durasi 6 Jam
@@ -301,44 +300,33 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
               return (
                 <div
                   key={pkg.id}
-                  onClick={() => {
-                    setSelectedPkgId(pkg.id);
-                    setOvertimeHours(0); // clear custom overtime on pkg swap
-                  }}
-                  className={`relative rounded-2xl p-6 cursor-pointer border transition-all duration-300 flex flex-col justify-between overflow-hidden ${
-                    isGold
-                      ? isSelected
-                        ? 'border-amber-400 bg-amber-950/20 ring-2 ring-amber-400/40 shadow-[0_0_35px_rgba(245,158,11,0.35)] shadow-amber-500/30'
-                        : 'border-amber-500/40 bg-amber-950/10 hover:border-amber-400/60 hover:bg-amber-950/15 shadow-[0_0_20px_rgba(245,158,11,0.15)] shadow-amber-500/10'
-                      : isSelected
-                        ? pkg.highlighted 
-                          ? 'border-purple-500 bg-purple-950/15 ring-2 ring-purple-500/20 shadow-purple-500/10 shadow-2xl'
-                          : 'border-blue-500 bg-blue-950/20 ring-2 ring-blue-500/20 shadow-blue-500/10 shadow-2xl'
-                        : 'border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]'
+                  onClick={() => setSelectedPkgId(pkg.id)}
+                  className={`relative border rounded-xl p-6 text-left cursor-pointer transition-all flex flex-col justify-between overflow-hidden ${
+                    isSelected 
+                      ? 'border-zinc-300 bg-zinc-950 shadow-sm'
+                      : 'border-zinc-900 bg-zinc-950/20 hover:border-zinc-805 hover:bg-zinc-950/40'
                   }`}
-                  id={`calc-pkg-${pkg.id}`}
                 >
                   {badgeConfig.text && (
                     <span 
                       style={{
                         position: 'absolute',
-                        top: badgeConfig.posY === 'top' ? `${badgeConfig.topOffset}px` : 'auto',
-                        bottom: badgeConfig.posY === 'bottom' ? `${badgeConfig.bottomOffset}px` : 'auto',
-                        left: badgeConfig.posX === 'left' ? `${badgeConfig.leftOffset}px` : 'auto',
-                        right: badgeConfig.posX === 'right' ? `${badgeConfig.rightOffset}px` : 'auto',
-                        fontSize: `${badgeConfig.textSize}px`,
-                        paddingLeft: `${badgeConfig.paddingX}px`,
-                        paddingRight: `${badgeConfig.paddingX}px`,
-                        paddingTop: `${badgeConfig.paddingY}px`,
-                        paddingBottom: `${badgeConfig.paddingY}px`,
-                        backgroundColor: badgeConfig.colorBg,
-                        color: badgeConfig.colorText,
-                        borderRadius: `${badgeConfig.borderRadius}px`,
-                        fontWeight: 'bold',
+                        top: '12px',
+                        right: '12px',
+                        fontSize: '9px',
+                        paddingLeft: '8px',
+                        paddingRight: '8px',
+                        paddingTop: '3px',
+                        paddingBottom: '3px',
+                        backgroundColor: '#27272a',
+                        color: '#f4f4f5',
+                        borderRadius: '4px',
+                        fontWeight: 'semibold',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                         whiteSpace: 'nowrap',
                         zIndex: 10,
+                        border: '1px solid rgba(255,255,255,0.08)',
                         transition: 'all 0.1s ease',
                       }}
                     >
@@ -349,32 +337,32 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                   <div>
                     {/* Header */}
                     <div className="mb-4">
-                      <span className="text-xs text-slate-400 block font-mono uppercase tracking-widest mb-1">
+                      <span className="text-[10px] text-zinc-500 block font-mono uppercase tracking-widest mb-1 font-semibold">
                         Paket Digital
                       </span>
-                      <h4 className="text-xl font-display font-extrabold">{pkg.name}</h4>
+                      <h4 className="text-lg font-sans font-medium text-zinc-100">{pkg.name}</h4>
                     </div>
 
                     {/* Price Tag */}
-                    <div className="mb-4 pt-2 border-t border-white/5">
-                      <div className="text-2xl font-mono font-black text-white">
+                    <div className="mb-4 pt-3 border-t border-zinc-900">
+                      <div className="text-xl font-mono font-bold text-white">
                         {formatIDR(offersRates)}
                       </div>
-                      <div className="text-xs text-slate-400 mt-0.5">
+                      <div className="text-[11px] text-zinc-500 mt-0.5">
                         durasi utama {durationPreset} jam ({pkg.camerasCount} kamera)
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                    <p className="text-xs text-zinc-400 leading-relaxed mb-4">
                       {pkg.description}
                     </p>
 
                     {/* Features list inclusion */}
-                    <div className="mb-5 space-y-1.5 border-t border-white/5 pt-3">
-                      <span className="text-[10px] font-mono tracking-wider font-bold text-slate-400 block uppercase">Inklusi Paket:</span>
+                    <div className="mb-5 space-y-1.5 border-t border-zinc-900 pt-3">
+                      <span className="text-[9px] font-mono tracking-wider font-bold text-zinc-455 block uppercase text-zinc-500">Inklusi Paket:</span>
                       {pkg.features.map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-start gap-1.5 text-[11px] text-slate-300">
-                          <Check className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                        <div key={fIdx} className="flex items-start gap-1.5 text-[11px] text-zinc-400">
+                          <Check className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
                           <span>{feat.name}</span>
                         </div>
                       ))}
@@ -382,14 +370,14 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                   </div>
 
                   {/* Highlights Spec tags */}
-                  <div className="border-t border-white/5 pt-4 mt-auto">
-                    <div className="flex flex-col gap-2.5 text-xs text-slate-300">
+                  <div className="border-t border-zinc-900 pt-4 mt-auto">
+                    <div className="flex flex-col gap-2.5 text-xs text-zinc-400">
                       <div className="flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-zinc-550 shrink-0 text-zinc-500" />
                         <span>{pkg.camerasCount}x Kamera Pro Terpasang</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Check className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-zinc-555 shrink-0 text-zinc-500" />
                         <span>Kru & Operator Siaga</span>
                       </div>
                     </div>
@@ -397,10 +385,8 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
                   {/* Checkmark ring icon */}
                   {isSelected && (
-                    <div className={`absolute bottom-3 right-3 p-1 rounded-full ${
-                      isGold ? 'bg-amber-500 text-slate-950 stroke-[3]' : 'bg-blue-500 text-white'
-                    }`}>
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="absolute bottom-3 right-3 p-1 rounded-full bg-zinc-100 text-zinc-950">
+                      <Check className="w-3 h-3 stroke-[2.5]" />
                     </div>
                   )}
                 </div>
@@ -410,13 +396,13 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
         </div>
 
         {/* Pricing Suggestion Card for savings */}
-        <div className="p-4 rounded-xl bg-blue-950/20 border border-blue-500/20 flex flex-col sm:flex-row items-center gap-3.5 mb-10 text-left">
-          <div className="p-2 bg-blue-600/20 rounded-lg text-blue-400 shrink-0">
-            <Info className="w-5 h-5" />
+        <div className="p-5 rounded-xl bg-zinc-900/20 border border-zinc-900 flex flex-col sm:flex-row items-center gap-4 mb-12 text-left">
+          <div className="p-2.5 bg-zinc-900 rounded-lg text-zinc-300 shrink-0 border border-zinc-800">
+            <Info className="w-4.5 h-4.5" />
           </div>
           <div>
-            <span className="font-semibold text-blue-300 text-sm block">Tips Penghematan Anggaran Broadcast</span>
-            <span className="text-xs text-slate-300 leading-relaxed">
+            <span className="font-medium text-zinc-200 text-sm block">Tips Penghematan Anggaran Broadcast</span>
+            <span className="text-xs text-zinc-400 leading-relaxed max-w-2xl block mt-0.5">
               Memilih preset durasi <b>6 Jam Utama</b> memberikan potongan harga yang jauh lebih murah dibanding menyewa durasi 4 Jam dan menambah overtime 2 jam secara terpisah.
             </span>
           </div>
@@ -429,12 +415,12 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
           <div className="lg:col-span-7 flex flex-col gap-6">
             
             {/* Camera Model Upgrade Options */}
-            <div className="glass-panel p-6 rounded-2xl text-left">
-              <h3 className="text-base font-display font-bold flex items-center gap-2 mb-3">
-                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">2</span>
+            <div className="bg-zinc-900/10 border border-zinc-900 p-6 rounded-2xl text-left">
+              <h3 className="text-base font-sans font-medium flex items-center gap-3 mb-3">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-mono">2</span>
                 Model Kamera Utama (Opsional Upgrade)
               </h3>
-              <p className="text-xs text-slate-400 mb-4 font-sans leading-relaxed">
+              <p className="text-xs text-zinc-450 mb-4 font-sans leading-relaxed text-zinc-400">
                 Setiap paket dilengkapi kamera bawaan <b>Sony NX-100</b>. Tingkatkan jenis kamera utama di bawah jika Anda memerlukan sensor 4K pro atau kedalaman warna yang lebih dramatis:
               </p>
 
@@ -445,27 +431,27 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                     <div
                       key={opt.id}
                       onClick={() => setSelectedCameraId(opt.id)}
-                      className={`p-3 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
+                      className={`p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition-all duration-300 ${
                         isSelected
-                          ? 'border-blue-500 bg-blue-950/20 shadow-md ring-1 ring-blue-500/20'
-                          : 'border-white/5 bg-white/[0.01] hover:border-white/10 hover:bg-white/[0.03]'
+                          ? 'border-zinc-400 bg-zinc-900/40 shadow-sm'
+                          : 'border-zinc-900 bg-zinc-950/20 hover:border-zinc-800 hover:bg-zinc-900/10'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                          isSelected ? 'border-blue-500 bg-blue-500' : 'border-white/30'
+                          isSelected ? 'border-zinc-450 bg-zinc-100' : 'border-zinc-800'
                         }`}>
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-zinc-950" />}
                         </div>
                         <div>
-                          <span className="font-semibold text-xs sm:text-sm block text-slate-200">{opt.name}</span>
-                          <span className="text-[10px] text-slate-400 font-sans">
+                          <span className="font-semibold text-xs sm:text-sm block text-zinc-200">{opt.name}</span>
+                          <span className="text-[10px] text-zinc-500 font-sans mt-0.5 block">
                             {opt.id === 'nx100' ? 'Kamera bawaan paket default tanpa biaya tambahan' : `Sensor & format rekaman broadcast ultra-high definition`}
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-mono font-bold text-blue-400 shrink-0 select-none">
-                        {opt.extraPrice === 0 ? 'Default / No Cost' : `+${formatIDR(opt.extraPrice)}`}
+                      <span className="text-xs font-mono font-bold text-zinc-300 shrink-0 select-none">
+                        {opt.extraPrice === 0 ? 'Bawaan' : `+${formatIDR(opt.extraPrice)}`}
                       </span>
                     </div>
                   );
@@ -473,12 +459,12 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
               </div>
 
               {selectedCameraId !== 'nx100' && (
-                <div className="mt-4 p-4 rounded-xl bg-blue-950/10 border border-blue-500/10 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="mt-4 p-4 rounded-xl bg-zinc-900/30 border border-zinc-850 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-200">Jumlah Kamera Utama yang Diupgrade:</h4>
-                      <p className="text-[10px] text-slate-400">
-                        Upgradi porsi unit kamera bawaan ke model professional ini (Maks. {selectedPackage.camerasCount} unit untuk {selectedPackage.name})
+                      <h4 className="text-xs font-bold text-zinc-100 font-sans">Jumlah Kamera Utama yang Diupgrade:</h4>
+                      <p className="text-[10px] text-zinc-500 mt-0.5">
+                        Upgrade porsi unit kamera bawaan ke model professional ini (Maks. {selectedPackage.camerasCount} unit untuk {selectedPackage.name})
                       </p>
                     </div>
                     
@@ -487,7 +473,7 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                         type="button"
                         onClick={() => setSelectedCameraCount(prev => Math.max(1, prev - 1))}
                         disabled={selectedCameraCount <= 1}
-                        className="w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        className="w-8 h-8 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-zinc-650 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
@@ -500,16 +486,16 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                         type="button"
                         onClick={() => setSelectedCameraCount(prev => Math.min(selectedPackage.camerasCount, prev + 1))}
                         disabled={selectedCameraCount >= selectedPackage.camerasCount}
-                        className="w-8 h-8 rounded-lg bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                        className="w-8 h-8 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white hover:border-zinc-650 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
                   
-                  <div className="mt-2.5 pt-2 border-t border-white/5 flex justify-between items-center text-[11px] text-slate-400">
+                  <div className="mt-2.5 pt-2.5 border-t border-zinc-900 flex justify-between items-center text-[11px] text-zinc-400">
                     <span>Tambahan Biaya Kamera Utama:</span>
-                    <span className="font-mono font-bold text-blue-400">
+                    <span className="font-mono font-bold text-zinc-200">
                       {selectedCameraCount} unit x {formatIDR(CAMERA_UPGRADE_OPTIONS.find(c => c.id === selectedCameraId)?.extraPrice || 0)} = {formatIDR(calculations.cameraUpgradeCost)}
                     </span>
                   </div>
@@ -518,17 +504,17 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
             </div>
 
             {/* Live Slider for Overtime hours */}
-            <div className="glass-panel p-6 rounded-2xl text-left">
-              <h3 className="text-base font-display font-bold flex items-center gap-2 mb-4">
-                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">3</span>
+            <div className="bg-zinc-900/10 border border-zinc-900 p-6 rounded-2xl text-left">
+              <h3 className="text-base font-sans font-medium flex items-center gap-3 mb-4">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-mono">3</span>
                 Tambahan Durasi Overtime (Jam)
               </h3>
               
               <div className="flex justify-between items-center mb-4">
-                <div className="text-slate-400 text-xs">
-                  Biaya Overtime: <span className="font-bold text-white font-mono">15% per jam</span> dari paket dasar 4 jam.
+                <div className="text-zinc-500 text-xs font-sans">
+                  Biaya Overtime: <span className="font-semibold text-zinc-350 font-mono">15% per jam</span> dari paket dasar 4 jam.
                 </div>
-                <div className="text-3xl font-mono font-black text-blue-400">
+                <div className="text-2xl font-mono font-bold text-zinc-200">
                   +{overtimeHours} Jam
                 </div>
               </div>
@@ -539,10 +525,10 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                 max="8"
                 value={overtimeHours}
                 onChange={(e) => setOvertimeHours(parseInt(e.target.value))}
-                className="w-full accent-blue-500 bg-slate-900 rounded-lg appearance-none h-2 cursor-pointer mb-3"
+                className="w-full accent-zinc-200 bg-zinc-900 rounded-lg appearance-none h-1.5 cursor-pointer mb-4"
               />
 
-              <div className="flex justify-between text-[10px] font-mono text-slate-500">
+              <div className="flex justify-between text-[10px] font-mono text-zinc-500">
                 <span>Mulai (0 Jam)</span>
                 <span>+2 Jam</span>
                 <span>+4 Jam</span>
@@ -551,41 +537,42 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
               </div>
 
               {overtimeHours > 0 && (
-                <div className="mt-4 p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs text-orange-300 flex justify-between items-center font-mono">
+                <div className="mt-4 p-3.5 rounded-xl bg-zinc-900/40 border border-zinc-850 text-xs text-zinc-300 flex justify-between items-center font-mono">
                   <span>Estimasi Biaya Overtime Jam Kerja:</span>
-                  <span className="font-bold">{formatIDR(calculations.totalOvertimeCost)}</span>
+                  <span className="font-bold text-white">{formatIDR(calculations.totalOvertimeCost)}</span>
                 </div>
               )}
             </div>
 
             {/* Live Addon Custom Checklist options */}
-            <div className="glass-panel p-6 rounded-2xl text-left">
-              <h3 className="text-base font-display font-bold flex items-center gap-2 mb-5">
-                <span className="flex items-center justify-center w-5.5 h-5.5 rounded-md bg-blue-600/20 text-blue-400 text-xs">4</span>
+            <div className="bg-zinc-900/10 border border-zinc-900 p-6 rounded-2xl text-left">
+              <h3 className="text-base font-sans font-medium flex items-center gap-3 mb-5">
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-mono">4</span>
                 Pilih Add-on Tambahan (Opsional)
               </h3>
 
               <div className="flex flex-col gap-4">
                 {ADD_ONS.map((addon) => {
                   const currentQty = addOnQuantities[addon.id] || 0;
+                  const isActive = currentQty > 0;
                   
                   return (
                     <div 
                       key={addon.id}
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all ${
-                        currentQty > 0 
-                          ? 'border-blue-500/40 bg-blue-950/10' 
-                          : 'border-white/5 bg-white/[0.01]'
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition-all duration-350 ${
+                        isActive 
+                          ? 'border-zinc-400 bg-zinc-900/40' 
+                          : 'border-zinc-900 bg-zinc-950/20 hover:border-zinc-800 hover:bg-zinc-900/10'
                       }`}
                     >
                       <div className="max-w-md pr-4 mb-3 sm:mb-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-sm text-slate-100">{addon.name}</span>
-                          <span className="text-[10px] bg-slate-900 border border-white/10 px-1.5 py-0.5 rounded text-slate-400">
+                          <span className="font-semibold text-sm text-zinc-100">{addon.name}</span>
+                          <span className="text-[10px] bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded text-zinc-400 font-mono">
                             {formatIDR(addon.price)} / {addon.unit}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
                           {addon.description}
                         </p>
                       </div>
@@ -594,17 +581,17 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                         <button
                           onClick={() => handleAddOnQuantityChange(addon.id, -1, addon.maxQty)}
                           disabled={currentQty === 0}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-white/15 bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-800 transition-colors"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none hover:bg-zinc-900 hover:border-zinc-700 transition-all"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-6 text-center font-mono font-bold text-sm">
+                        <span className="w-6 text-center font-mono font-bold text-sm text-zinc-200">
                           {currentQty}
                         </span>
                         <button
                           onClick={() => handleAddOnQuantityChange(addon.id, 1, addon.maxQty)}
                           disabled={currentQty >= addon.maxQty}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-white/15 bg-slate-900 text-blue-400 disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-800 transition-colors"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-800 bg-zinc-950 text-zinc-200 hover:text-white disabled:opacity-30 disabled:pointer-events-none hover:bg-zinc-900 hover:border-zinc-700 transition-all"
                         >
                           <Plus className="w-3.5 h-3.5" />
                         </button>
@@ -619,48 +606,48 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
           {/* Dynamic Quote Summary Sidebar Panel */}
           <div className="lg:col-span-5">
-            <div className="sticky top-24 glass-panel p-6 rounded-2xl flex flex-col justify-between border-blue-500/20 text-left h-fit bg-slate-900/40 shadow-xl">
+            <div className="sticky top-24 border border-zinc-850 p-6 rounded-2xl flex flex-col justify-between text-left h-fit bg-zinc-950 shadow-xl">
               
               <div>
-                <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
+                <div className="flex items-center justify-between border-b border-zinc-900 pb-4 mb-5">
                   <div>
-                    <span className="text-[10px] font-mono tracking-widest text-slate-400 uppercase">
-                      Ringkasan Konfigurasi
+                    <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">
+                      Konfigurasi Event
                     </span>
-                    <h4 className="text-lg font-display font-bold text-white">Live Invoice</h4>
+                    <h4 className="text-base font-sans font-medium text-white">Ringkasan Biaya</h4>
                   </div>
-                  <span className="text-xs font-mono font-bold text-red-400 bg-red-400/10 px-2 py-0.5 rounded">
-                    ESTIMASI BIAYA
+                  <span className="text-[9px] font-mono tracking-wider font-semibold text-zinc-400 bg-zinc-900 border border-zinc-800 px-2 py-1 rounded">
+                    ESTIMASI NETT
                   </span>
                 </div>
 
                 {/* Selected Package Info */}
-                <div className="flex justify-between items-start text-sm mb-3">
+                <div className="flex justify-between items-start text-sm mb-4">
                   <div>
-                    <span className="font-extrabold text-slate-200 uppercase tracking-tight block">
-                      {selectedPackage.name}
+                    <span className="font-semibold text-zinc-100 block">
+                      Paket {selectedPackage.name}
                     </span>
-                    <span className="text-xs text-slate-400">
-                      Paket Siaran ({durationPreset} Jam Utama)
+                    <span className="text-xs text-zinc-500 mt-1 block">
+                      Broadcasting Utama ({durationPreset} Jam)
                     </span>
                   </div>
-                  <span className="font-mono font-semibold text-white">
+                  <span className="font-mono text-sm text-zinc-200">
                     {formatIDR(calculations.basePrice)}
                   </span>
                 </div>
 
                 {/* Overtime Info */}
                 {overtimeHours > 0 && (
-                  <div className="flex justify-between items-start text-sm mb-3 border-t border-white/5 pt-2">
+                  <div className="flex justify-between items-start text-sm mb-4 border-t border-zinc-900 pt-3">
                     <div>
-                      <span className="font-semibold text-slate-200 block">
-                        Extra Overtime ({overtimeHours} Jam)
+                      <span className="font-medium text-zinc-200 block">
+                        Kapasitas Overtime (+{overtimeHours} Jam)
                       </span>
-                      <span className="text-xs text-slate-400">
-                        {formatIDR(calculations.hourlyOvertimePrice)} / jam
+                      <span className="text-xs text-zinc-500 mt-1 block">
+                        Rate {formatIDR(calculations.hourlyOvertimePrice)} / jam
                       </span>
                     </div>
-                    <span className="font-mono font-semibold text-white">
+                    <span className="font-mono text-sm text-zinc-200">
                       {formatIDR(calculations.totalOvertimeCost)}
                     </span>
                   </div>
@@ -668,16 +655,16 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
                 {/* AddOns listing details */}
                 {calculations.activeAddOnsList.length > 0 && (
-                  <div className="border-t border-white/5 pt-3 mb-3">
-                    <span className="text-xs text-slate-400 font-bold block uppercase mb-1.5">
-                      Tambahan Add-On:
+                  <div className="border-t border-zinc-900 pt-4 mb-4">
+                    <span className="text-[10px] text-zinc-500 font-mono tracking-wide block uppercase mb-2">
+                      Sistem & Perlengkapan Tambahan:
                     </span>
                     {calculations.activeAddOnsList.map((addon) => (
-                      <div key={addon.id} className="flex justify-between text-xs text-slate-300 mb-2 pl-2 border-l border-blue-500/40">
-                        <span>
-                          {addon.name} <b>(x{addon.quantity})</b>
+                      <div key={addon.id} className="flex justify-between text-xs text-zinc-300 mb-2 pl-3 border-l border-zinc-800">
+                        <span className="text-zinc-400">
+                          {addon.name} <b className="text-zinc-500 font-normal font-mono">(x{addon.quantity})</b>
                         </span>
-                        <span className="font-mono">
+                        <span className="font-mono text-zinc-300">
                           {formatIDR(addon.totalPrice)}
                         </span>
                       </div>
@@ -687,16 +674,16 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
                 {/* Camera Upgrade Info */}
                 {calculations.cameraUpgradeCost > 0 && (
-                  <div className="flex justify-between items-start text-sm mb-3 border-t border-white/5 pt-2">
+                  <div className="flex justify-between items-start text-sm mb-4 border-t border-zinc-900 pt-3">
                     <div>
-                      <span className="font-semibold text-slate-200 block">
-                        Upgrade Kamera (x{selectedCameraCount})
+                      <span className="font-medium text-zinc-200 block">
+                        Upgrade Model Kamera (x{selectedCameraCount})
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-zinc-500 mt-1 block">
                         {calculations.selectedCameraName}
                       </span>
                     </div>
-                    <span className="font-mono font-semibold text-white">
+                    <span className="font-mono text-sm text-zinc-200 font-medium">
                       +{formatIDR(calculations.cameraUpgradeCost)}
                     </span>
                   </div>
@@ -704,51 +691,51 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
                 {/* Voucher Discount Info Row */}
                 {appliedVoucher && (
-                  <div className="flex justify-between items-start text-sm mb-3 border-t border-white/5 pt-2">
+                  <div className="flex justify-between items-start text-sm mb-4 border-t border-zinc-900 pt-3">
                     <div>
-                      <span className="font-bold text-green-400 block font-sans">
-                        Potongan Voucher ({appliedVoucher.code})
+                      <span className="font-medium text-zinc-100 block font-sans">
+                        Kupon Terpasang ({appliedVoucher.code})
                       </span>
-                      <span className="text-xs text-slate-400 font-sans">
-                        Diskon {appliedVoucher.discount}% dari Subtotal
+                      <span className="text-xs text-zinc-550 font-sans mt-1 block text-zinc-500 font-mono">
+                        Diskon {appliedVoucher.discount}%
                       </span>
                     </div>
-                    <span className="font-mono font-bold text-green-400">
+                    <span className="font-mono text-sm font-semibold text-zinc-300">
                       -{formatIDR(calculations.discountAmount)}
                     </span>
                   </div>
                 )}
 
                 {/* Voucher Input and Application Panel */}
-                <div className="border-t border-white/5 pt-3.5 mt-3">
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-xs text-slate-400 font-bold block uppercase font-sans">
-                      Kupon Voucher Diskon:
+                <div className="border-t border-zinc-900 pt-4 mt-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] text-zinc-500 font-mono tracking-wide block uppercase">
+                      Masukkan Kupon Voucher:
                     </span>
                     {dbIsLive && (
-                      <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full font-sans flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                        Cloud Active
+                      <span className="text-[9px] bg-zinc-900 text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded-full font-mono flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-zinc-400"></span>
+                        Cloud Sync
                       </span>
                     )}
                   </div>
                   
                   {appliedVoucher ? (
-                    <div className="p-2.5 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-between text-xs mb-2 transition-all">
+                    <div className="p-3 bg-zinc-900/40 border border-zinc-850 rounded-lg flex items-center justify-between text-xs mb-2 transition-all">
                       <div className="flex flex-col text-left">
-                        <span className="font-mono font-bold text-green-400 uppercase tracking-wide">
-                          {appliedVoucher.code} APPLIED
+                        <span className="font-mono font-bold text-zinc-350 uppercase tracking-wide">
+                          {appliedVoucher.code} AKTIF
                         </span>
-                        <span className="text-[10px] text-slate-400 mt-0.5 leading-none">
-                          Potongan harga sebesar {appliedVoucher.discount}%
+                        <span className="text-[10px] text-zinc-500 mt-1 leading-none">
+                          Potongan harga diskon {appliedVoucher.discount}%
                         </span>
                       </div>
                       <button 
                         type="button"
                         onClick={handleRemoveVoucher}
-                        className="text-[10px] bg-slate-950/40 hover:bg-red-500/35 hover:text-white border border-white/10 text-slate-300 font-bold px-2 py-1 rounded transition-colors cursor-pointer"
+                        className="text-[10px] bg-zinc-950 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 px-2 py-1 rounded transition-colors cursor-pointer font-sans"
                       >
-                        Batal
+                        Hapus
                       </button>
                     </div>
                   ) : (
@@ -764,63 +751,63 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
                               handleApplyVoucher();
                             }
                           }}
-                          placeholder="INPUT KODE KUUPON"
-                          className="flex-1 bg-slate-950 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 uppercase font-mono placeholder:text-slate-600"
+                          placeholder="KODE VOUCHER"
+                          className="flex-1 bg-zinc-950 border border-zinc-855 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-zinc-500 uppercase font-mono placeholder:text-zinc-700"
                         />
                         <button
                           type="button"
                           onClick={handleApplyVoucher}
                           disabled={loadingVoucher || !voucherCode.trim()}
-                          className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 text-white font-bold text-xs px-3 rounded-lg transition-all flex items-center justify-center cursor-pointer"
+                          className="bg-zinc-100 hover:bg-zinc-200 disabled:opacity-30 text-zinc-950 font-semibold text-xs px-3 rounded-lg transition-all flex items-center justify-center cursor-pointer"
                         >
-                          {loadingVoucher ? '...' : 'Pasang'}
+                          {loadingVoucher ? '...' : 'Terapkan'}
                         </button>
                       </div>
                       
                       {voucherError && (
-                        <p className="text-[10px] text-red-400 font-semibold font-sans">{voucherError}</p>
+                        <p className="text-[10px] text-zinc-500 font-mono mt-1">{voucherError}</p>
                       )}
                       {voucherSuccess && (
-                        <p className="text-[10px] text-green-400 font-semibold font-sans">{voucherSuccess}</p>
+                        <p className="text-[10px] text-zinc-400 font-mono mt-1">{voucherSuccess}</p>
                       )}
                     </div>
                   )}
                 </div>
 
                 {/* Policy Clauses Inside the Card */}
-                <div className="border-t border-white/10 pt-4 mt-4 bg-white/[0.02] p-3.5 rounded-xl border border-white/5 text-xs text-slate-400">
-                  <span className="font-semibold text-slate-300 text-xs block mb-1">
-                    Aturan & Kebijakan Khusus
+                <div className="border-t border-zinc-900 pt-4 mt-4 bg-zinc-950 p-4 rounded-xl border border-zinc-900 text-xs text-zinc-500 font-sans leading-relaxed">
+                  <span className="font-semibold text-zinc-400 text-xs block mb-1.5">
+                    Ketentuan & Syarat Operasional:
                   </span>
-                  <ul className="list-disc pl-4 space-y-1 text-[11px] leading-relaxed">
-                    <li>Sound & Display Screen <b>tidak tersedia</b> (mixer direct output).</li>
-                    <li>Transport & Akomodasi tim ditanggung sepenuhnya oleh klien.</li>
-                    <li>Rundown & aset media streaming diserahkan selambatnya H-3.</li>
+                  <ul className="list-decimal pl-4 space-y-1.5 text-[11px] text-zinc-500 leading-normal">
+                    <li>Tidak termasuk sound & screen (direct mixer feed).</li>
+                    <li>Transportasi & akomodasi luar kota ditanggung klien.</li>
+                    <li>Rundown dan materi media diserahkan H-3 event.</li>
                   </ul>
                 </div>
               </div>
 
               {/* Grand Total area */}
-              <div className="border-t border-white/10 pt-4 mt-6">
-                <div className="flex justify-between items-end mb-5">
+              <div className="border-t border-zinc-900 pt-5 mt-6">
+                <div className="flex justify-between items-end mb-6">
                   <div>
-                    <span className="text-xs text-slate-400 block font-bold uppercase tracking-wider">
-                      TOTAL BIAYA (IDR)
+                    <span className="text-[10px] text-zinc-500 block font-mono uppercase tracking-wider">
+                      TOTAL BIAYA ESTIMATED
                     </span>
-                    <span className="text-[10px] text-slate-500">Estimasi Nett • Belum PPN</span>
+                    <span className="text-[10px] text-zinc-650 mt-1 block">Nett • Diluar PPN</span>
                   </div>
                   <div className="text-right">
                     {appliedVoucher && (
-                      <div className="text-xs font-mono line-through text-slate-500 mb-0.5">
+                      <div className="text-xs font-mono line-through text-zinc-600 mb-0.5">
                         {formatIDR(calculations.subtotal)}
                       </div>
                     )}
-                    <div className="text-2xl sm:text-3xl font-mono font-black text-blue-400 tracking-tight">
+                    <div className="text-2xl font-mono font-semibold text-white tracking-tight">
                       {formatIDR(calculations.finalTotal)}
                     </div>
                     {appliedVoucher && (
-                      <div className="text-[10px] text-green-400 font-bold mt-1">
-                        Anda Hemat {formatIDR(calculations.discountAmount)}!
+                      <div className="text-[10px] text-zinc-400 font-mono mt-1">
+                        Diskon {formatIDR(calculations.discountAmount)} diterapkan
                       </div>
                     )}
                   </div>
@@ -828,11 +815,11 @@ export default function PricingCalculator({ onPackageSelect, initialPackageId = 
 
                 <button
                   onClick={handleBookingRedirect}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold p-4 rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#ffffff] hover:bg-zinc-200 text-zinc-950 font-medium py-3.5 px-4 rounded-lg shadow-sm transition-colors cursor-pointer"
                   id="checkout-trigger-btn"
                 >
-                  <ArrowRight className="w-5 h-5" />
-                  <span>Isi Reservasi & Pesan</span>
+                  <ArrowRight className="w-4 h-4" />
+                  <span>Lanjutkan Pemesanan</span>
                 </button>
               </div>
 
