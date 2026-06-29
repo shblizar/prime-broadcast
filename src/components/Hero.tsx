@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import ThreeCameraHero from './ThreeCameraHero';
-import logoGTV from '../assets/images/GTV.png';
-import logoMNC from '../assets/images/MNC.png';
-import logoMatahati from '../assets/images/Matahati.png';
-import logoRCTI from '../assets/images/RCTI PLUS.png';
-import logoNabawi from '../assets/images/Nabawi TV.png';
-import logoTVNU from '../assets/images/TVNU.png';
-import logoCentennial from '../assets/images/CentennialZ.png';
-import logoMikta from '../assets/images/Mikta.png';
-import { ArrowRight, Play } from 'lucide-react';
+import { 
+  Sparkles, 
+  ArrowRight, 
+  Play, 
+  Video, 
+  Monitor, 
+  Tv, 
+  Users, 
+  Layers,
+  Award,
+  Globe,
+  Briefcase,
+  Building,
+  Shield,
+  Activity,
+  Cpu
+} from 'lucide-react';
 
 interface HeroProps {
   onViewChange: (view: string) => void;
@@ -23,10 +31,13 @@ interface PortfolioItem {
   description: string;
   tag: string;
 }
+
 interface PartnerItem {
   id: string;
   name: string;
-  img: string;
+  industry: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
 }
 
 export default function Hero({ onViewChange }: HeroProps) {
@@ -111,47 +122,64 @@ export default function Hero({ onViewChange }: HeroProps) {
 
   // 8 Partner mockups with grayscale-to-color hover transition
   const PARTNERS: PartnerItem[] = [
-  {
-    id: "p1",
-    name: "GTV",
-    img: logoGTV,
-  },
-  {
-    id: "p2",
-    name: "MNC",
-    img: logoMNC,
-  },
-  {
-    id: "p3",
-    name: "MATAHATI",
-    img: logoMatahati,
-  },
-  {
-    id: "p4",
-    name: "RCTI PLUS",
-    img: logoRCTI,
-  },
-  {
-    id: "p5",
-    name: "NABAWI TV",
-    img: logoNabawi,
-  },
-  {
-    id: "p6",
-    name: "TV NU",
-    img: logoTVNU,
-  },
-  {
-    id: "p7",
-    name: "CENTENNIAL Z",
-    img: logoCentennial,
-  },
-  {
-    id: "p8",
-    name: "MIKTA",
-    img: logoMikta,
-  },
-];
+    {
+      id: 'p1',
+      name: 'Telkom Indonesia',
+      industry: 'Telecommunication',
+      icon: Globe,
+      color: 'group-hover:text-red-500 group-hover:bg-red-500/10 border-red-500/30'
+    },
+    {
+      id: 'p2',
+      name: 'BUMN Indonesia Corp',
+      industry: 'State Enterprise',
+      icon: Building,
+      color: 'group-hover:text-blue-500 group-hover:bg-blue-500/10 border-blue-500/30'
+    },
+    {
+      id: 'p3',
+      name: 'Mandiri Financial Hub',
+      industry: 'Financial Banking',
+      icon: Briefcase,
+      color: 'group-hover:text-amber-500 group-hover:bg-amber-500/10 border-amber-500/30'
+    },
+    {
+      id: 'p4',
+      name: 'Universitas Indonesia',
+      industry: 'Education Academics',
+      icon: Award,
+      color: 'group-hover:text-yellow-500 group-hover:bg-yellow-500/10 border-yellow-500/30'
+    },
+    {
+      id: 'p5',
+      name: 'Astra Group Sentra',
+      industry: 'Production & Logistics',
+      icon: Cpu,
+      color: 'group-hover:text-emerald-500 group-hover:bg-emerald-500/10 border-emerald-500/30'
+    },
+    {
+      id: 'p6',
+      name: 'Pertamina Trans Energi',
+      industry: 'Energy & Oil',
+      icon: Activity,
+      color: 'group-hover:text-green-500 group-hover:bg-green-500/10 border-green-500/30'
+    },
+    {
+      id: 'p7',
+      name: 'Cyber Security Indonesia',
+      industry: 'Network Protection',
+      icon: Shield,
+      color: 'group-hover:text-indigo-500 group-hover:bg-indigo-500/10 border-indigo-500/30'
+    },
+    {
+      id: 'p8',
+      name: 'Grab Digital Venture',
+      industry: 'Tech Service Platform',
+      icon: Users,
+      color: 'group-hover:text-teal-500 group-hover:bg-teal-500/10 border-teal-500/30'
+    }
+  ];
+
   return (
     <div className="bg-black text-white relative select-none font-sans overflow-hidden">
       
@@ -292,20 +320,35 @@ export default function Hero({ onViewChange }: HeroProps) {
 
           {/* Minimalist Grid of Grayscale Logotypes with Hover effect */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {PARTNERS.map((partner) => (
-          <div
-              key={partner.id}
-              className="group bg-zinc-950/40 border border-zinc-900 hover:border-zinc-700 hover:bg-zinc-950 rounded-2xl h-36 flex items-center justify-center p-6 transition-all duration-300"
-          >
-            <img
-              src={partner.img}
-              alt={partner.name}
-              className="max-h-14 w-auto object-contain grayscale opacity-70 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105"
-              draggable={false}
-            />
+            {PARTNERS.map((partner) => {
+              const PartnerIcon = partner.icon;
+
+              return (
+                <div 
+                  key={partner.id}
+                  className="group bg-zinc-950/40 border border-zinc-900/80 hover:border-zinc-800 hover:bg-zinc-950 p-6 rounded-2xl flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer h-36 relative overflow-hidden"
+                >
+                  {/* Subtle hover background highlight aura */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  {/* Brand Icon Component - Grayscale state by default, colorful highlight on hover */}
+                  <div className={`w-12 h-12 rounded-xl bg-zinc-900/50 border border-zinc-850/60 flex items-center justify-center transition-all duration-300 mb-3 grayscale group-hover:grayscale-0 ${partner.color}`}>
+                    <PartnerIcon className="w-5 h-5 transition-transform duration-300 group-hover:scale-105" />
+                  </div>
+
+                  {/* Brand Label */}
+                  <span className="text-xs font-semibold text-zinc-400 group-hover:text-zinc-100 transition-colors duration-350">
+                    {partner.name}
+                  </span>
+
+                  {/* Industry Label */}
+                  <span className="text-[9px] font-mono tracking-wider text-zinc-600 group-hover:text-zinc-500 transition-colors duration-300 mt-1">
+                    {partner.industry}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        ))}
-         </div>
 
           {/* Integration Note below the logo board */}
           <div className="mt-12 text-center">
