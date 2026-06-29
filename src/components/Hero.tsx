@@ -321,7 +321,7 @@ export default function Hero({ onViewChange }: HeroProps) {
             />
           </div>
         ))}
-          
+         </div>
 
           {/* Integration Note below the logo board */}
           <div className="mt-12 text-center">
