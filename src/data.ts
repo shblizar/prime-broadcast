@@ -224,9 +224,8 @@ export const FAQS: FAQItem[] = [
 
 export const CAMERA_UPGRADE_OPTIONS: CameraUpgradeOption[] = [
   { id: 'nx100', name: 'Sony NX-100 (Default)', extraPrice: 0 },
-  { id: 'z90v', name: 'Sony PXW-Z90V 4K', extraPrice: 200000 },
-  { id: 'z150', name: 'Sony PXW-Z150 4K XDCAM', extraPrice: 250000 },
-  { id: 'z190', name: 'Sony PXW-Z190 4K XDCAM Camcorder', extraPrice: 300000 },
-  { id: 'pmw300', name: 'Sony PMW-300 XDCAM', extraPrice: 450000 },
-  { id: 'FX6', name: 'Sony PXW-FX6', extraPrice: 2500000 }
+  { id: 'z90v', name: 'Sony PXW-Z90V 4K', extraPrice: 550000 },
+  { id: 'z150', name: 'Sony PXW-Z150 4K XDCAM', extraPrice: 660000 },
+  { id: 'z190', name: 'Sony PXW-Z190 4K XDCAM Camcorder', extraPrice: 750000 },
+  { id: 'pmw300', name: 'Sony PMW-300 XDCAM', extraPrice: 850000 }
 ];
