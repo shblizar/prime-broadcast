@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X, CalendarRange } from 'lucide-react';
+import logoPrime from '../assets/images/logo-prime.png';
 
 interface NavbarProps {
   currentView: string;
@@ -25,12 +26,13 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
           {/* Logo Brand */}
           <div
             onClick={() => onViewChange('home')}
-            className="flex items-center gap-3 cursor-pointer group"
+            className="flex items-center cursor-pointer group"
           >
             <img
-              src="/assets/images/logo-prime.png"
+              src={logoPrime}
               alt="Prime Broadcast"
-              className="h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
+              draggable={false}
             />
           </div>
 
