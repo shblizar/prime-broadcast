@@ -8,23 +8,7 @@ import logoNabawi from '../assets/images/Nabawi TV.png';
 import logoTVNU from '../assets/images/TVNU.png';
 import logoCentennial from '../assets/images/CentennialZ.png';
 import logoMikta from '../assets/images/Mikta.png';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  Play, 
-  Video, 
-  Monitor, 
-  Tv, 
-  Users, 
-  Layers,
-  Award,
-  Globe,
-  Briefcase,
-  Building,
-  Shield,
-  Activity,
-  Cpu
-} from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 
 interface HeroProps {
   onViewChange: (view: string) => void;
