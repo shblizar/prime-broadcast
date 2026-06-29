@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import ThreeCameraHero from './ThreeCameraHero';
+import picture from '../src/assets/images/GTV.png';
+import picture from '../src/assets/images/MNC.png';
+import picture from '../src/assets/images/Matahati.png';
+import picture from '../src/assets/images/RCTI PLUS.png';
+import picture from '../src/assets/images/Nabawi TV.png';
+import picture from '../src/assets/images/TVNU.png';
+import picture from '../src/assets/images/CentennialZ.png';
+import picture from '../src/assets/images/Mikta.png';
 import { 
   Sparkles, 
   ArrowRight, 
