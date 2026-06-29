@@ -1,13 +1,10 @@
 import React from 'react';
 import { 
-  Video, 
   Mail, 
-  Youtube, 
   Instagram, 
   MessageSquare, 
   ShieldCheck, 
   Sparkles,
-  PhoneCall
 } from 'lucide-react';
 
 interface FooterProps {
@@ -31,13 +28,16 @@ export default function Footer({ onViewChange }: FooterProps) {
           
           {/* Brand block */}
           <div className="md:col-span-5 flex flex-col gap-5">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => onViewChange('home')}>
-              <div className="p-2 bg-zinc-950 rounded-lg border border-zinc-855 group-hover:scale-105 transition-all duration-300 flex items-center justify-center">
-                <Video className="w-5 h-5 text-zinc-400" />
-              </div>
-              <span className="font-display font-medium text-xs tracking-widest text-white uppercase">
-                PRIME BROADCAST
-              </span>
+            <div
+              className="cursor-pointer group w-fit"
+              onClick={() => onViewChange('home')}
+            >
+              <img
+                src="/assets/images/logo-prime.png"
+                alt="Prime Broadcast"
+                className="h-9 w-auto object-contain transition-opacity duration-300 group-hover:opacity-70 select-none"
+                draggable={false}
+              />
             </div>
             
             <p className="text-zinc-550 text-xs leading-relaxed max-w-sm">
@@ -85,7 +85,6 @@ export default function Footer({ onViewChange }: FooterProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {socialLinks.map((social) => {
                 const IconComp = social.icon;
-
                 return (
                   <a
                     key={social.name}
