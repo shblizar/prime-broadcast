@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import ThreeCameraHero from './ThreeCameraHero';
-import logoGTV from '../src/assets/images/GTV.png';
-import logoMNC from '../src/assets/images/MNC.png';
-import logoMatahati from '../src/assets/images/Matahati.png';
-import logoRCTI from '../src/assets/images/RCTI PLUS.png';
-import logoNabawi from '../src/assets/images/Nabawi TV.png';
-import logoTVNU from '../src/assets/images/TVNU.png';
-import logoCentennial from '../src/assets/images/CentennialZ.png';
-import logoMikta from '../src/assets/images/Mikta.png';
+import logoGTV from '../assets/images/GTV.png';
+import logoMNC from '../assets/images/MNC.png';
+import logoMatahati from '../assets/images/Matahati.png';
+import logoRCTI from '../assets/images/RCTI PLUS.png';
+import logoNabawi from '../assets/images/Nabawi TV.png';
+import logoTVNU from '../assets/images/TVNU.png';
+import logoCentennial from '../assets/images/CentennialZ.png';
+import logoMikta from '../assets/images/Mikta.png';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -39,13 +39,10 @@ interface PortfolioItem {
   description: string;
   tag: string;
 }
-
 interface PartnerItem {
   id: string;
   name: string;
-  industry: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
+  img: string;
 }
 
 export default function Hero({ onViewChange }: HeroProps) {
@@ -129,7 +126,7 @@ export default function Hero({ onViewChange }: HeroProps) {
   ];
 
   // 8 Partner mockups with grayscale-to-color hover transition
-  const PARTNERS = [
+  const PARTNERS: PartnerItem[] = [
   {
     id: "p1",
     name: "GTV",
@@ -311,35 +308,20 @@ export default function Hero({ onViewChange }: HeroProps) {
 
           {/* Minimalist Grid of Grayscale Logotypes with Hover effect */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {PARTNERS.map((partner) => {
-              const PartnerIcon = partner.icon;
-
-              return (
-                <div 
-                  key={partner.id}
-                  className="group bg-zinc-950/40 border border-zinc-900/80 hover:border-zinc-800 hover:bg-zinc-950 p-6 rounded-2xl flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer h-36 relative overflow-hidden"
-                >
-                  {/* Subtle hover background highlight aura */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  {/* Brand Icon Component - Grayscale state by default, colorful highlight on hover */}
-                  <div className={`w-12 h-12 rounded-xl bg-zinc-900/50 border border-zinc-850/60 flex items-center justify-center transition-all duration-300 mb-3 grayscale group-hover:grayscale-0 ${partner.color}`}>
-                    <PartnerIcon className="w-5 h-5 transition-transform duration-300 group-hover:scale-105" />
-                  </div>
-
-                  {/* Brand Label */}
-                  <span className="text-xs font-semibold text-zinc-400 group-hover:text-zinc-100 transition-colors duration-350">
-                    {partner.name}
-                  </span>
-
-                  {/* Industry Label */}
-                  <span className="text-[9px] font-mono tracking-wider text-zinc-600 group-hover:text-zinc-500 transition-colors duration-300 mt-1">
-                    {partner.industry}
-                  </span>
-                </div>
-              );
-            })}
+            {PARTNERS.map((partner) => (
+          <div
+              key={partner.id}
+              className="group bg-zinc-950/40 border border-zinc-900 hover:border-zinc-700 hover:bg-zinc-950 rounded-2xl h-36 flex items-center justify-center p-6 transition-all duration-300"
+          >
+            <img
+              src={partner.img}
+              alt={partner.name}
+              className="max-h-14 w-auto object-contain grayscale opacity-70 transition-all duration-300 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105"
+              draggable={false}
+            />
           </div>
+        ))}
+          
 
           {/* Integration Note below the logo board */}
           <div className="mt-12 text-center">
