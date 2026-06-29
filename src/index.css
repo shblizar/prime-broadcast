@@ -1,145 +1,158 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+@import "flatpickr/dist/flatpickr.css";
+@import "flatpickr/dist/themes/material_blue.css";
 
-@theme {
-  /* Font */
-  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Playfair Display", serif;
-
-  /* Primary Colors */
-  --color-primary: #004F4A;
-  --color-primary-light: #A7C4C2;
-
-  /* Secondary Colors */
-  --color-surface: #FFFFFF;
-  --color-surface-light: #F4F5F5;
-  --color-accent-pink: #FDEEEE;
-  --color-accent-cream: #FFF4E8;
-
-  /* Text Colors */
-  --color-text-primary: #2F2F2F;
-  --color-text-secondary: #666666;
+* {
+  font-family: 'Poppins', sans-serif !important;
 }
 
-/* Glassmorphism custom components */
+@theme {
+  --font-sans: "Poppins", sans-serif;
+  --font-display: "Poppins", sans-serif;
+  --font-serif: "Poppins", sans-serif;
+  --font-mono: "Poppins", sans-serif;
+  
+  --color-surface-dark: #09090b;
+  --color-surface-grey: #18181b;
+  --color-primary-container: #18181b;
+  --color-secondary-container: #27272a;
+  --color-accent-blue: #3b82f6;
+  --color-accent-purple: #a855f7;
+  --color-accent-orange: #f97316;
+}
+
+/* Luxury Minimalist Card Components */
 .glass-panel {
-  background: rgba(18, 20, 28, 0.65);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(24, 24, 27, 0.5);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
 }
 
 .glass-panel-heavy {
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(9, 9, 11, 0.8);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
 }
 
 .hero-glow {
-  background: radial-gradient(circle at center, rgba(0, 112, 243, 0.15) 0%, rgba(104, 7, 186, 0.1) 40%, transparent 70%);
+  background: radial-gradient(circle at center, rgba(147, 197, 253, 0.06) 0%, rgba(196, 181, 253, 0.02) 45%, transparent 75%);
 }
 
 .glow-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glow-hover:hover {
-  box-shadow: 0 0 25px rgba(0, 112, 243, 0.35);
-  border-color: rgba(0, 112, 243, 0.4);
+  border-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.02);
   transform: translateY(-2px);
 }
 
 .live-pulse {
-  animation: live-pulse-anim 2s infinite;
+  animation: elegant-pulse-anim 3s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-@keyframes live-pulse-anim {
-  0% {
-    transform: scale(0.92);
-    opacity: 0.6;
-    box-shadow: 0 0 0 0 rgba(104, 7, 186, 0.5);
+@keyframes elegant-pulse-anim {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(0.96);
   }
   50% {
-    transform: scale(1.08);
     opacity: 1;
-    box-shadow: 0 0 8px 3px rgba(104, 7, 186, 0.3);
-  }
-  100% {
-    transform: scale(0.92);
-    opacity: 0.6;
-    box-shadow: 0 0 0 0 rgba(104, 7, 186, 0);
+    transform: scale(1.04);
   }
 }
 
-/* ===================== BODY ===================== */
-
-body {
-  font-family: var(--font-sans);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-}
-
-/* ===================== BUTTONS ===================== */
-
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-  border-radius: 6px;
-  padding: 14px 28px;
-  transition: 0.3s ease;
-}
-
-.btn-primary:hover {
-  background: #00645e;
-}
-
-/* ===================== CARD ===================== */
-
-.card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  transition: 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.12);
-}
-
-/* ===================== HERO ===================== */
-
-.hero-bg {
-  background: linear-gradient(
-    135deg,
-    #A7C4C2 0%,
-    #F4F5F5 100%
-  );
-}
-
-/* ===================== TITLES ===================== */
-
-.title {
-  font-family: var(--font-display);
-  color: var(--color-primary);
-}
-
-/* ===================== SCROLLBAR ===================== */
-
+/* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F4F5F5;
+  background: #09090b;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #A7C4C2;
-  border-radius: 4px;
+  background: #27272a;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #004F4A;
+  background: #3f3f46;
 }
+
+/* Slider styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #f4f4f5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #ffffff;
+}
+
+/* Glowing Cable Transitions and Signal Flows Animations */
+@keyframes cable-signal-flow {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-cable-signal {
+  animation: cable-signal-flow 2.4s infinite linear;
+}
+
+.animate-cable-signal-delayed {
+  animation: cable-signal-flow 2.4s infinite linear;
+  animation-delay: 1.2s;
+}
+
+@keyframes signal-bar-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-signal-bar {
+  background-size: 200% 200%;
+  animation: signal-bar-flow 4s infinite linear;
+}
+
+/* Elegant Tech Grid Pattern */
+.bg-grid-pattern {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
