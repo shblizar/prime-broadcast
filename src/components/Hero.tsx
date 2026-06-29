@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import ThreeCameraHero from './ThreeCameraHero';
-import picture from '../src/assets/images/GTV.png';
-import picture from '../src/assets/images/MNC.png';
-import picture from '../src/assets/images/Matahati.png';
-import picture from '../src/assets/images/RCTI PLUS.png';
-import picture from '../src/assets/images/Nabawi TV.png';
-import picture from '../src/assets/images/TVNU.png';
-import picture from '../src/assets/images/CentennialZ.png';
-import picture from '../src/assets/images/Mikta.png';
+import logoGTV from '../src/assets/images/GTV.png';
+import logoMNC from '../src/assets/images/MNC.png';
+import logoMatahati from '../src/assets/images/Matahati.png';
+import logoRCTI from '../src/assets/images/RCTI PLUS.png';
+import logoNabawi from '../src/assets/images/Nabawi TV.png';
+import logoTVNU from '../src/assets/images/TVNU.png';
+import logoCentennial from '../src/assets/images/CentennialZ.png';
+import logoMikta from '../src/assets/images/Mikta.png';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -132,59 +132,43 @@ export default function Hero({ onViewChange }: HeroProps) {
   const PARTNERS: PartnerItem[] = [
     {
       id: 'p1',
-      name: 'Telkom Indonesia',
-      industry: 'Telecommunication',
-      icon: Globe,
-      color: 'group-hover:text-red-500 group-hover:bg-red-500/10 border-red-500/30'
+      name: 'GTV',
+     
     },
     {
       id: 'p2',
-      name: 'BUMN Indonesia Corp',
-      industry: 'State Enterprise',
-      icon: Building,
-      color: 'group-hover:text-blue-500 group-hover:bg-blue-500/10 border-blue-500/30'
+      name: 'MNC',
+
     },
     {
       id: 'p3',
-      name: 'Mandiri Financial Hub',
-      industry: 'Financial Banking',
-      icon: Briefcase,
-      color: 'group-hover:text-amber-500 group-hover:bg-amber-500/10 border-amber-500/30'
+      name: 'MATAHATI',
+      
     },
     {
       id: 'p4',
-      name: 'Universitas Indonesia',
-      industry: 'Education Academics',
-      icon: Award,
-      color: 'group-hover:text-yellow-500 group-hover:bg-yellow-500/10 border-yellow-500/30'
+      name: 'RCTI PLUS',
+      
     },
     {
       id: 'p5',
-      name: 'Astra Group Sentra',
-      industry: 'Production & Logistics',
-      icon: Cpu,
-      color: 'group-hover:text-emerald-500 group-hover:bg-emerald-500/10 border-emerald-500/30'
+      name: 'NABAWI TV',
+      
     },
     {
       id: 'p6',
-      name: 'Pertamina Trans Energi',
-      industry: 'Energy & Oil',
-      icon: Activity,
-      color: 'group-hover:text-green-500 group-hover:bg-green-500/10 border-green-500/30'
+      name: 'TV NU',
+      
     },
     {
       id: 'p7',
-      name: 'Cyber Security Indonesia',
-      industry: 'Network Protection',
-      icon: Shield,
-      color: 'group-hover:text-indigo-500 group-hover:bg-indigo-500/10 border-indigo-500/30'
+      name: 'CENTENNIAL Z',
+      
     },
     {
       id: 'p8',
-      name: 'Grab Digital Venture',
-      industry: 'Tech Service Platform',
-      icon: Users,
-      color: 'group-hover:text-teal-500 group-hover:bg-teal-500/10 border-teal-500/30'
+      name: 'MIKTA',
+      
     }
   ];
 
