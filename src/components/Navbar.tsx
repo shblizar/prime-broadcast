@@ -45,6 +45,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
                   Live Production
                 </span>
               </div>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
