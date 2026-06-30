@@ -78,6 +78,9 @@ export default function FaqSection({ mode = 'both', scrollToAnchor = null, onAnc
       const el = document.getElementById(targetId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Nudge the landing position down a bit so the refund card isn't
+        // sitting right at the very top edge of the visible area.
+        window.scrollBy({ top: -120, behavior: 'smooth' });
       }
       onAnchorScrolled?.();
     }, 50);
