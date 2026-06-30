@@ -10,9 +10,10 @@ import logoPrime from '../assets/images/logo-prime.png';
 
 interface FooterProps {
   onViewChange: (view: string) => void;
+  onNavigateAnchor?: (view: string, anchor?: string) => void;
 }
 
-export default function Footer({ onViewChange }: FooterProps) {
+export default function Footer({ onViewChange, onNavigateAnchor }: FooterProps) {
   
   const socialLinks = [
     { name: 'WhatsApp', href: 'https://wa.me/6285150555195', icon: MessageSquare, value: '+62 851-5055-5195', color: 'hover:text-zinc-300' },
@@ -20,6 +21,17 @@ export default function Footer({ onViewChange }: FooterProps) {
     { name: 'Tiktok', href: 'https://tiktok.com/@primebroadcast_', icon: Sparkles, value: '@primebroadcast_', color: 'hover:text-zinc-300' },
     { name: 'Email Address', href: 'mailto:primebroadcast.id@gmail.com', icon: Mail, value: 'primebroadcast.id@gmail.com', color: 'hover:text-zinc-300' },
   ];
+
+  // Navigate to the Policies view, then scroll to a specific anchor inside it
+  // (e.g. the refund clause). Falls back to a plain view switch if the
+  // anchor-aware handler wasn't passed down from App.
+  const goToPolicyAnchor = (anchor?: string) => {
+    if (onNavigateAnchor) {
+      onNavigateAnchor('policies', anchor);
+    } else {
+      onViewChange('policies');
+    }
+  };
 
   return (
     <footer className="bg-black border-t border-zinc-900 text-white pt-24 pb-12 text-left relative z-10 font-sans">
@@ -120,9 +132,19 @@ export default function Footer({ onViewChange }: FooterProps) {
             <span>© {new Date().getFullYear()} Prime Broadcast Indonesia. Hak Cipta Dilindungi Undang-Undang.</span>
           </div>
           <div className="flex gap-4 text-[11px] text-zinc-600 font-mono">
-            <span className="hover:text-zinc-400 cursor-help transition-colors">Syarat Ketentuan Jasa</span>
+            <button
+              onClick={() => goToPolicyAnchor()}
+              className="hover:text-zinc-400 cursor-pointer transition-colors bg-transparent border-none p-0"
+            >
+              Syarat Ketentuan Jasa
+            </button>
             <span>/</span>
-            <span className="hover:text-slate-400 cursor-help transition-colors">Refund &amp; Reschedule Policy</span>
+            <button
+              onClick={() => goToPolicyAnchor('refund')}
+              className="hover:text-slate-400 cursor-pointer transition-colors bg-transparent border-none p-0"
+            >
+              Refund &amp; Reschedule Policy
+            </button>
           </div>
         </div>
 
