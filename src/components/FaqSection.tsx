@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FAQS } from '../data';
 import { FAQItem } from '../types';
 import { 
@@ -20,9 +20,11 @@ import {
 
 interface FaqSectionProps {
   mode?: 'policies' | 'faq' | 'both';
+  scrollToAnchor?: string | null;
+  onAnchorScrolled?: () => void;
 }
 
-export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
+export default function FaqSection({ mode = 'both', scrollToAnchor = null, onAnchorScrolled }: FaqSectionProps) {
   const [activeFaqId, setActiveFaqId] = useState<string | null>('faq-1');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -64,6 +66,24 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
 
   const isPoliciesMode = mode === 'policies' || mode === 'both';
   const isFaqMode = mode === 'faq' || mode === 'both';
+
+  // Scroll to a specific in-page anchor (e.g. the refund policy item) once
+  // this section has mounted/rendered, triggered from the Footer link.
+  useEffect(() => {
+    if (!scrollToAnchor) return;
+
+    const targetId = scrollToAnchor === 'refund' ? 'refund-policy' : scrollToAnchor;
+    // Wait one tick so the DOM for this view has fully painted before measuring position.
+    const timeoutId = setTimeout(() => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      onAnchorScrolled?.();
+    }, 50);
+
+    return () => clearTimeout(timeoutId);
+  }, [scrollToAnchor, onAnchorScrolled]);
 
   return (
     <div className="py-24 bg-black text-white text-left relative selection:bg-zinc-800 selection:text-white">
@@ -165,7 +185,7 @@ export default function FaqSection({ mode = 'both' }: FaqSectionProps) {
                     <CheckCircle2 className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
                     <span><b>Pelunasan Sisa Kontrak (70%)</b> paling lambat diselesaikan pada H-1 acara sebelum proses live penyiaran dimulai.</span>
                   </li>
-                  <li className="flex items-start gap-2.5">
+                  <li id="refund-policy" className="flex items-start gap-2.5 scroll-mt-24">
                     <div className="w-4 h-4 rounded-full bg-zinc-900 border border-zinc-855 flex items-center justify-center shrink-0 mt-0.5 text-[10px] text-zinc-400 font-mono">
                       i
                     </div>
