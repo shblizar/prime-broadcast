@@ -36,12 +36,25 @@ export default function App() {
   const [preselectedDate, setPreselectedDate] = useState<string>('');
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number; packageId?: string } | null>(null);
 
+  // Anchor target inside a view (e.g. 'refund' inside the policies view),
+  // set by Footer links so the destination section can scroll itself
+  // into view once it has mounted.
+  const [pendingAnchor, setPendingAnchor] = useState<string | null>(null);
+
+  const handleNavigateAnchor = (view: string, anchor?: string) => {
+    setCurrentView(view);
+    setPendingAnchor(anchor || null);
+  };
+
   // Auto-scroll to top of the new view every time currentView changes,
   // so users land directly on the section instead of staying at their
-  // previous scroll position and having to scroll manually.
+  // previous scroll position and having to scroll manually. Skipped when
+  // a specific in-page anchor is pending — that scroll is handled by the
+  // target section itself (see FaqSection's scrollToAnchor prop).
   useEffect(() => {
+    if (pendingAnchor) return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [currentView]);
+  }, [currentView, pendingAnchor]);
   
   // Transition to Booking and set parameters
   const handlePackageConfiguredChange = (
@@ -167,7 +180,11 @@ export default function App() {
         {/* VIEW 4: POLICIES CLASSIFICATIONS */}
         {currentView === 'policies' && (
           <div className="animate-in fade-in duration-300">
-            <FaqSection mode="policies" />
+            <FaqSection 
+              mode="policies" 
+              scrollToAnchor={pendingAnchor} 
+              onAnchorScrolled={() => setPendingAnchor(null)} 
+            />
           </div>
         )}
 
@@ -188,7 +205,7 @@ export default function App() {
       </main>
 
       {/* Footer component */}
-      <Footer onViewChange={setCurrentView} />
+      <Footer onViewChange={setCurrentView} onNavigateAnchor={handleNavigateAnchor} />
 
     </div>
   );
