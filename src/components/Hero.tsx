@@ -267,17 +267,17 @@ export default function Hero({ onViewChange }: HeroProps) {
             {PARTNERS.map((partner) => (
               <div
                 key={partner.id}
-                className="group bg-zinc-950/40 border border-zinc-900/80 hover:border-zinc-800 hover:bg-zinc-950 p-6 rounded-2xl flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer h-36 relative overflow-hidden"
+                className="group bg-zinc-950/40 border border-zinc-900/80 hover:border-zinc-800 hover:bg-zinc-950 p-6 rounded-2xl flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer h-44 relative overflow-hidden"
               >
                 {/* Subtle hover background highlight aura */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/[0.01] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                {/* Partner Logo - Grayscale by default, full color on hover */}
-                <div className="w-14 h-14 rounded-xl bg-zinc-900/50 border border-zinc-850/60 flex items-center justify-center transition-all duration-300 mb-3 overflow-hidden">
+                {/* Partner Logo - Full original color, no grayscale filter */}
+                <div className="w-20 h-20 rounded-xl bg-zinc-900/50 border border-zinc-850/60 flex items-center justify-center transition-all duration-300 mb-3 overflow-hidden">
                   <img
                     src={partner.logo}
                     alt={partner.name}
-                    className="w-10 h-10 object-contain grayscale group-hover:grayscale-0 transition-all duration-300 group-hover:scale-105"
+                    className="w-16 h-16 object-contain transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
 
@@ -307,3 +307,4 @@ export default function Hero({ onViewChange }: HeroProps) {
     </div>
   );
 }
+
