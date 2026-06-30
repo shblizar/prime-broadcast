@@ -26,7 +26,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
           {/* Logo Brand */}
           <div
             onClick={() => onViewChange('home')}
-            className="flex items-center cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
             <img
               src={logoPrime}
@@ -34,17 +34,17 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
               className="h-10 w-auto object-contain transition-opacity duration-300 group-hover:opacity-80 select-none"
               draggable={false}
             />
-          </div>
-          <div>
-              <span className="font-display font-medium text-base tracking-widest text-[#f4f4f5] font-bold group-hover:text-zinc-300 transition-colors uppercase">
-                PRIME BROADCAST
-              </span>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1 h-1 rounded-full bg-zinc-500"></span>
-                <span className="text-[9px] font-sans tracking-[0.2em] text-zinc-500 font-medium uppercase font-mono">
-                  Live Production
+            <div>
+                <span className="font-display font-medium text-base tracking-widest text-[#f4f4f5] font-bold group-hover:text-zinc-300 transition-colors uppercase">
+                  PRIME BROADCAST
                 </span>
-              </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1 h-1 rounded-full bg-zinc-500"></span>
+                  <span className="text-[9px] font-sans tracking-[0.2em] text-zinc-500 font-medium uppercase font-mono">
+                    Live Production
+                  </span>
+                </div>
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -126,3 +126,4 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
     </nav>
   );
 }
+
