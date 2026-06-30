@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import PricingCalculator from './components/PricingCalculator';
@@ -35,6 +35,13 @@ export default function App() {
   const [selectedCameraCount, setSelectedCameraCount] = useState<number>(1);
   const [preselectedDate, setPreselectedDate] = useState<string>('');
   const [appliedVoucher, setAppliedVoucher] = useState<{ code: string; discount: number; packageId?: string } | null>(null);
+
+  // Auto-scroll to top of the new view every time currentView changes,
+  // so users land directly on the section instead of staying at their
+  // previous scroll position and having to scroll manually.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentView]);
   
   // Transition to Booking and set parameters
   const handlePackageConfiguredChange = (
