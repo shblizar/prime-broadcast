@@ -128,7 +128,7 @@ export default function Hero({ onViewChange }: HeroProps) {
     <div className="bg-black text-white relative select-none font-sans overflow-hidden">
 
       {/* SECTION 1: HERO SECTION - APPLE STYLE (REVISED: 2-COLUMN, TEXT LEFT / 3D RIGHT ON DESKTOP) */}
-      <section className="relative min-h-[105vh] flex flex-col justify-between pt-32 pb-24 px-4 sm:px-6 lg:px-8 bg-black">
+      <section className="relative min-h-[105vh] flex flex-col justify-between pt-24 pb-24 px-4 sm:px-6 lg:px-8 bg-black">
 
         {/* Soft elegant top ambient light */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[400px] bg-gradient-to-b from-zinc-800/20 via-transparent to-transparent pointer-events-none rounded-full blur-[120px] opacity-20" />
@@ -311,3 +311,4 @@ export default function Hero({ onViewChange }: HeroProps) {
     </div>
   );
 }
+
