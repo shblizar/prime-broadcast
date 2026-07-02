@@ -128,13 +128,13 @@ export default function Hero({ onViewChange }: HeroProps) {
     <div className="bg-black text-white relative select-none font-sans overflow-hidden">
 
       {/* SECTION 1: HERO SECTION - APPLE STYLE (REVISED: 2-COLUMN, TEXT LEFT / 3D RIGHT ON DESKTOP) */}
-      <section className="relative min-h-[105vh] flex flex-col justify-between pt-24 pb-24 px-4 sm:px-6 lg:px-8 bg-black">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-black">
 
         {/* Soft elegant top ambient light */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[400px] bg-gradient-to-b from-zinc-800/20 via-transparent to-transparent pointer-events-none rounded-full blur-[120px] opacity-20" />
 
         {/* Grid wrapper: 1 column (stacked) on mobile, 2 columns (text | 3D) from lg breakpoint up */}
-        <div className="max-w-7xl mx-auto w-full flex-grow grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-16 relative z-10 pt-6">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 items-center gap-10 lg:gap-16 relative z-10">
 
           {/* LEFT COLUMN: Headline, description, CTA buttons */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-6 order-1">
@@ -175,7 +175,7 @@ export default function Hero({ onViewChange }: HeroProps) {
         </div>
 
         {/* Arrow pointer down */}
-        <div className="w-full flex justify-center pt-8 animate-bounce opacity-40">
+        <div className="absolute bottom-8 left-0 w-full flex justify-center animate-bounce opacity-40">
           <div className="text-[10px] tracking-widest text-zinc-500 uppercase font-mono">
             Scroll Ke Bawah Untuk Portfolio
           </div>
@@ -311,4 +311,3 @@ export default function Hero({ onViewChange }: HeroProps) {
     </div>
   );
 }
-
