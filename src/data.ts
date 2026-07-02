@@ -18,7 +18,7 @@ export const PACKAGES: StreamPackage[] = [
       { name: 'Acer Nitro V15', included: true },
       { name: 'Audio Soundcard', included: true },
       { name: 'Output Siaran 1 Platform + File Rekaman Master', included: true },
-      { name: '5 Crew', included: true }
+      { name: '5 Crew', included: true },
     ]
   },
   {
