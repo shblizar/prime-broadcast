@@ -221,5 +221,5 @@ export const CAMERA_UPGRADE_OPTIONS: CameraUpgradeOption[] = [
   { id: 'z150', name: 'Sony PXW-Z150 4K XDCAM', extraPrice: 660000 },
   { id: 'z190', name: 'Sony PXW-Z190 4K XDCAM Camcorder', extraPrice: 750000 },
   { id: 'pmw300', name: 'Sony PMW-300 XDCAM', extraPrice: 850000 },
-  { id: 'FX-6',  name:  'Sony FX-6',  extraPrices: 2000000 }
+  { id: 'FX-6',  name:  'Sony FX-6',  extraPrice: 2000000 }
 ];
