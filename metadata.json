@@ -1,6 +1,0 @@
-{
-  "name": "Prime Broadcast",
-  "description": "Website vendor profesional live streaming broadcast, multi-camera setup, dan dokumentasi video berbasis di Jakarta beserta Admin Dashboard terintegrasi.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
