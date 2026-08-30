@@ -211,9 +211,6 @@ export const PublicDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           {/* Minimal rotating loader */}
           <div className="flex items-center gap-3 text-slate-500 font-medium">
             <Loader2 className="w-5 h-5 animate-spin text-[#A40D35]" />
-            <span className="text-sm tracking-wide text-slate-500 font-semibold">
-              Memuat data penyiaran...
-            </span>
           </div>
         </div>
       </div>
