@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
 import { HeroSlider } from '../components/home/HeroSlider';
@@ -29,6 +30,13 @@ export const HomePage: React.FC = () => {
       portfolioControls.start('visible');
     }
   }, [replayCounts['portfolio'], portfolioControls]);
+
+  // Ensure the page opens and refreshes starting at the very top of the homepage
+  useEffect(() => {
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   const whatsappClean = siteSettings?.whatsapp_number
     ? normalizeWhatsAppNumber(siteSettings.whatsapp_number)
@@ -61,8 +69,18 @@ export const HomePage: React.FC = () => {
       {/* 2. Hero Photo Slider */}
       <HeroSlider whatsappClean={whatsappClean} />
 
+      {/* Mobile/Tablet Only CTA Button to decrease gap and offer action */}
+      <div className="flex justify-center lg:hidden pt-8 pb-4 px-6 bg-white" id="mobile-cta-button">
+        <Link
+          to="/paket"
+          className="w-full max-w-xs text-center py-3.5 px-5 rounded-2xl text-xs sm:text-sm font-bold text-white transition-all duration-200 shadow-md bg-gradient-to-r from-[#081A2E] to-[#A40D35] hover:from-[#0b2440] hover:to-[#850B2B] shadow-slate-900/15 hover:shadow-lg active:scale-[0.99]"
+        >
+          Pesan Sekarang
+        </Link>
+      </div>
+
       {/* 3. Portfolio */}
-      <section className="py-20 lg:py-28 px-6 lg:px-12 bg-white text-[#081A2E]" id="portfolio">
+      <section className="pt-6 pb-20 lg:py-28 px-6 lg:px-12 bg-white text-[#081A2E]" id="portfolio">
         <div className="max-w-7xl mx-auto space-y-12">
           {/* Header */}
           <motion.div
