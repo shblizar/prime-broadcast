@@ -130,7 +130,16 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
       onTouchEnd={handleTouchEnd}
     >
       {hasSlides ? (
-        <div className="relative h-[320px] sm:h-[480px] md:h-[580px] lg:h-[680px] xl:h-[720px] w-full flex items-center justify-center">
+        <div className="relative w-full lg:h-[680px] xl:h-[720px] flex items-center justify-center">
+          {/* Dynamic Invisible Spacer Image to match active slide's exact aspect ratio on mobile/tablet */}
+          {currentSlide?.image_path && (
+            <img
+              src={getHeroSlidePublicUrl(currentSlide.image_path)}
+              alt="Spacer"
+              className="w-full h-auto block opacity-0 pointer-events-none lg:hidden"
+            />
+          )}
+
           {/* Background Images with flawless zero-flash crossfade */}
           <div className="absolute inset-0 z-0">
             {/* Underlay (Static Previous Slide) */}
@@ -216,7 +225,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
           )}
         </div>
       ) : (
-        <div className="relative h-[320px] sm:h-[480px] md:h-[580px] lg:h-[680px] xl:h-[720px] w-full flex items-center justify-center">
+        <div className="relative w-full aspect-video lg:aspect-auto lg:h-[680px] xl:h-[720px] flex items-center justify-center">
           {/* Fallback Clean Hero if no slides uploaded */}
           <img
             src="https://images.unsplash.com/photo-1516280440614-37939bbacd6a?q=80&w=2070&auto=format&fit=crop"
