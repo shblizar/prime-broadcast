@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary-navy: #081a2e;
+    --primary-cta: #a40d35;
+    --primary-cta-hover: #820a2a;
+    --bg-main: #f7f5f1;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+    font-synthesis-style: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: var(--primary-navy);
+    background-color: var(--bg-main);
+    letter-spacing: 0;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+    font-synthesis-style: none;
+  }
+
+  /* Display Font: Coolvetica strictly at font-weight 400 and letter-spacing 0 */
+  .display-font,
+  .font-coolvetica {
+    font-family: "Coolvetica", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+    font-synthesis-style: none;
+  }
+
+  /* Headings Hierarchy */
+  h1 {
+    font-family: "Coolvetica", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.12;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+    font-synthesis-style: none;
+  }
+
+  h2 {
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.18;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+  }
+
+  h3 {
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.25;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+  }
+
+  h4, h5, h6 {
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0;
+    font-synthesis: none;
+    font-synthesis-weight: none;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none !important;
+    width: auto !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+}
