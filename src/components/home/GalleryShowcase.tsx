@@ -53,27 +53,15 @@ export const GalleryShowcase: React.FC = () => {
     <section className="py-20 lg:py-28 px-6 lg:px-12 bg-[#F7F5F1] text-[#081A2E]" id="galeri">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto space-y-3"
-        >
+        <div className="text-center max-w-3xl mx-auto space-y-3">
           <p className="text-sm font-semibold tracking-wide text-[#A40D35]">Galeri Dokumentasi</p>
           <h2 className="text-3xl sm:text-4xl font-bold text-[#081A2E] leading-snug">
             Dokumentasi Eksekusi Lapangan
           </h2>
-        </motion.div>
+        </div>
 
         {/* Desktop Expanding Cards (Hover Expands, Click Opens Album) */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="hidden lg:flex gap-3.5 h-[460px] w-full items-stretch"
-        >
+        <div className="hidden lg:flex gap-3.5 h-[460px] w-full items-stretch">
           {galleryAlbums.map((album) => {
             const photoCount = album.images && album.images.length > 0 ? album.images.length : 1;
 
@@ -139,16 +127,10 @@ export const GalleryShowcase: React.FC = () => {
               </div>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Mobile / Tablet Stacked Cards */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-6"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-6">
           {galleryAlbums.map((album) => {
             const photoCount = album.images && album.images.length > 0 ? album.images.length : 1;
             return (
@@ -185,7 +167,7 @@ export const GalleryShowcase: React.FC = () => {
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
 
       {/* Lightbox Modal with AnimatePresence */}

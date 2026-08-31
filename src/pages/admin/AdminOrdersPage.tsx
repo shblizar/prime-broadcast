@@ -332,12 +332,12 @@ export const AdminOrdersPage: React.FC = () => {
                     <tbody className="divide-y divide-slate-100">
                       <tr>
                         <td className="p-3.5 font-semibold text-slate-900">
-                          {selectedOrder.package_name} ({selectedOrder.package_duration_hours} Jam)
+                          {selectedOrder.package_name_snapshot || selectedOrder.package_name} ({selectedOrder.package_duration_snapshot || selectedOrder.package_duration_hours} Jam)
                         </td>
-                        <td className="p-3.5 text-right">{formatIDR(selectedOrder.package_price)}</td>
+                        <td className="p-3.5 text-right">{formatIDR(selectedOrder.package_price_snapshot || selectedOrder.package_price || 0)}</td>
                         <td className="p-3.5 text-center">1</td>
                         <td className="p-3.5 text-right font-bold">
-                          {formatIDR(selectedOrder.package_price)}
+                          {formatIDR(selectedOrder.package_price_snapshot || selectedOrder.package_price || 0)}
                         </td>
                       </tr>
 
@@ -379,12 +379,12 @@ export const AdminOrdersPage: React.FC = () => {
                     <span>{formatIDR(selectedOrder.subtotal)}</span>
                   </div>
 
-                  {selectedOrder.voucher_discount_amount > 0 && (
+                  {(selectedOrder.voucher_discount_amount && selectedOrder.voucher_discount_amount > 0) ? (
                     <div className="flex justify-between font-bold text-emerald-700">
-                      <span>Diskon Voucher ({selectedOrder.voucher_code}):</span>
-                      <span>-{formatIDR(selectedOrder.voucher_discount_amount)}</span>
+                      <span>Diskon Voucher ({selectedOrder.voucher_code_snapshot || selectedOrder.voucher_code}):</span>
+                      <span>-{formatIDR(selectedOrder.voucher_discount_amount || 0)}</span>
                     </div>
-                  )}
+                  ) : null}
 
                   <div className="pt-2 border-t border-slate-200 flex justify-between font-bold text-base text-[#081A2E]">
                     <span>Total Estimasi:</span>

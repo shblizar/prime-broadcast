@@ -61,6 +61,9 @@ const AdminFaqPage = lazy(() =>
 const AdminSettingsPage = lazy(() =>
   import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage }))
 );
+const AdminDatabasePage = lazy(() =>
+  import('./pages/admin/AdminDatabasePage').then((m) => ({ default: m.AdminDatabasePage }))
+);
 
 // Professional, minimal loading fallback for Admin portal routes
 function AdminLoadingFallback() {
@@ -153,6 +156,7 @@ export default function App() {
                   <Route path="client-logos" element={<AdminClientLogosPage />} />
                   <Route path="faq" element={<AdminFaqPage />} />
                   <Route path="settings" element={<AdminSettingsPage />} />
+                  <Route path="database" element={<AdminDatabasePage />} />
                 </Route>
               </Route>
 

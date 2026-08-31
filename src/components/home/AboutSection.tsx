@@ -63,108 +63,81 @@ export const AboutSection: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Founder Profile Area - Clean Cutout Portraits Without Frame/Card */}
+        {/* Founder Profile Area - Premium Editorial Showcase with Alternating Side-by-Side Profile Presentation */}
         {founders.length > 0 && (
-          <div className="pt-4">
-            {founders.length === 1 ? (
-              /* Single Founder Layout */
-              <div className="max-w-xs mx-auto text-center space-y-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6 }}
-                  className="flex flex-col items-center"
-                >
-                  <div className="w-full h-80 flex items-end justify-center">
-                    <img
-                      src={founders[0].photo_path}
-                      alt={founders[0].name}
-                      className="max-h-full max-w-full object-contain object-bottom"
-                    />
-                  </div>
-                  <div className="pt-4 space-y-1">
-                    <h3 className="text-lg font-bold text-[#081A2E]">{founders[0].name}</h3>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium">{founders[0].role}</p>
-                    <p className="text-xs text-slate-400">Prime Broadcast</p>
-                  </div>
-                </motion.div>
-              </div>
-            ) : founders.length === 2 ? (
-              /* Two Founders: 2 Equal Columns with Subtle Vertical Divider */
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-0 max-w-3xl mx-auto md:divide-x md:divide-slate-200">
-                {/* Left Founder */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-col items-center text-center px-4 sm:px-8"
-                >
-                  <div className="w-full h-72 sm:h-80 flex items-end justify-center">
-                    <img
-                      src={founders[0].photo_path}
-                      alt={founders[0].name}
-                      className="max-h-full max-w-full object-contain object-bottom"
-                    />
-                  </div>
-                  <div className="pt-4 space-y-0.5">
-                    <h3 className="text-lg font-bold text-[#081A2E]">{founders[0].name}</h3>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium">{founders[0].role}</p>
-                    <p className="text-xs text-slate-400">Prime Broadcast</p>
-                  </div>
-                </motion.div>
+          <div className="space-y-16 sm:space-y-24 lg:space-y-40 pt-4 sm:pt-8">
+            {founders.map((founder, idx) => {
+              const isEven = idx % 2 === 0;
 
-                {/* Right Founder */}
-                <motion.div
-                  initial={{ opacity: 0, x: 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex flex-col items-center text-center px-4 sm:px-8"
+              // Dynamic color split: color the first word in #A40D35, and the rest in #081A2E
+              const nameWords = founder.name.trim().split(/\s+/);
+              const firstWord = nameWords[0] || '';
+              const remainingName = nameWords.slice(1).join(' ');
+
+              return (
+                <div
+                  key={founder.id}
+                  className={`flex items-center justify-between gap-4 sm:gap-10 lg:gap-20 max-w-5xl mx-auto ${
+                    isEven ? 'flex-row' : 'flex-row-reverse'
+                  }`}
                 >
-                  <div className="w-full h-72 sm:h-80 flex items-end justify-center">
-                    <img
-                      src={founders[1].photo_path}
-                      alt={founders[1].name}
-                      className="max-h-full max-w-full object-contain object-bottom"
-                    />
-                  </div>
-                  <div className="pt-4 space-y-0.5">
-                    <h3 className="text-lg font-bold text-[#081A2E]">{founders[1].name}</h3>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium">{founders[1].role}</p>
-                    <p className="text-xs text-slate-400">Prime Broadcast</p>
-                  </div>
-                </motion.div>
-              </div>
-            ) : (
-              /* More than 2 Founders: Clean Responsive Grid */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-4xl mx-auto">
-                {founders.map((founder, idx) => (
-                  <motion.div
-                    key={founder.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: idx * 0.1 }}
-                    className="flex flex-col items-center text-center"
-                  >
-                    <div className="w-full h-72 flex items-end justify-center">
+                  {/* Portrait Column - Prominently Displayed Large Cutout */}
+                  <div className="w-[45%] lg:w-1/2 flex items-end justify-center">
+                    <motion.div
+                      initial={{ opacity: 0, y: 25, x: isEven ? -15 : 15 }}
+                      whileInView={{ opacity: 1, y: 0, x: 0 }}
+                      viewport={{ once: true, margin: '-100px' }}
+                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative w-full h-[220px] sm:h-[350px] lg:h-[550px] xl:h-[600px] flex items-end justify-center overflow-visible"
+                    >
                       <img
                         src={founder.photo_path}
                         alt={founder.name}
-                        className="max-h-full max-w-full object-contain object-bottom"
+                        className="max-h-full max-w-full object-contain object-bottom select-none transform scale-[1.35] sm:scale-[1.45] lg:scale-[1.55] origin-bottom transition-transform duration-500 ease-out hover:scale-[1.4] sm:hover:scale-[1.5] lg:hover:scale-[1.6]"
+                        style={{
+                          filter: 'drop-shadow(0 20px 40px rgba(8, 26, 46, 0.08))',
+                        }}
                       />
+                    </motion.div>
+                  </div>
+
+                  {/* Profile Details Column - Clean Editorial Typography & Dynamic Bio Description */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20, x: isEven ? 15 : -15 }}
+                    whileInView={{ opacity: 1, y: 0, x: 0 }}
+                    viewport={{ once: true, margin: '-100px' }}
+                    transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                    className={`w-[55%] lg:w-1/2 space-y-2 sm:space-y-4 lg:space-y-6 flex flex-col justify-center items-start text-left pr-2 sm:pr-0`}
+                  >
+                    <div className="space-y-1 sm:space-y-2 lg:space-y-3">
+                      <h3 className="text-2xl sm:text-4xl lg:text-6xl font-bold tracking-tight leading-tight">
+                        <span className="text-[#A40D35]">{firstWord}</span>
+                        {remainingName && <span className="text-[#081A2E]"> {remainingName}</span>}
+                      </h3>
+                      <p className="text-sm sm:text-xl lg:text-2xl font-bold text-[#A40D35] tracking-wide">
+                        {founder.role}
+                      </p>
                     </div>
-                    <div className="pt-4 space-y-0.5">
-                      <h3 className="text-base font-bold text-[#081A2E]">{founder.name}</h3>
-                      <p className="text-xs text-[#64748B] font-medium">{founder.role}</p>
-                      <p className="text-xs text-slate-400">Prime Broadcast</p>
+
+                    {founder.short_bio ? (
+                      <p className="text-slate-600 text-xs sm:text-sm lg:text-lg leading-snug sm:leading-relaxed max-w-lg line-clamp-3 sm:line-clamp-4 lg:line-clamp-5">
+                        {founder.short_bio}
+                      </p>
+                    ) : (
+                      <p className="text-slate-400 text-xs sm:text-sm italic">
+                        Anggota tim profesional Prime Broadcast.
+                      </p>
+                    )}
+
+                    <div className="pt-2 sm:pt-4 border-t border-slate-100 w-full max-w-[100px] sm:max-w-[200px] lg:max-w-xs text-left">
+                      <p className="text-[10px] sm:text-xs lg:text-sm text-slate-400 font-bold tracking-widest uppercase">
+                        Prime Broadcast
+                      </p>
                     </div>
                   </motion.div>
-                ))}
-              </div>
-            )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

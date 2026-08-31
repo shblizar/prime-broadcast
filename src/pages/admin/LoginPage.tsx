@@ -14,9 +14,11 @@ export const LoginPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // If already logged in
-  if (user && isAdmin) {
-    navigate('/admin/dashboard', { replace: true });
-  }
+  React.useEffect(() => {
+    if (user && isAdmin) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [user, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

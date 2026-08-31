@@ -34,14 +34,14 @@ export const ClientMarquee: React.FC = () => {
           {displayLogos.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="flex items-center justify-center h-12 w-32 sm:w-40 flex-shrink-0"
+              className="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0"
             >
               <img
                 src={item.logo_path}
                 alt={item.client_name}
                 loading="lazy"
                 referrerPolicy="no-referrer"
-                className="max-h-9 max-w-full object-contain"
+                className="w-full h-full object-contain p-2"
               />
             </div>
           ))}

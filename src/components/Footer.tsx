@@ -13,6 +13,24 @@ export const Footer: React.FC = () => {
     getSiteSettings().then(setSettings).catch(console.error);
   }, []);
 
+  const handleFooterLinkClick = (e: React.MouseEvent, path: string, hash?: string) => {
+    if (window.location.pathname === '/') {
+      if (path === '/' && !hash) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.history.pushState(null, '', '/');
+      } else if (hash) {
+        e.preventDefault();
+        const targetId = hash.substring(1);
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+          window.history.pushState(null, '', hash);
+        }
+      }
+    }
+  };
+
   const whatsappClean = settings?.whatsapp_number
     ? normalizeWhatsAppNumber(settings.whatsapp_number)
     : '6285150555195';
@@ -45,7 +63,7 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2.5 text-sm text-slate-400">
               <li>
-                <Link to="/" className="hover:text-white transition-colors">
+                <Link to="/" onClick={(e) => handleFooterLinkClick(e, '/')} className="hover:text-white transition-colors">
                   Beranda
                 </Link>
               </li>
@@ -55,17 +73,17 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/#tentang" className="hover:text-white transition-colors">
+                <Link to="/#tentang" onClick={(e) => handleFooterLinkClick(e, '/', '#tentang')} className="hover:text-white transition-colors">
                   Tentang Kami
                 </Link>
               </li>
               <li>
-                <Link to="/#galeri" className="hover:text-white transition-colors">
+                <Link to="/#galeri" onClick={(e) => handleFooterLinkClick(e, '/', '#galeri')} className="hover:text-white transition-colors">
                   Galeri
                 </Link>
               </li>
               <li>
-                <Link to="/#faq" className="hover:text-white transition-colors">
+                <Link to="/#faq" onClick={(e) => handleFooterLinkClick(e, '/', '#faq')} className="hover:text-white transition-colors">
                   FAQ
                 </Link>
               </li>

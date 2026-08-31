@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { Package, Upgrade, Addon, OvertimeSettings, Order } from '../types';
+import { Package, Upgrade, Addon, OvertimeSettings, Order, VoucherValidationResult } from '../types';
 import {
   createOrder,
+  validateVoucher,
 } from '../services/api';
 import { formatIDR } from '../utils/currency';
 import {
@@ -125,6 +126,19 @@ export const CheckoutPage: React.FC = () => {
   });
 
   const subtotal = packagePrice + upgradesTotal + overtimeTotal + addonsTotal;
+
+  const [voucherResult, setVoucherResult] = useState<VoucherValidationResult | null>(null);
+
+  useEffect(() => {
+    if (voucherCode && subtotal > 0) {
+      validateVoucher(voucherCode, subtotal).then(res => setVoucherResult(res));
+    } else {
+      setVoucherResult(null);
+    }
+  }, [voucherCode, subtotal]);
+
+  const discountAmount = voucherResult?.valid && voucherResult.voucher ? voucherResult.voucher.calculated_discount : 0;
+  const estimatedTotal = Math.max(0, subtotal - discountAmount);
 
   // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -322,7 +336,7 @@ export const CheckoutPage: React.FC = () => {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1.5 pr-10">
                   <div className="text-xs sm:text-[13px] font-semibold text-[#A40D35]">
-                    Formulir Reservasi ({selectedPkg.name}: {formatIDR(subtotal)})
+                    Formulir Reservasi ({selectedPkg.name}: {formatIDR(estimatedTotal)})
                   </div>
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-normal text-[#081A2E] leading-tight tracking-tight">
                     Konfirmasi Pemesanan Prime Broadcast
@@ -513,8 +527,32 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Payment Summary */}
+                <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3 mt-6">
+                  <div className="flex justify-between items-center text-sm font-medium text-slate-600">
+                    <span>Subtotal</span>
+                    <span>{formatIDR(subtotal)}</span>
+                  </div>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-sm font-bold text-emerald-700">
+                      <span>
+                        Voucher ({voucherResult?.voucher?.discount_type === 'percentage'
+                          ? `${voucherResult.voucher.discount_value}%`
+                          : `-${formatIDR(voucherResult?.voucher?.discount_value ?? discountAmount)}`})
+                      </span>
+                      <span>-{formatIDR(discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
+                    <span className="text-base font-bold text-[#081A2E]">Total Estimasi Biaya</span>
+                    <span className="text-xl sm:text-2xl font-black text-[#A40D35]">
+                      {formatIDR(estimatedTotal)}
+                    </span>
+                  </div>
+                </div>
+
                 {/* 3. Form Footer / Action Area */}
-                <div className="pt-6 border-t border-slate-300/60 flex flex-col-reverse sm:flex-row items-center justify-end gap-3.5 sm:gap-4">
+                <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-end gap-3.5 sm:gap-4">
                   <button
                     type="button"
                     onClick={() => navigate('/paket')}

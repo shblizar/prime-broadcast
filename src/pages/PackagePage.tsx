@@ -115,7 +115,14 @@ export const PackagePage: React.FC = () => {
   });
 
   const subtotal = packagePrice + upgradesTotal + overtimeTotal + addonsTotal;
-  const discountAmount = voucherResult?.valid && voucherResult.voucher ? voucherResult.voucher.discount_amount : 0;
+
+  useEffect(() => {
+    if (voucherResult?.valid && voucherCodeInput) {
+      validateVoucher(voucherCodeInput, subtotal).then(res => setVoucherResult(res));
+    }
+  }, [subtotal]);
+
+  const discountAmount = voucherResult?.valid && voucherResult.voucher ? voucherResult.voucher.calculated_discount : 0;
   const estimatedTotal = Math.max(0, subtotal - discountAmount);
 
   // Sync draft to localStorage
@@ -783,10 +790,12 @@ export const PackagePage: React.FC = () => {
 
                   {/* Discount Line if valid */}
                   {discountAmount > 0 && (
-                    <div className="py-2 px-3 bg-emerald-50 rounded-xl border border-emerald-200 flex justify-between items-center text-xs font-bold text-emerald-800">
+                    <div className="py-2.5 px-3 bg-emerald-50 rounded-xl border border-emerald-200 flex justify-between items-center text-xs font-bold text-emerald-800">
                       <span className="flex items-center gap-1.5">
                         <Tag className="w-3.5 h-3.5" />
-                        Diskon Voucher
+                        Voucher ({voucherResult?.voucher?.discount_type === 'percentage'
+                          ? `${voucherResult.voucher.discount_value}%`
+                          : `-${formatIDR(voucherResult?.voucher?.discount_value ?? discountAmount)}`})
                       </span>
                       <span>-{formatIDR(discountAmount)}</span>
                     </div>

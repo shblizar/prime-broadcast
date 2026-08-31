@@ -1381,73 +1381,102 @@ export async function validateVoucher(code: string, subtotal: number): Promise<V
 
   const cleanCode = code.trim().toUpperCase();
 
+  let voucher: Voucher | null = null;
+
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase.rpc('validate_voucher', {
-        p_code: cleanCode,
-        p_subtotal: subtotal,
-      });
-
-      if (!error && data) {
-        return data as VoucherValidationResult;
+      console.log('Validating voucher code:', cleanCode);
+      const { data: voucherData, error } = await supabase
+        .from('vouchers')
+        .select('*')
+        .eq('code', cleanCode)
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Supabase get voucher error:', error);
+        return { valid: false, message: `Database Error: ${error.message}` };
       }
-    } catch (e) {
-      console.warn('Supabase validate_voucher RPC error', e);
+      
+      if (voucherData) {
+        voucher = voucherData as Voucher;
+      }
+    } catch (e: any) {
+      console.warn('Supabase get voucher exception:', e);
+      return { valid: false, message: `Terjadi kesalahan saat memvalidasi voucher.` };
     }
   }
 
-  // Local calculation fallback
-  const vouchers = getLocalData<Voucher[]>(STORAGE_KEYS.VOUCHERS, []);
-  const voucher = vouchers.find((v) => v.code.toUpperCase() === cleanCode);
-
   if (!voucher) {
-    return { valid: false, message: 'Kode voucher tidak ditemukan.' };
+    const vouchers = getLocalData<Voucher[]>(STORAGE_KEYS.VOUCHERS, []);
+    voucher = vouchers.find((v) => v.code.toUpperCase() === cleanCode && v.is_active) || null;
   }
 
-  if (!voucher.is_active) {
-    return { valid: false, message: 'Voucher tidak aktif.' };
+  if (!voucher) {
+    return { valid: false, message: 'Kode voucher tidak valid atau tidak dapat digunakan.' };
+  }
+
+  if (voucher.is_active === false) {
+    return { valid: false, message: 'Kode voucher tidak valid atau tidak dapat digunakan.' };
   }
 
   const now = new Date();
-  if (voucher.starts_at && new Date(voucher.starts_at) > now) {
+  const startsAt = voucher.starts_at;
+  if (startsAt && new Date(startsAt) > now) {
     return { valid: false, message: 'Voucher belum dapat digunakan.' };
   }
 
-  if (voucher.expires_at && new Date(voucher.expires_at) < now) {
-    return { valid: false, message: 'Voucher sudah berakhir.' };
+  const expiresAt = voucher.expires_at;
+  if (expiresAt && new Date(expiresAt) < now) {
+    return { valid: false, message: 'Voucher sudah tidak berlaku.' };
   }
 
-  if (subtotal < voucher.minimum_transaction) {
+  const minTransaction = voucher.minimum_transaction ?? voucher.min_purchase_amount ?? 0;
+  if (subtotal < minTransaction) {
     return {
       valid: false,
-      message: `Minimum transaksi belum terpenuhi (min: Rp${voucher.minimum_transaction.toLocaleString('id-ID')}).`,
+      message: 'Minimum transaksi untuk voucher ini belum terpenuhi.',
     };
   }
 
-  if (voucher.usage_limit !== null && voucher.usage_count >= voucher.usage_limit) {
-    return { valid: false, message: 'Voucher telah mencapai batas penggunaan.' };
+  const usageLimit = voucher.usage_limit;
+  const usageCount = voucher.usage_count || 0;
+  if (usageLimit !== undefined && usageLimit !== null && usageCount >= usageLimit) {
+    return { valid: false, message: 'Voucher sudah mencapai batas penggunaan.' };
   }
 
-  let discountAmount = 0;
-  if (voucher.discount_type === 'percentage') {
-    discountAmount = Math.round((subtotal * voucher.discount_value) / 100);
-    if (voucher.maximum_discount !== null && discountAmount > voucher.maximum_discount) {
-      discountAmount = voucher.maximum_discount;
-    }
-  } else {
-    discountAmount = voucher.discount_value;
+  const discountType = voucher.discount_type;
+  const discValue = voucher.discount_value;
+
+  if (discValue === undefined || discValue === null || isNaN(discValue)) {
+    return { valid: false, message: 'Data voucher tidak lengkap atau tidak valid.' };
   }
+
+  let calculatedDiscount = 0;
+  if (discountType === 'percentage') {
+    calculatedDiscount = Math.round((subtotal * discValue) / 100);
+    if (voucher.maximum_discount !== null && voucher.maximum_discount !== undefined && voucher.maximum_discount > 0) {
+      calculatedDiscount = Math.min(calculatedDiscount, voucher.maximum_discount);
+    }
+  } else if (discountType === 'fixed') {
+    calculatedDiscount = discValue;
+  } else {
+    return { valid: false, message: 'Tipe diskon voucher tidak valid.' };
+  }
+
+  // Cap calculatedDiscount to subtotal so it doesn't go negative
+  calculatedDiscount = Math.max(0, Math.min(calculatedDiscount, subtotal));
 
   return {
     valid: true,
-    message: `Voucher berhasil diterapkan (${voucher.name})`,
+    message: `Voucher berhasil diterapkan (${voucher.name || voucher.code})`,
     voucher: {
       id: voucher.id,
       code: voucher.code,
       name: voucher.name,
-      discount_type: voucher.discount_type,
-      discount_value: voucher.discount_value,
-      discount_amount: discountAmount,
+      discount_type: discountType,
+      discount_value: discValue,
+      calculated_discount: calculatedDiscount,
     },
   };
 }
@@ -1567,9 +1596,12 @@ export async function getAdminFaqs(): Promise<FAQ[]> {
 export async function createFaq(data: Omit<FAQ, 'id' | 'created_at' | 'updated_at'>): Promise<FAQ> {
   invalidatePublicCache('public_faqs');
   if (isSupabaseConfigured) {
-    const { data: created, error } = await supabase.from('faqs').insert(data).select().single();
-    if (error) throw new Error(error.message);
-    return created as FAQ;
+    try {
+      const { data: created, error } = await supabase.from('faqs').insert(data).select().single();
+      if (!error && created) return created as FAQ;
+    } catch (e) {
+      console.warn('Supabase createFaq error, falling back to local storage', e);
+    }
   }
   const list = getLocalData<FAQ[]>(STORAGE_KEYS.FAQS, []);
   const newItem: FAQ = {
@@ -1585,14 +1617,17 @@ export async function createFaq(data: Omit<FAQ, 'id' | 'created_at' | 'updated_a
 export async function updateFaq(id: string, updates: Partial<FAQ>): Promise<FAQ> {
   invalidatePublicCache('public_faqs');
   if (isSupabaseConfigured) {
-    const { data, error } = await supabase
-      .from('faqs')
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return data as FAQ;
+    try {
+      const { data, error } = await supabase
+        .from('faqs')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) return data as FAQ;
+    } catch (e) {
+      console.warn('Supabase updateFaq error, falling back to local storage', e);
+    }
   }
   const list = getLocalData<FAQ[]>(STORAGE_KEYS.FAQS, []);
   const idx = list.findIndex((f) => f.id === id);
@@ -1605,9 +1640,12 @@ export async function updateFaq(id: string, updates: Partial<FAQ>): Promise<FAQ>
 export async function deleteFaq(id: string): Promise<void> {
   invalidatePublicCache('public_faqs');
   if (isSupabaseConfigured) {
-    const { error } = await supabase.from('faqs').delete().eq('id', id);
-    if (error) throw new Error(error.message);
-    return;
+    try {
+      const { error } = await supabase.from('faqs').delete().eq('id', id);
+      if (!error) return;
+    } catch (e) {
+      console.warn('Supabase deleteFaq error, falling back to local storage', e);
+    }
   }
   const list = getLocalData<FAQ[]>(STORAGE_KEYS.FAQS, []);
   setLocalData(
@@ -1713,13 +1751,17 @@ export async function createOrder(payload: OrderSubmissionPayload): Promise<Orde
   let discountAmount = 0;
   let voucherId: string | null = null;
   let voucherCodeSnapshot: string | null = null;
+  let voucherDiscountType: string | undefined;
+  let voucherDiscountValue: number | undefined;
 
   if (payload.voucher_code && payload.voucher_code.trim()) {
     const voucherResult = await validateVoucher(payload.voucher_code, subtotal);
     if (voucherResult.valid && voucherResult.voucher) {
-      discountAmount = voucherResult.voucher.discount_amount;
+      discountAmount = voucherResult.voucher.calculated_discount;
       voucherId = voucherResult.voucher.id;
       voucherCodeSnapshot = voucherResult.voucher.code;
+      voucherDiscountType = voucherResult.voucher.discount_type;
+      voucherDiscountValue = voucherResult.voucher.discount_value;
     }
   }
 
@@ -1739,15 +1781,26 @@ export async function createOrder(payload: OrderSubmissionPayload): Promise<Orde
           venue_address: payload.venue_address.trim(),
           additional_notes: payload.additional_notes?.trim() || null,
           package_id: selectedPkg.id,
+          package_name_snapshot: selectedPkg.name,
+          package_price_snapshot: selectedPkg.price,
+          package_duration_snapshot: selectedPkg.duration_hours,
+          subtotal: subtotal,
+          discount_amount: discountAmount,
+          estimated_total: estimatedTotal,
           voucher_id: voucherId,
-          voucher_code: voucherCodeSnapshot,
+          voucher_code_snapshot: voucherCodeSnapshot,
         },
         p_items: orderItemsToInsert,
       });
 
       if (!error && data) {
         const fullOrder = data as Order;
-        const msg = formatOrderWhatsAppMessage(fullOrder);
+        const orderForWhatsApp = {
+          ...fullOrder,
+          voucher_discount_type: voucherDiscountType,
+          voucher_discount_value: voucherDiscountValue,
+        };
+        const msg = formatOrderWhatsAppMessage(orderForWhatsApp);
         const waUrl = buildWhatsAppUrl(siteSettings.whatsapp_number, msg);
         return {
           success: true,
@@ -1808,7 +1861,12 @@ export async function createOrder(payload: OrderSubmissionPayload): Promise<Orde
     }
   }
 
-  const whatsappMessage = formatOrderWhatsAppMessage(createdOrder);
+  const orderForWhatsApp = {
+    ...createdOrder,
+    voucher_discount_type: voucherDiscountType,
+    voucher_discount_value: voucherDiscountValue,
+  };
+  const whatsappMessage = formatOrderWhatsAppMessage(orderForWhatsApp);
   const whatsappUrl = buildWhatsAppUrl(siteSettings.whatsapp_number, whatsappMessage);
 
   return {

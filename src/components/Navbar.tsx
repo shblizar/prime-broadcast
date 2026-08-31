@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PrimeBroadcastLogo } from './PrimeBroadcastLogo';
 import { Menu, X } from 'lucide-react';
@@ -9,12 +9,15 @@ export const Navbar: React.FC = () => {
   const location = useLocation();
   const { triggerReplay } = useSectionAnimation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isScrollingManualRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navLinks = [
     { label: 'Beranda', path: '/', hash: '' },
     { label: 'Paket', path: '/paket', hash: '' },
     { label: 'Tentang Kami', path: '/', hash: '#tentang' },
     { label: 'Galeri', path: '/', hash: '#galeri' },
+    { label: 'Aturan & Kebijakan', path: '/aturan-kebijakan', hash: '' },
     { label: 'FAQ', path: '/', hash: '#faq' },
   ];
 
@@ -24,6 +27,12 @@ export const Navbar: React.FC = () => {
       const targetId = location.hash.substring(1);
       const el = document.getElementById(targetId);
       if (el) {
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        isScrollingManualRef.current = true;
+        scrollTimeoutRef.current = setTimeout(() => {
+          isScrollingManualRef.current = false;
+        }, 1200);
+
         setTimeout(() => {
           el.scrollIntoView({ behavior: 'smooth' });
           triggerReplay(targetId);
@@ -46,6 +55,7 @@ export const Navbar: React.FC = () => {
     const sections = ['hero', 'portfolio', 'tentang', 'galeri', 'faq'];
     
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      if (isScrollingManualRef.current) return;
       // Filter entries that are intersecting
       const visibleEntries = entries.filter((e) => e.isIntersecting);
       if (visibleEntries.length > 0) {
@@ -57,8 +67,6 @@ export const Navbar: React.FC = () => {
         const id = topSection.target.id;
         const hash = (id === 'hero' || id === 'portfolio') ? '' : `#${id}`;
         setActiveHash(hash);
-        // Replace state in URL without pushing to history stack
-        window.history.replaceState(null, '', hash ? hash : window.location.pathname);
       }
     };
 
@@ -79,6 +87,13 @@ export const Navbar: React.FC = () => {
 
   const handleNavClick = (e: React.MouseEvent, item: { label: string; path: string; hash: string }) => {
     setMobileMenuOpen(false);
+
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    isScrollingManualRef.current = true;
+    scrollTimeoutRef.current = setTimeout(() => {
+      isScrollingManualRef.current = false;
+    }, 1200);
+
     if (item.label === 'Beranda' && location.pathname === '/') {
       e.preventDefault();
       window.scrollTo({ top: 0, behavior: 'smooth' });

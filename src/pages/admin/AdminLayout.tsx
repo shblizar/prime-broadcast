@@ -55,6 +55,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Client Logos', path: '/admin/client-logos', icon: Image, category: 'Media' },
     { label: 'FAQ', path: '/admin/faq', icon: HelpCircle, category: 'Pengaturan' },
     { label: 'Settings', path: '/admin/settings', icon: Settings, category: 'Pengaturan' },
+    { label: 'Database SQL', path: '/admin/database', icon: Database, category: 'Pengaturan' },
   ];
 
   // Derive current page title for breadcrumb

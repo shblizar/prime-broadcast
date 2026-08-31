@@ -105,15 +105,12 @@ export interface Voucher {
   id: string;
   code: string;
   name?: string;
-  discount_amount?: number;
   discount_type?: VoucherDiscountType;
   discount_value?: number;
   min_purchase_amount?: number;
   minimum_transaction?: number;
   maximum_discount?: number | null;
-  valid_from?: string;
   starts_at?: string;
-  valid_until?: string;
   expires_at?: string;
   usage_limit?: number | null;
   usage_count: number;
@@ -129,7 +126,7 @@ export interface VoucherValidationResult {
     id: string;
     code: string;
     name?: string;
-    discount_amount: number;
+    calculated_discount: number;
     discount_type?: VoucherDiscountType;
     discount_value?: number;
   };
@@ -195,7 +192,6 @@ export interface Order {
   voucher_id?: string | null;
   voucher_code?: string | null;
   voucher_code_snapshot?: string | null;
-  voucher_discount_amount?: number;
   discount_amount: number;
   estimated_total: number;
   status: OrderStatus;

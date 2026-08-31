@@ -97,16 +97,25 @@ export function formatOrderWhatsAppMessage(order: any): string {
   lines.push(`${formatIDR(order.subtotal)}`);
 
   const voucherCode = order.voucher_code || order.voucher_code_snapshot;
-  const discountAmount = order.voucher_discount_amount || order.discount_amount || 0;
+  const discountAmount = order.voucher_discount_amount || 0;
   if (voucherCode && discountAmount > 0) {
+    const discType = order.voucher_discount_type || order.discount_type || 'fixed';
+    const discValue = order.voucher_discount_value || order.discount_value;
+
     lines.push('');
-    lines.push(`Voucher:\n${voucherCode}`);
+    lines.push('Voucher:');
+    lines.push(`${voucherCode}`);
     lines.push('');
-    lines.push(`Potongan:\n-${formatIDR(discountAmount)}`);
+    lines.push('Diskon Voucher:');
+    if (discType === 'percentage' && discValue !== undefined) {
+      lines.push(`${discValue}% (-${formatIDR(discountAmount)})`);
+    } else {
+      lines.push(`-${formatIDR(discountAmount)}`);
+    }
   }
 
   lines.push('');
-  lines.push('ESTIMASI TOTAL:');
+  lines.push('Total Estimasi Biaya:');
   lines.push(`${formatIDR(order.estimated_total)}`);
 
   if (order.additional_notes && order.additional_notes.trim()) {
