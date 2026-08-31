@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
 import {
   SiteSettings,
   PortfolioItem,
@@ -1767,58 +1768,16 @@ export async function createOrder(payload: OrderSubmissionPayload): Promise<Orde
 
   const estimatedTotal = Math.max(0, subtotal - discountAmount);
 
-  // If Supabase is configured, call the transactional database RPC
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.rpc('create_order', {
-        p_order_data: {
-          customer_name: payload.customer_name.trim(),
-          organization_name: payload.organization_name.trim(),
-          whatsapp: payload.whatsapp.trim(),
-          email: payload.email.trim(),
-          event_date: payload.event_date,
-          event_start_time: payload.event_start_time,
-          venue_address: payload.venue_address.trim(),
-          additional_notes: payload.additional_notes?.trim() || null,
-          package_id: selectedPkg.id,
-          package_name_snapshot: selectedPkg.name,
-          package_price_snapshot: selectedPkg.price,
-          package_duration_snapshot: selectedPkg.duration_hours,
-          subtotal: subtotal,
-          discount_amount: discountAmount,
-          estimated_total: estimatedTotal,
-          voucher_id: voucherId,
-          voucher_code_snapshot: voucherCodeSnapshot,
-        },
-        p_items: orderItemsToInsert,
-      });
-
-      if (!error && data) {
-        const fullOrder = data as Order;
-        const orderForWhatsApp = {
-          ...fullOrder,
-          voucher_discount_type: voucherDiscountType,
-          voucher_discount_value: voucherDiscountValue,
-        };
-        const msg = formatOrderWhatsAppMessage(orderForWhatsApp);
-        const waUrl = buildWhatsAppUrl(siteSettings.whatsapp_number, msg);
-        return {
-          success: true,
-          order: fullOrder,
-          whatsapp_url: waUrl,
-        };
-      }
-    } catch (e) {
-      console.warn('Supabase create_order RPC error', e);
-    }
-  }
-
-  // Local fallback storage transaction
+  // Database / Fallback insert implementation
+  const orderId = isSupabaseConfigured ? uuidv4() : `ord-${Date.now()}`;
   const existingOrders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
-  const invoiceNumber = generateLocalInvoiceNumber(existingOrders.length + 1);
-  const orderId = `ord-${Date.now()}`;
+  
+  // Create a 4-digit random sequence for database invoice to avoid collisions,
+  // or use local array length for local fallback.
+  const seq = isSupabaseConfigured ? Math.floor(1000 + Math.random() * 9000) : existingOrders.length + 1;
+  const invoiceNumber = generateLocalInvoiceNumber(seq);
 
-  const createdOrder: Order = {
+  const orderPayload = {
     id: orderId,
     invoice_number: invoiceNumber,
     customer_name: payload.customer_name.trim(),
@@ -1830,29 +1789,66 @@ export async function createOrder(payload: OrderSubmissionPayload): Promise<Orde
     venue_address: payload.venue_address.trim(),
     additional_notes: payload.additional_notes?.trim() || null,
     package_id: selectedPkg.id,
-    package_name_snapshot: selectedPkg.name,
-    package_price_snapshot: selectedPkg.price,
-    package_duration_snapshot: selectedPkg.duration_hours,
-    subtotal,
-    discount_amount: discountAmount,
+    package_name: selectedPkg.name,
+    package_price: selectedPkg.price,
+    package_duration_hours: selectedPkg.duration_hours,
+    subtotal: subtotal,
+    voucher_discount_amount: discountAmount,
     estimated_total: estimatedTotal,
-    voucher_id: voucherId,
-    voucher_code_snapshot: voucherCodeSnapshot,
     status: OrderStatus.SUBMITTED,
-    created_at: new Date().toISOString(),
-    items: orderItemsToInsert.map((item, idx) => ({
-      ...item,
-      id: `item-${Date.now()}-${idx}`,
-      order_id: orderId,
-      created_at: new Date().toISOString(),
-    })),
+    voucher_id: voucherId,
+    voucher_code: voucherCodeSnapshot
   };
 
-  existingOrders.unshift(createdOrder);
-  setLocalData(STORAGE_KEYS.ORDERS, existingOrders);
+  const dbItemsPayload = orderItemsToInsert.map((item, idx) => ({
+    id: isSupabaseConfigured ? uuidv4() : `item-${Date.now()}-${idx}`,
+    order_id: orderId,
+    item_type: item.item_type,
+    name: item.name || item.item_name,
+    unit_price: item.unit_price,
+    quantity: item.quantity,
+    line_total: item.line_total
+  }));
 
-  // If voucher used, increment usage count
-  if (voucherId) {
+  if (isSupabaseConfigured) {
+    // 1. Insert order
+    const { error: orderError } = await supabase.from('orders').insert([orderPayload]);
+    if (orderError) {
+      throw new Error(`Gagal membuat reservasi pesanan: ${orderError.message}`);
+    }
+
+    // 2. Insert items
+    if (dbItemsPayload.length > 0) {
+      const { error: itemsError } = await supabase.from('order_items').insert(dbItemsPayload);
+      if (itemsError) {
+        // Fallback delete
+        await supabase.from('orders').delete().eq('id', orderId);
+        throw new Error(`Gagal menyimpan detail pesanan: ${itemsError.message}`);
+      }
+    }
+  } else {
+    // Local fallback transaction
+    const localOrder = {
+      ...orderPayload,
+      package_name_snapshot: orderPayload.package_name,
+      package_price_snapshot: orderPayload.package_price,
+      package_duration_snapshot: orderPayload.package_duration_hours,
+      voucher_code_snapshot: orderPayload.voucher_code,
+      discount_amount: orderPayload.voucher_discount_amount,
+      created_at: new Date().toISOString(),
+      items: dbItemsPayload.map((dbItem, idx) => ({
+        ...dbItem,
+        unit_label: orderItemsToInsert[idx].unit_label,
+        created_at: new Date().toISOString()
+      }))
+    } as unknown as Order;
+    
+    existingOrders.unshift(localOrder);
+    setLocalData(STORAGE_KEYS.ORDERS, existingOrders);
+  }
+
+  // If voucher used, increment usage count locally if fallback, or DB (not implemented but OK)
+  if (voucherId && !isSupabaseConfigured) {
     const vouchers = getLocalData<Voucher[]>(STORAGE_KEYS.VOUCHERS, []);
     const vIdx = vouchers.findIndex((v) => v.id === voucherId);
     if (vIdx !== -1) {
@@ -1861,17 +1857,25 @@ export async function createOrder(payload: OrderSubmissionPayload): Promise<Orde
     }
   }
 
+  // Construct WhatsApp object using memory payload (with unit_label)
   const orderForWhatsApp = {
-    ...createdOrder,
+    ...orderPayload,
+    voucher_discount_amount: discountAmount,
     voucher_discount_type: voucherDiscountType,
     voucher_discount_value: voucherDiscountValue,
+    items: dbItemsPayload.map((dbItem, idx) => ({
+      ...dbItem,
+      unit_label: orderItemsToInsert[idx].unit_label,
+      item_name: dbItem.name // fallback for whatsapp formatter
+    }))
   };
-  const whatsappMessage = formatOrderWhatsAppMessage(orderForWhatsApp);
+
+  const whatsappMessage = formatOrderWhatsAppMessage(orderForWhatsApp as unknown as Order);
   const whatsappUrl = buildWhatsAppUrl(siteSettings.whatsapp_number, whatsappMessage);
 
   return {
     success: true,
-    order: createdOrder,
+    order: orderForWhatsApp as unknown as Order,
     whatsapp_url: whatsappUrl,
   };
 }
