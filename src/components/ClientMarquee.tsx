@@ -22,10 +22,13 @@ export const ClientMarquee: React.FC = () => {
       className="py-14 bg-[#F7F5F1] border-y border-slate-200/60 overflow-hidden"
       id="clients"
     >
-      <div className="max-w-7xl mx-auto px-6 mb-8 text-center">
-        <h3 className="text-sm font-semibold tracking-wide text-[#A40D35]">
-          Client & Partner Penyiaran
+      <div className="max-w-7xl mx-auto px-6 mb-8 text-center space-y-2">
+        <h3 className="text-4xl md:text-[50px] font-bold tracking-wide text-[#A40D35]">
+          Pelanggan Unggulan
         </h3>
+        <p className="text-slate-600 text-sm sm:text-base">
+          Beberapa customer yang menggunakan layanan kami
+        </p>
       </div>
 
       <div className="relative w-full overflow-hidden">
