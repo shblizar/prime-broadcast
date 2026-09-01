@@ -171,7 +171,18 @@ const OVERLAY_BUFFER_FRAMES = 20;
  * ==============================================================
  */
 const AUTO_PLAY_IDLE_MS = 1200;
-const AUTO_PLAY_DURATION_MS = 26000;
+const AUTO_PLAY_DURATION_MS = 42000;
+
+/*
+ * PERFORMANCE: cap how often we actually decode + paint a new frame
+ * onto the canvas. JPEG decode + drawImage is the single heaviest
+ * operation in this whole component — during continuous autoplay
+ * (no natural pauses like real scrolling has) trying to paint every
+ * unique frame at 60fps is what causes visible lag. 24 draws/sec is
+ * indistinguishable from 60 for this kind of motion but is far
+ * cheaper, and applies to both scroll and autoplay.
+ */
+const DRAW_INTERVAL_MS = 1000 / 24;
 
 type OverlayAnimationState = {
   opacity: number;
@@ -320,6 +331,13 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   const lastFrameTimestampRef =
+    useRef<number>(0);
+
+  /*
+   * PERFORMANCE: last time we actually painted a new frame to the
+   * canvas, used to throttle draws to DRAW_INTERVAL_MS.
+   */
+  const lastDrawTimestampRef =
     useRef<number>(0);
 
   /*
@@ -815,27 +833,36 @@ export const OurProductsPage: React.FC = () => {
    */
 
   const preloadAhead = (
-    currentIndex: number
+    currentIndex: number,
+    forwardOnly = false
   ) => {
     const center =
       getSafeFrame(
         currentIndex
       );
 
-    const offsets = [
-      1,
-      -1,
-      2,
-      -2,
-      3,
-      -3,
-      4,
-      -4,
-      5,
-      -5,
-      6,
-      -6
-    ];
+    /*
+     * PERFORMANCE: during autoplay the playback direction is always
+     * forward, so there's no point spending loading slots on frames
+     * behind the current one — load further ahead instead so the
+     * decoder never runs out of ready frames.
+     */
+    const offsets = forwardOnly
+      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      : [
+          1,
+          -1,
+          2,
+          -2,
+          3,
+          -3,
+          4,
+          -4,
+          5,
+          -5,
+          6,
+          -6
+        ];
 
     for (
       const offset of offsets
@@ -1353,21 +1380,32 @@ export const OurProductsPage: React.FC = () => {
         );
 
       /*
-       * Render only when the integer frame changes.
+       * PERFORMANCE: only actually paint a new frame when the
+       * integer frame changed AND enough time has passed since the
+       * last paint (DRAW_INTERVAL_MS). This is what stops autoplay
+       * from trying to decode+draw a brand new JPEG on literally
+       * every animation tick.
        */
       if (
         renderFrame !==
-        currentFrameRef.current
+          currentFrameRef.current &&
+        now -
+          lastDrawTimestampRef.current >=
+          DRAW_INTERVAL_MS
       ) {
         currentFrameRef.current =
           renderFrame;
+
+        lastDrawTimestampRef.current =
+          now;
 
         drawFrame(
           renderFrame
         );
 
         preloadAhead(
-          renderFrame
+          renderFrame,
+          isIdle
         );
       }
 
