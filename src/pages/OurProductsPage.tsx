@@ -246,6 +246,27 @@ export const OurProductsPage: React.FC = () => {
     useRef<HTMLDivElement>(null);
 
   /*
+   * PERFORMANCE + LOOP FIX: flat list of every overlay section except
+   * the hero. Used to force-hide everything when autoplay wraps back
+   * to frame 0, since frame 0 is far outside all of these sections'
+   * active ranges and the normal "skip if far away" optimization
+   * would otherwise leave whatever was visible right before the loop
+   * (e.g. the final CTA) stuck on screen, overlapping the hero text.
+   */
+  const getNonHeroOverlayEntries =
+    () => [
+      { key: 'sonyTitle', ref: sonyTitleRef },
+      { key: 'sonySpecs', ref: sonySpecsRef },
+      { key: 'feelworldTitle', ref: feelworldTitleRef },
+      { key: 'feelworldSpecs', ref: feelworldSpecsRef },
+      { key: 'godoxTitle', ref: godoxTitleRef },
+      { key: 'godoxSpecs', ref: godoxSpecsRef },
+      { key: 'hollylandTitle', ref: hollylandTitleRef },
+      { key: 'hollylandSpecs', ref: hollylandSpecsRef },
+      { key: 'cta', ref: ctaOverlayRef }
+    ];
+
+  /*
    * PERFORMANCE: cache of the last value written to each overlay so
    * we never write the exact same opacity/transform twice in a row.
    */
@@ -982,6 +1003,39 @@ export const OurProductsPage: React.FC = () => {
   };
 
   /*
+   * LOOP FIX: hard-reset every non-hero overlay to fully hidden,
+   * bypassing the "skip if far from range" optimization. Call this
+   * exactly at the moment autoplay wraps back to frame 0 so nothing
+   * visible right before the loop can get stuck on screen.
+   */
+  const forceHideNonHeroOverlays =
+    () => {
+      getNonHeroOverlayEntries().forEach(
+        ({ key, ref }) => {
+          if (!ref.current) return;
+
+          ref.current.style.opacity =
+            '0';
+
+          ref.current.style.transform =
+            'translate3d(0, 24px, 0) scale(0.985)';
+
+          ref.current.style.pointerEvents =
+            'none';
+
+          lastOverlayStateRef.current.set(
+            key,
+            {
+              opacity: 0,
+              translateY: 24,
+              scale: 0.985
+            }
+          );
+        }
+      );
+    };
+
+  /*
    * PERFORMANCE: only compute + write a section's overlay if the
    * current frame is anywhere near its active window. Everything
    * far outside that window was already hidden by a previous tick
@@ -1334,6 +1388,11 @@ export const OurProductsPage: React.FC = () => {
 
           smoothFrameRef.current =
             0;
+
+          currentFrameRef.current =
+            -1;
+
+          forceHideNonHeroOverlays();
         }
 
         targetFrameRef.current =
