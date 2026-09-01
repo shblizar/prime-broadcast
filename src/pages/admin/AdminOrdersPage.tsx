@@ -3,6 +3,8 @@ import { getAllOrders, updateOrderStatus } from '../../services/api';
 import { Order, OrderStatus } from '../../types';
 import { formatIDR } from '../../utils/currency';
 import { generateWhatsAppMessage, normalizeWhatsAppNumber } from '../../utils/whatsapp';
+import { generateGmailLink } from '../../utils/email';
+import { generateInvoicePDF } from '../../utils/pdf';
 import {
   Search,
   Filter,
@@ -17,6 +19,7 @@ import {
   Mail,
   FileText,
   X,
+  Printer
 } from 'lucide-react';
 
 export const AdminOrdersPage: React.FC = () => {
@@ -207,6 +210,31 @@ export const AdminOrdersPage: React.FC = () => {
                           <MessageSquare className="w-3.5 h-3.5" />
                           <span>WA</span>
                         </a>
+
+                        <a
+                          href={generateGmailLink(order)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold text-[11px] transition-colors"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Gmail</span>
+                        </a>
+
+                        <button
+                          onClick={async () => {
+                            try {
+                              await generateInvoicePDF(order);
+                            } catch (error) {
+                              console.error('Failed to generate PDF', error);
+                              alert('Gagal membuat invoice PDF.');
+                            }
+                          }}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-bold text-[11px] transition-colors"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Invoice</span>
+                        </button>
                       </td>
                     </tr>
                   );
