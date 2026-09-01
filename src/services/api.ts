@@ -1273,9 +1273,17 @@ export async function getOvertimeSettings(): Promise<OvertimeSettings> {
 export async function updateOvertimeSettings(updates: Partial<OvertimeSettings>): Promise<OvertimeSettings> {
   if (isSupabaseConfigured) {
     const current = await getOvertimeSettings();
+    
+    const { id, ...restCurrent } = current;
+    const payload = {
+      ...(id === 'default-overtime' ? restCurrent : current),
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from('overtime_settings')
-      .upsert({ ...current, ...updates, updated_at: new Date().toISOString() })
+      .upsert(payload)
       .select()
       .single();
     if (error) throw new Error(error.message);
