@@ -206,7 +206,7 @@ export const PublicDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       >
         <div className="flex flex-col items-center max-w-sm w-full space-y-8">
           {/* Prime Broadcast Logo */}
-          <PrimeBroadcastLogo className="h-16 text-[#081A2E]" />
+          <PrimeBroadcastLogo className="h-16 text-[#081A2E]" showText={false} />
 
           {/* Minimal rotating loader */}
           <div className="flex items-center gap-3 text-slate-500 font-medium">

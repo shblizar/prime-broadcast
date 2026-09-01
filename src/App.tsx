@@ -11,6 +11,7 @@ import { CheckoutPage } from './pages/CheckoutPage';
 import { PolicyPage } from './pages/PolicyPage';
 
 // Admin Pages (dynamically imported / code-split to reduce initial bundle size)
+const OurProductsPage = lazy(() => import('./pages/OurProductsPage').then((m) => ({ default: m.OurProductsPage })));
 const LoginPage = lazy(() => import('./pages/admin/LoginPage').then((m) => ({ default: m.LoginPage })));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
 const AdminProtectedRoute = lazy(() =>
@@ -115,6 +116,14 @@ export default function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />
+              <Route
+                path="/our-products"
+                element={
+                  <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-500 text-sm">Loading...</div>}>
+                    <OurProductsPage />
+                  </Suspense>
+                }
+              />
               <Route path="/paket" element={<PackagePage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/faq" element={<Navigate to="/#faq" replace />} />
