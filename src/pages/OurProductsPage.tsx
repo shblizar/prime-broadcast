@@ -143,6 +143,39 @@ const getOverlayAnimation = (
   };
 };
 
+/*
+ * ==============================================================
+ * PERFORMANCE: overlay section registry
+ * ==============================================================
+ * Each text overlay only needs to be touched (DOM write) while the
+ * scroll frame is anywhere near its active window. Outside of that
+ * window (with a small safety buffer) it is already fully hidden
+ * from a previous update, so there is nothing new to paint and we
+ * skip it entirely. This turns "10 DOM writes every single animation
+ * tick" into "1-2 DOM writes only when something is actually moving",
+ * which is the main source of scroll jank/lag.
+ * ==============================================================
+ */
+const OVERLAY_BUFFER_FRAMES = 20;
+
+type OverlayAnimationState = {
+  opacity: number;
+  translateY: number;
+  scale: number;
+};
+
+const isFrameNearRange = (
+  frame: number,
+  startFrame: number,
+  endFrame: number,
+  buffer: number
+) => {
+  return (
+    frame >= startFrame - buffer &&
+    frame <= endFrame + buffer
+  );
+};
+
 export const OurProductsPage: React.FC = () => {
   const containerRef =
     useRef<HTMLDivElement>(null);
@@ -187,6 +220,15 @@ export const OurProductsPage: React.FC = () => {
     useRef<HTMLDivElement>(null);
 
   /*
+   * PERFORMANCE: cache of the last value written to each overlay so
+   * we never write the exact same opacity/transform twice in a row.
+   */
+  const lastOverlayStateRef =
+    useRef<Map<string, OverlayAnimationState>>(
+      new Map()
+    );
+
+  /*
    * ==========================================================
    * IMAGE CACHE
    * ==========================================================
@@ -225,10 +267,13 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   /*
-   * Keep network concurrency controlled
-   * to avoid choking mobile devices.
+   * Keep network concurrency controlled to avoid choking mobile
+   * devices, but high enough that fast scrolling doesn't outrun
+   * the loader and cause visible stepping/stutter. 3 was too low
+   * for a 862-frame sequence; 6 keeps things buffered without
+   * saturating slow connections.
    */
-  const MAX_CONCURRENT_LOADS = 3;
+  const MAX_CONCURRENT_LOADS = 6;
 
   /*
    * ==========================================================
@@ -759,7 +804,11 @@ export const OurProductsPage: React.FC = () => {
       3,
       -3,
       4,
-      -4
+      -4,
+      5,
+      -5,
+      6,
+      -6
     ];
 
     for (
@@ -837,14 +886,28 @@ export const OurProductsPage: React.FC = () => {
    */
 
   const updateOverlay = (
+    key: string,
     element: HTMLDivElement | null,
-    animation: {
-      opacity: number;
-      translateY: number;
-      scale: number;
-    }
+    animation: OverlayAnimationState
   ) => {
     if (!element) return;
+
+    /*
+     * PERFORMANCE: skip the DOM write entirely if this exact value
+     * was already applied last tick. Prevents redundant style
+     * recalculation when the section is fully hidden and nothing
+     * about it is actually changing.
+     */
+    const last =
+      lastOverlayStateRef.current.get(key);
+
+    const changed =
+      !last ||
+      Math.abs(last.opacity - animation.opacity) > 0.001 ||
+      Math.abs(last.translateY - animation.translateY) > 0.05 ||
+      Math.abs(last.scale - animation.scale) > 0.0005;
+
+    if (!changed) return;
 
     element.style.opacity =
       String(
@@ -858,6 +921,51 @@ export const OurProductsPage: React.FC = () => {
       animation.opacity > 0.01
         ? 'auto'
         : 'none';
+
+    lastOverlayStateRef.current.set(
+      key,
+      animation
+    );
+  };
+
+  /*
+   * PERFORMANCE: only compute + write a section's overlay if the
+   * current frame is anywhere near its active window. Everything
+   * far outside that window was already hidden by a previous tick
+   * and needs no further work, so we skip it completely instead of
+   * touching the DOM for all 10 overlays on every single frame.
+   */
+  const updateOverlaySection = (
+    key: string,
+    element: HTMLDivElement | null,
+    frame: number,
+    startFrame: number,
+    endFrame: number,
+    fadeInDuration: number,
+    fadeOutDuration: number
+  ) => {
+    if (
+      !isFrameNearRange(
+        frame,
+        startFrame,
+        endFrame,
+        OVERLAY_BUFFER_FRAMES
+      )
+    ) {
+      return;
+    }
+
+    updateOverlay(
+      key,
+      element,
+      getOverlayAnimation(
+        frame,
+        startFrame,
+        endFrame,
+        fadeInDuration,
+        fadeOutDuration
+      )
+    );
   };
 
   const updateTextOverlays = (
@@ -876,135 +984,126 @@ export const OurProductsPage: React.FC = () => {
      * and only fades OUT near frame 59.
      * ========================================================
      */
-    updateOverlay(
+    updateOverlaySection(
+      'hero',
       heroOverlayRef.current,
-      getOverlayAnimation(
-        frame,
-        0,
-        59,
-        0,
-        12
-      )
+      frame,
+      0,
+      59,
+      0,
+      12
     );
 
     /*
      * SONY TITLE
      * Frame 60-179
      */
-    updateOverlay(
+    updateOverlaySection(
+      'sonyTitle',
       sonyTitleRef.current,
-      getOverlayAnimation(
-        frame,
-        60,
-        179,
-        14,
-        16
-      )
+      frame,
+      60,
+      179,
+      14,
+      16
     );
 
     /*
      * SONY SPECS
      * Frame 180-299
      */
-    updateOverlay(
+    updateOverlaySection(
+      'sonySpecs',
       sonySpecsRef.current,
-      getOverlayAnimation(
-        frame,
-        180,
-        299,
-        14,
-        16
-      )
+      frame,
+      180,
+      299,
+      14,
+      16
     );
 
     /*
      * FEELWORLD TITLE
      * Frame 300-404
      */
-    updateOverlay(
+    updateOverlaySection(
+      'feelworldTitle',
       feelworldTitleRef.current,
-      getOverlayAnimation(
-        frame,
-        300,
-        404,
-        14,
-        14
-      )
+      frame,
+      300,
+      404,
+      14,
+      14
     );
 
     /*
      * FEELWORLD SPECS
      * Frame 405-569
      */
-    updateOverlay(
+    updateOverlaySection(
+      'feelworldSpecs',
       feelworldSpecsRef.current,
-      getOverlayAnimation(
-        frame,
-        405,
-        569,
-        16,
-        18
-      )
+      frame,
+      405,
+      569,
+      16,
+      18
     );
 
     /*
      * GODOX TITLE
      * Frame 619-653
      */
-    updateOverlay(
+    updateOverlaySection(
+      'godoxTitle',
       godoxTitleRef.current,
-      getOverlayAnimation(
-        frame,
-        619,
-        653,
-        8,
-        8
-      )
+      frame,
+      619,
+      653,
+      8,
+      8
     );
 
     /*
      * GODOX SPECS
      * Frame 652-691
      */
-    updateOverlay(
+    updateOverlaySection(
+      'godoxSpecs',
       godoxSpecsRef.current,
-      getOverlayAnimation(
-        frame,
-        652,
-        691,
-        8,
-        8
-      )
+      frame,
+      652,
+      691,
+      8,
+      8
     );
 
     /*
      * HOLLYLAND TITLE
      * Frame 692-768
      */
-    updateOverlay(
+    updateOverlaySection(
+      'hollylandTitle',
       hollylandTitleRef.current,
-      getOverlayAnimation(
-        frame,
-        692,
-        768,
-        12,
-        12
-      )
+      frame,
+      692,
+      768,
+      12,
+      12
     );
 
     /*
      * HOLLYLAND SPECS
      * Frame 768-839
      */
-    updateOverlay(
+    updateOverlaySection(
+      'hollylandSpecs',
       hollylandSpecsRef.current,
-      getOverlayAnimation(
-        frame,
-        768,
-        839,
-        12,
-        12
-      )
+      frame,
+      768,
+      839,
+      12,
+      12
     );
 
     /*
@@ -1015,15 +1114,14 @@ export const OurProductsPage: React.FC = () => {
      * No fade out, so it remains visible
      * through the final frame.
      */
-    updateOverlay(
+    updateOverlaySection(
+      'cta',
       ctaOverlayRef.current,
-      getOverlayAnimation(
-        frame,
-        840,
-        861,
-        8,
-        0
-      )
+      frame,
+      840,
+      861,
+      8,
+      0
     );
   };
 
@@ -1221,6 +1319,8 @@ export const OurProductsPage: React.FC = () => {
 
       frameQueue.current = [];
       queueSet.current.clear();
+
+      lastOverlayStateRef.current.clear();
     };
   }, []);
 
