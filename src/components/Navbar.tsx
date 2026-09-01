@@ -14,7 +14,7 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { label: 'Beranda', path: '/', hash: '' },
-    { label: 'Our Products', path: '/our-products', hash: '' },
+    { label: 'Our Equipment', path: '/our-products', hash: '' },
     { label: 'Paket', path: '/paket', hash: '' },
     { label: 'Tentang Kami', path: '/', hash: '#tentang' },
     { label: 'Galeri', path: '/', hash: '#galeri' },
