@@ -124,6 +124,10 @@ export function formatOrderWhatsAppMessage(order: any): string {
     lines.push(order.additional_notes.trim());
   }
 
+  lines.push('');
+  lines.push('Pembayaran Anda berhasil,');
+  lines.push('Terima kasih sudah mempercayakan event Anda kepada kami.');
+
   return lines.join('\n');
 }
 
