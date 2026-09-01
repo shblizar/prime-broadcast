@@ -320,7 +320,7 @@ export const OurProductsPage: React.FC = () => {
    * for a 862-frame sequence; 6 keeps things buffered without
    * saturating slow connections.
    */
-  const MAX_CONCURRENT_LOADS = 6;
+  const MAX_CONCURRENT_LOADS = 8;
 
   /*
    * ==========================================================
@@ -633,52 +633,82 @@ export const OurProductsPage: React.FC = () => {
             img.decoding =
               'async';
 
-            img.onload = () => {
-              imageCache.current.set(
-                frame,
-                img
-              );
-
-              loadingFrames.current.delete(
-                frame
-              );
-
-              activeLoadsRef.current--;
-
-              resolve();
-
-              processFrameQueue();
-
-              /*
-               * Immediately render the frame
-               * if it is still the current frame.
-               */
-              const currentFrame =
-                getSafeFrame(
-                  smoothFrameRef.current
+            /*
+             * PERFORMANCE (root cause of the stutter): browsers often
+             * defer the actual JPEG pixel decode until the image is
+             * first drawn, not when it finishes downloading. That
+             * means the expensive decode work was happening exactly
+             * when we tried to paint it mid-animation — the real
+             * source of the choppiness. img.decode() forces decoding
+             * to finish ahead of time (off the main thread on
+             * supporting browsers), during the idle preload window,
+             * so drawImage() at playback time is just a cheap blit.
+             */
+            const finalizeFrame =
+              () => {
+                imageCache.current.set(
+                  frame,
+                  img
                 );
 
-              if (
-                currentFrame ===
-                frame
-              ) {
-                const canvas =
-                  canvasRef.current;
+                loadingFrames.current.delete(
+                  frame
+                );
 
-                if (!canvas) return;
+                activeLoadsRef.current--;
 
-                const ctx =
-                  canvas.getContext(
-                    '2d'
+                resolve();
+
+                processFrameQueue();
+
+                /*
+                 * Immediately render the frame
+                 * if it is still the current frame.
+                 */
+                const currentFrame =
+                  getSafeFrame(
+                    smoothFrameRef.current
                   );
 
-                if (!ctx) return;
+                if (
+                  currentFrame ===
+                  frame
+                ) {
+                  const canvas =
+                    canvasRef.current;
 
-                drawImageCover(
-                  ctx,
-                  img,
-                  canvas
-                );
+                  if (!canvas) return;
+
+                  const ctx =
+                    canvas.getContext(
+                      '2d'
+                    );
+
+                  if (!ctx) return;
+
+                  drawImageCover(
+                    ctx,
+                    img,
+                    canvas
+                  );
+                }
+              };
+
+            img.onload = () => {
+              if (
+                typeof img.decode ===
+                'function'
+              ) {
+                img
+                  .decode()
+                  .then(
+                    finalizeFrame
+                  )
+                  .catch(
+                    finalizeFrame
+                  );
+              } else {
+                finalizeFrame();
               }
             };
 
@@ -869,7 +899,7 @@ export const OurProductsPage: React.FC = () => {
      * decoder never runs out of ready frames.
      */
     const offsets = forwardOnly
-      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
       : [
           1,
           -1,
