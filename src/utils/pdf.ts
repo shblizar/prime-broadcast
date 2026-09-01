@@ -515,30 +515,6 @@ export const generateInvoicePDF = async (order: Order) => {
     'bold',
   );
 
-  doc.text(
-    'Pembayaran Anda berhasil,',
-    15,
-    finalY,
-  );
-
-  doc.setFontSize(9);
-  doc.setFont(
-    'helvetica',
-    'normal',
-  );
-
-  doc.text(
-    'Terima kasih sudah mempercayakan',
-    15,
-    finalY + 5,
-  );
-
-  doc.text(
-    'event Anda kepada kami.',
-    15,
-    finalY + 10,
-  );
-
   const summaryX = 130;
   const labelX = summaryX;
   const colonX =
