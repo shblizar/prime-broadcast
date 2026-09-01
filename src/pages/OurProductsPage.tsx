@@ -7,6 +7,8 @@ const productSequence = {
   extension: 'jpg'
 };
 
+const PACKAGE_ROUTE = '/paket';
+
 const getFrameUrl = (index: number) => {
   return `${productSequence.basePath}Video%20%20%20%20Web${index
     .toString()
@@ -29,12 +31,23 @@ const smoothStep = (value: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/*
+ * Frame-driven animation.
+ *
+ * Every text block:
+ * - fade in
+ * - hold
+ * - fade out
+ *
+ * Because the animation is based directly on frame position,
+ * scrolling upward automatically reverses the animation.
+ */
 const getOverlayAnimation = (
   frame: number,
   startFrame: number,
   endFrame: number,
-  fadeInEnd: number,
-  fadeOutStart: number
+  fadeInDuration = 12,
+  fadeOutDuration = 12
 ) => {
   if (
     frame < startFrame ||
@@ -47,27 +60,50 @@ const getOverlayAnimation = (
     };
   }
 
+  const fadeInEnd = Math.min(
+    startFrame + fadeInDuration,
+    endFrame
+  );
+
+  const fadeOutStart = Math.max(
+    endFrame - fadeOutDuration,
+    startFrame
+  );
+
   let opacity = 1;
   let translateY = 0;
   let scale = 1;
 
+  /*
+   * Fade in
+   */
   if (frame < fadeInEnd) {
     const progress = smoothStep(
       (frame - startFrame) /
-        (fadeInEnd - startFrame)
+        Math.max(
+          1,
+          fadeInEnd - startFrame
+        )
     );
 
     opacity = progress;
     translateY =
       24 * (1 - progress);
     scale =
-      0.985 + 0.015 * progress;
+      0.985 +
+      0.015 * progress;
   }
 
+  /*
+   * Fade out
+   */
   if (frame > fadeOutStart) {
     const progress = smoothStep(
       (frame - fadeOutStart) /
-        (endFrame - fadeOutStart)
+        Math.max(
+          1,
+          endFrame - fadeOutStart
+        )
     );
 
     opacity = 1 - progress;
@@ -91,47 +127,69 @@ export const OurProductsPage: React.FC = () => {
   const canvasRef =
     useRef<HTMLCanvasElement>(null);
 
+  /*
+   * ==========================================================
+   * TEXT REFS
+   * ==========================================================
+   */
+
   const heroOverlayRef =
     useRef<HTMLDivElement>(null);
 
-  const productOverlayRef =
+  const sonyTitleRef =
     useRef<HTMLDivElement>(null);
 
-  const standardOverlayRef =
+  const sonySpecsRef =
+    useRef<HTMLDivElement>(null);
+
+  const feelworldTitleRef =
+    useRef<HTMLDivElement>(null);
+
+  const feelworldSpecsRef =
+    useRef<HTMLDivElement>(null);
+
+  const godoxTitleRef =
+    useRef<HTMLDivElement>(null);
+
+  const godoxSpecsRef =
+    useRef<HTMLDivElement>(null);
+
+  const hollylandTitleRef =
+    useRef<HTMLDivElement>(null);
+
+  const hollylandSpecsRef =
+    useRef<HTMLDivElement>(null);
+
+  const ctaOverlayRef =
     useRef<HTMLDivElement>(null);
 
   /*
-   * Successfully loaded frames.
+   * ==========================================================
+   * IMAGE CACHE
+   * ==========================================================
    */
+
   const imageCache =
     useRef<Map<number, HTMLImageElement>>(
       new Map()
     );
 
-  /*
-   * Frames currently loading.
-   */
   const loadingFrames =
     useRef<Map<number, Promise<void>>>(
       new Map()
     );
 
-  /*
-   * Frames that failed to load.
-   * Prevents endless retry loops.
-   */
   const failedFrames =
     useRef<Set<number>>(
       new Set()
     );
 
   /*
-   * Loading queue.
-   *
-   * Instead of firing many image requests at once,
-   * frames are queued and processed with a small
-   * concurrency limit.
+   * ==========================================================
+   * CONTROLLED IMAGE QUEUE
+   * ==========================================================
    */
+
   const frameQueue =
     useRef<number[]>([]);
 
@@ -144,29 +202,23 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   /*
-   * A very small concurrency limit is intentional.
-   *
-   * The goal is to keep scrolling responsive instead
-   * of saturating the browser with hundreds of JPG
-   * downloads + decodes at once.
+   * Keep network concurrency low enough
+   * so scrolling remains responsive.
    */
   const MAX_CONCURRENT_LOADS = 3;
 
   /*
-   * Current integer frame actually rendered.
+   * ==========================================================
+   * FRAME STATE
+   * ==========================================================
    */
+
   const currentFrameRef =
     useRef<number>(0);
 
-  /*
-   * Floating-point frame used for smooth interpolation.
-   */
   const smoothFrameRef =
     useRef<number>(0);
 
-  /*
-   * Frame target generated from scroll.
-   */
   const targetFrameRef =
     useRef<number>(0);
 
@@ -175,6 +227,12 @@ export const OurProductsPage: React.FC = () => {
 
   const renderLoopRef =
     useRef<number>(0);
+
+  /*
+   * ==========================================================
+   * FRAME HELPERS
+   * ==========================================================
+   */
 
   const getSafeFrame = (
     index: number
@@ -238,8 +296,8 @@ export const OurProductsPage: React.FC = () => {
     let sourceY = 0;
 
     /*
-     * Crop source image when necessary so
-     * the Canvas is always completely filled.
+     * Crop source image as needed
+     * so the viewport is always fully filled.
      */
     if (
       imageRatio > canvasRatio
@@ -307,12 +365,6 @@ export const OurProductsPage: React.FC = () => {
         )
       );
 
-    /*
-     * Use a capped DPR.
-     *
-     * This reduces the amount of pixels the Canvas
-     * has to redraw while keeping the visual crisp.
-     */
     const dpr =
       Math.min(
         window.devicePixelRatio || 1,
@@ -371,24 +423,12 @@ export const OurProductsPage: React.FC = () => {
    * ==========================================================
    */
 
-  const removeFromQueueSet = (
-    frame: number
-  ) => {
-    queueSet.current.delete(
-      frame
-    );
-  };
-
   const enqueueFrame = (
     index: number
   ) => {
     const safeIndex =
       getSafeFrame(index);
 
-    /*
-     * Don't queue frames that are already
-     * loaded, loading, or known to be invalid.
-     */
     if (
       imageCache.current.has(
         safeIndex
@@ -415,60 +455,13 @@ export const OurProductsPage: React.FC = () => {
     );
   };
 
-  const enqueueFramesByPriority = (
-    targetFrame: number
-  ) => {
-    const center =
-      getSafeFrame(
-        targetFrame
-      );
-
-    /*
-     * Current frame gets highest priority.
-     */
-    enqueueFrame(center);
-
-    /*
-     * Then frames immediately around it.
-     *
-     * This helps both forward and backward scrolling.
-     */
-    const priorityOffsets = [
-      1,
-      -1,
-      2,
-      -2,
-      3,
-      -3,
-      4,
-      -4,
-      5,
-      -5,
-      6,
-      -6
-    ];
-
-    for (
-      const offset of priorityOffsets
-    ) {
-      enqueueFrame(
-        center + offset
-      );
-    }
-  };
-
   const processFrameQueue = () => {
     while (
       activeLoadsRef.current <
         MAX_CONCURRENT_LOADS &&
-      frameQueue.current.length > 0
+      frameQueue.current.length >
+        0
     ) {
-      /*
-       * Always process the most recently
-       * requested queue item first.
-       *
-       * This helps when the user scrolls quickly.
-       */
       const frame =
         frameQueue.current.pop();
 
@@ -478,7 +471,7 @@ export const OurProductsPage: React.FC = () => {
         break;
       }
 
-      removeFromQueueSet(
+      queueSet.current.delete(
         frame
       );
 
@@ -504,11 +497,8 @@ export const OurProductsPage: React.FC = () => {
             const img =
               new Image();
 
-            /*
-             * Async decode prevents synchronous
-             * decode work from blocking the UI.
-             */
-            img.decoding = 'async';
+            img.decoding =
+              'async';
 
             img.onload = () => {
               imageCache.current.set(
@@ -524,15 +514,11 @@ export const OurProductsPage: React.FC = () => {
 
               resolve();
 
-              /*
-               * Continue processing queued frames
-               * as soon as this one completes.
-               */
               processFrameQueue();
 
               /*
-               * If this is the frame currently needed,
-               * render it immediately.
+               * If this frame is currently needed,
+               * draw it immediately.
                */
               const currentFrame =
                 getSafeFrame(
@@ -564,11 +550,6 @@ export const OurProductsPage: React.FC = () => {
             };
 
             img.onerror = () => {
-              /*
-               * Mark failed permanently for this
-               * page lifetime so it cannot create
-               * an endless request loop.
-               */
               failedFrames.current.add(
                 frame
               );
@@ -585,7 +566,9 @@ export const OurProductsPage: React.FC = () => {
             };
 
             img.src =
-              getFrameUrl(frame);
+              getFrameUrl(
+                frame
+              );
           }
         );
 
@@ -596,12 +579,6 @@ export const OurProductsPage: React.FC = () => {
     }
   };
 
-  /*
-   * Public loader used by rendering.
-   *
-   * It does NOT immediately fire unlimited requests.
-   * It adds the frame to the controlled queue.
-   */
   const loadFrame = (
     index: number
   ): Promise<void> => {
@@ -611,12 +588,7 @@ export const OurProductsPage: React.FC = () => {
     if (
       imageCache.current.has(
         safeIndex
-      )
-    ) {
-      return Promise.resolve();
-    }
-
-    if (
+      ) ||
       failedFrames.current.has(
         safeIndex
       )
@@ -639,37 +611,12 @@ export const OurProductsPage: React.FC = () => {
 
     processFrameQueue();
 
-    const queuedPromise =
-      new Promise<void>(
-        (resolve) => {
-          const check = () => {
-            if (
-              imageCache.current.has(
-                safeIndex
-              ) ||
-              failedFrames.current.has(
-                safeIndex
-              )
-            ) {
-              resolve();
-              return;
-            }
-
-            requestAnimationFrame(
-              check
-            );
-          };
-
-          check();
-        }
-      );
-
-    return queuedPromise;
+    return Promise.resolve();
   };
 
   /*
    * ==========================================================
-   * FRAME RENDERING
+   * FRAME RENDER
    * ==========================================================
    */
 
@@ -722,14 +669,14 @@ export const OurProductsPage: React.FC = () => {
     const safeIndex =
       getSafeFrame(index);
 
-    /*
-     * Exact frame already available.
-     */
     const exactImage =
       imageCache.current.get(
         safeIndex
       );
 
+    /*
+     * Exact frame available.
+     */
     if (exactImage) {
       drawImageCover(
         ctx,
@@ -741,10 +688,8 @@ export const OurProductsPage: React.FC = () => {
     }
 
     /*
-     * Fallback to the closest loaded frame.
-     *
-     * This prevents the Canvas from going blank
-     * when the requested frame is still loading.
+     * Keep currently available visual
+     * instead of flashing to blank.
      */
     const closestImage =
       findClosestLoadedFrame(
@@ -760,13 +705,9 @@ export const OurProductsPage: React.FC = () => {
     }
 
     /*
-     * Queue the exact frame with highest priority.
+     * Prioritize requested frame.
      */
-    loadFrame(
-      safeIndex
-    );
-
-    enqueueFramesByPriority(
+    enqueueFrame(
       safeIndex
     );
 
@@ -787,11 +728,6 @@ export const OurProductsPage: React.FC = () => {
         currentIndex
       );
 
-    /*
-     * Only preload a small number of nearby frames.
-     *
-     * No huge preload window.
-     */
     const offsets = [
       1,
       -1,
@@ -873,7 +809,7 @@ export const OurProductsPage: React.FC = () => {
 
   /*
    * ==========================================================
-   * TEXT OVERLAYS
+   * TEXT OVERLAY
    * ==========================================================
    */
 
@@ -905,54 +841,174 @@ export const OurProductsPage: React.FC = () => {
     frame: number
   ) => {
     /*
-     * OUR PRODUCTS
-     * Frame 0-50
+     * HERO
+     * FRAME 0-59
+     * CENTER
      */
     updateOverlay(
       heroOverlayRef.current,
       getOverlayAnimation(
         frame,
         0,
-        50,
+        59,
         12,
-        38
+        12
       )
     );
 
     /*
-     * SONY NX-100
-     * Frame 50-180
+     * SONY TITLE
+     * FRAME 60-179
+     * LEFT
      */
     updateOverlay(
-      productOverlayRef.current,
+      sonyTitleRef.current,
       getOverlayAnimation(
         frame,
-        50,
+        60,
+        179,
+        14,
+        16
+      )
+    );
+
+    /*
+     * SONY SPECS
+     * FRAME 180-299
+     * RIGHT
+     */
+    updateOverlay(
+      sonySpecsRef.current,
+      getOverlayAnimation(
+        frame,
         180,
-        70,
-        150
+        299,
+        14,
+        16
       )
     );
 
     /*
-     * Membangun Standard Penyiaran
-     * Frame 200-250
+     * FEELWORLD TITLE
+     * FRAME 300-404
+     * LEFT
      */
     updateOverlay(
-      standardOverlayRef.current,
+      feelworldTitleRef.current,
       getOverlayAnimation(
         frame,
-        200,
-        250,
-        215,
-        235
+        300,
+        404,
+        14,
+        14
+      )
+    );
+
+    /*
+     * FEELWORLD SPECS
+     * FRAME 405-569
+     * RIGHT
+     */
+    updateOverlay(
+      feelworldSpecsRef.current,
+      getOverlayAnimation(
+        frame,
+        405,
+        569,
+        16,
+        18
+      )
+    );
+
+    /*
+     * GODOX TITLE
+     * FRAME 619-653
+     * LEFT
+     */
+    updateOverlay(
+      godoxTitleRef.current,
+      getOverlayAnimation(
+        frame,
+        619,
+        653,
+        8,
+        8
+      )
+    );
+
+    /*
+     * GODOX SPECS
+     * FRAME 652-691
+     * RIGHT
+     */
+    updateOverlay(
+      godoxSpecsRef.current,
+      getOverlayAnimation(
+        frame,
+        652,
+        691,
+        8,
+        8
+      )
+    );
+
+    /*
+     * HOLLYLAND TITLE
+     * FRAME 692-768
+     * LEFT
+     */
+    updateOverlay(
+      hollylandTitleRef.current,
+      getOverlayAnimation(
+        frame,
+        692,
+        768,
+        12,
+        12
+      )
+    );
+
+    /*
+     * HOLLYLAND SPECS
+     * FRAME 768-839
+     * LEFT
+     */
+    updateOverlay(
+      hollylandSpecsRef.current,
+      getOverlayAnimation(
+        frame,
+        768,
+        839,
+        12,
+        12
+      )
+    );
+
+    /*
+     * FINAL CTA
+     *
+     * FRAME 840-861
+     * CENTER
+     *
+     * IMPORTANT:
+     * fadeOutDuration = 0
+     * means CTA remains visible at frame 861.
+     */
+    updateOverlay(
+      ctaOverlayRef.current,
+      getOverlayAnimation(
+        frame,
+        840,
+        861,
+        8,
+        0
       )
     );
   };
 
   /*
    * ==========================================================
-   * EVENT HANDLERS
+   * EVENTS
    * ==========================================================
    */
 
@@ -985,9 +1041,6 @@ export const OurProductsPage: React.FC = () => {
   useEffect(() => {
     let mounted = true;
 
-    /*
-     * Start at Frame 000.
-     */
     currentFrameRef.current =
       0;
 
@@ -997,54 +1050,23 @@ export const OurProductsPage: React.FC = () => {
     targetFrameRef.current =
       0;
 
-    /*
-     * Canvas setup.
-     */
     resizeCanvas();
 
     /*
-     * CRITICAL:
-     * Only request the first frame initially.
-     *
-     * The remaining sequence is NOT loaded upfront.
+     * Initial frame.
      */
     loadFrame(0).then(() => {
       if (!mounted) return;
 
-      const canvas =
-        canvasRef.current;
+      resizeCanvas();
 
-      if (!canvas) return;
-
-      const ctx =
-        canvas.getContext('2d');
-
-      if (!ctx) return;
-
-      const firstImage =
-        imageCache.current.get(
-          0
-        );
-
-      if (firstImage) {
-        drawImageCover(
-          ctx,
-          firstImage,
-          canvas
-        );
-      }
+      drawFrame(0);
 
       updateTextOverlays(0);
 
-      /*
-       * Begin very small background preload.
-       */
       preloadAhead(0);
     });
 
-    /*
-     * Scroll listener.
-     */
     window.addEventListener(
       'scroll',
       handleScroll,
@@ -1053,9 +1075,6 @@ export const OurProductsPage: React.FC = () => {
       }
     );
 
-    /*
-     * Resize listener.
-     */
     window.addEventListener(
       'resize',
       handleResize
@@ -1065,7 +1084,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * ========================================================
-     * SMOOTH FRAME RENDER LOOP
+     * SMOOTH RENDER LOOP
      * ========================================================
      */
     const renderLoop = () => {
@@ -1081,7 +1100,7 @@ export const OurProductsPage: React.FC = () => {
         target - current;
 
       /*
-       * Preserve the exact smoothness factor.
+       * Preserve existing smoothness.
        */
       if (
         Math.abs(difference) >
@@ -1097,8 +1116,9 @@ export const OurProductsPage: React.FC = () => {
       }
 
       /*
-       * Update text on the floating frame value
-       * so fade animations remain smooth and reversible.
+       * Text follows smooth frame,
+       * so reverse scrolling reverses
+       * the animations naturally.
        */
       updateTextOverlays(
         smoothFrameRef.current
@@ -1109,9 +1129,6 @@ export const OurProductsPage: React.FC = () => {
           smoothFrameRef.current
         );
 
-      /*
-       * Only draw when integer frame changes.
-       */
       if (
         renderFrame !==
         currentFrameRef.current
@@ -1123,9 +1140,6 @@ export const OurProductsPage: React.FC = () => {
           renderFrame
         );
 
-        /*
-         * Nearby background preload.
-         */
         preloadAhead(
           renderFrame
         );
@@ -1171,12 +1185,10 @@ export const OurProductsPage: React.FC = () => {
         );
       }
 
-      /*
-       * Clear runtime caches.
-       */
       loadingFrames.current.clear();
       imageCache.current.clear();
       failedFrames.current.clear();
+
       frameQueue.current = [];
       queueSet.current.clear();
     };
@@ -1184,11 +1196,13 @@ export const OurProductsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black font-sans">
+
       <Navbar />
 
       <main>
+
         {/* =====================================================
-            ONE SINGLE SCROLL-DRIVEN CANVAS EXPERIENCE
+            SINGLE SCROLL-DRIVEN EXPERIENCE
             ===================================================== */}
         <section
           ref={containerRef}
@@ -1197,7 +1211,7 @@ export const OurProductsPage: React.FC = () => {
             height: '400vh'
           }}
         >
-          {/* Sticky viewport */}
+
           <div className="sticky top-0 left-0 w-full h-screen overflow-hidden">
 
             {/* =================================================
@@ -1213,7 +1227,11 @@ export const OurProductsPage: React.FC = () => {
                 ================================================= */}
             <div className="absolute inset-0 z-20 pointer-events-none">
 
-              {/* ================= HERO ================= */}
+              {/* =================================================
+                  HERO
+                  FRAME 0-59
+                  CENTER
+                  ================================================= */}
               <div
                 ref={heroOverlayRef}
                 className="absolute inset-0 flex items-center justify-center px-4 sm:px-5 md:px-6 text-center"
@@ -1233,7 +1251,7 @@ export const OurProductsPage: React.FC = () => {
                       color: '#FFFFFF'
                     }}
                   >
-                    OUR PRODUCTS
+                    Our Premium Equipment
                   </h1>
 
                   <p
@@ -1246,13 +1264,60 @@ export const OurProductsPage: React.FC = () => {
                     Professional broadcast equipment behind every production.
                   </p>
 
+                  <div
+                    className="mt-8 sm:mt-9 md:mt-10 flex flex-col items-center"
+                    style={{
+                      color: '#FFFFFF'
+                    }}
+                  >
+                    <span className="text-[0.6rem] sm:text-[0.65rem] md:text-xs font-semibold uppercase tracking-[0.22em] opacity-90">
+                      Scroll Down
+                    </span>
+
+                    <div
+                      className="mt-3"
+                      style={{
+                        animation:
+                          'scrollArrow 1.5s ease-in-out infinite'
+                      }}
+                    >
+                      <svg
+                        width="20"
+                        height="28"
+                        viewBox="0 0 20 28"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M10 1V24"
+                          stroke="currentColor"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                        />
+
+                        <path
+                          d="M3.5 17.5L10 24L16.5 17.5"
+                          stroke="currentColor"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
-              {/* ================= PRODUCT ================= */}
+              {/* =================================================
+                  SONY TITLE
+                  FRAME 60-179
+                  LEFT
+                  ================================================= */}
               <div
-                ref={productOverlayRef}
-                className="absolute inset-0 flex items-center"
+                ref={sonyTitleRef}
+                className="absolute inset-0 flex items-center justify-start"
                 style={{
                   opacity: 0,
                   transform:
@@ -1261,16 +1326,20 @@ export const OurProductsPage: React.FC = () => {
                     'opacity, transform'
                 }}
               >
-                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-20">
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-12 xl:pl-16">
 
-                  <div className="max-w-xl md:max-w-2xl">
+                  <div className="max-w-xl">
 
                     <p
-                      className="text-[0.5rem] sm:text-[0.55rem] md:text-[0.65rem] lg:text-base font-bold uppercase tracking-[0.24em] mb-2 lg:mb-3 drop-shadow-lg"
+                      className="text-[0.55rem] sm:text-[0.6rem] md:text-xs lg:text-sm font-bold uppercase tracking-[0.24em] mb-2 sm:mb-3"
                       style={{
                         color: '#ff3157'
                       }}
                     >
+                      WE PRESENT
+                    </p>
+
+                    <p className="text-[0.55rem] sm:text-[0.65rem] md:text-xs lg:text-sm uppercase tracking-[0.18em] font-semibold text-white/85 mb-2">
                       Professional Broadcast Camera
                     </p>
 
@@ -1284,7 +1353,7 @@ export const OurProductsPage: React.FC = () => {
                     </h2>
 
                     <p
-                      className="mt-3 sm:mt-3 md:mt-4 lg:mt-5 text-[0.65rem] sm:text-[0.72rem] md:text-[0.8rem] lg:text-xl leading-relaxed font-medium max-w-xl drop-shadow-xl"
+                      className="mt-3 sm:mt-4 md:mt-5 text-[0.65rem] sm:text-[0.72rem] md:text-[0.8rem] lg:text-xl leading-relaxed font-medium max-w-xl drop-shadow-xl"
                       style={{
                         color:
                           'rgba(255,255,255,0.9)'
@@ -1298,10 +1367,339 @@ export const OurProductsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* ================= STANDARD ================= */}
+              {/* =================================================
+                  SONY SPECS
+                  FRAME 180-299
+                  RIGHT
+                  ================================================= */}
               <div
-                ref={standardOverlayRef}
-                className="absolute inset-0 flex items-center justify-center px-4 sm:px-5 md:px-6 text-center"
+                ref={sonySpecsRef}
+                className="absolute inset-0 flex items-center justify-end"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pr-12 xl:pr-16 flex justify-end">
+
+                  <div className="max-w-xl">
+
+                    <div className="text-white/90 text-[0.65rem] sm:text-[0.72rem] md:text-[0.82rem] lg:text-lg leading-relaxed font-medium space-y-3">
+
+                      <p>
+                        <strong className="text-white">1.</strong>{' '}
+                        Sensor: 1.0-type (13.2 x 8.8 mm) Back-Illuminated Exmor R CMOS Sensor [0.142 Megapixel efektif].
+                      </p>
+
+                      <p>
+                        <strong className="text-white">2.</strong>{' '}
+                        Full HD 1920 x 1080p hingga 60 fps.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">3.</strong>{' '}
+                        Sony G Lens dengan 12x optical zoom, 24x Clear Image Zoom, dan 48x digital zoom.
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  FEELWORLD TITLE
+                  FRAME 300-404
+                  LEFT
+                  ================================================= */}
+              <div
+                ref={feelworldTitleRef}
+                className="absolute inset-0 flex items-center justify-start"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-12 xl:pl-16">
+
+                  <div className="max-w-xl">
+
+                    <p
+                      className="text-[0.55rem] sm:text-[0.6rem] md:text-xs lg:text-sm font-bold uppercase tracking-[0.24em] mb-2 sm:mb-3"
+                      style={{
+                        color: '#ff3157'
+                      }}
+                    >
+                      WE PRESENT
+                    </p>
+
+                    <h2
+                      className="text-2xl sm:text-[2rem] md:text-[2.5rem] lg:text-7xl font-black tracking-[-0.04em] leading-none drop-shadow-2xl"
+                      style={{
+                        color: '#FFFFFF'
+                      }}
+                    >
+                      SWITCHER FEELWORLD L4
+                    </h2>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  FEELWORLD SPECS
+                  FRAME 405-569
+                  RIGHT
+                  ================================================= */}
+              <div
+                ref={feelworldSpecsRef}
+                className="absolute inset-0 flex items-center justify-end"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pr-12 xl:pr-16 flex justify-end">
+
+                  <div className="max-w-xl">
+
+                    <div className="text-white/90 text-[0.65rem] sm:text-[0.72rem] md:text-[0.82rem] lg:text-lg leading-relaxed font-medium space-y-3">
+
+                      <p>
+                        <strong className="text-white">1.</strong>{' '}
+                        Input 4x HDMI (HDMI 1.4) dan 1x 3G-SDI.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">2.</strong>{' '}
+                        Output 1x HDMI, 1x SDI, dan 1x USB Type-C/3.0.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">3.</strong>{' '}
+                        Resolusi Up to 1080p60.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">4.</strong>{' '}
+                        Fitur Spesial: T-Bar untuk transisi, 13 efek transisi, Chroma Key, PIP, dan Logo Overlay.
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  GODOX TITLE
+                  FRAME 619-653
+                  LEFT
+                  ================================================= */}
+              <div
+                ref={godoxTitleRef}
+                className="absolute inset-0 flex items-center justify-start"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-12 xl:pl-16">
+
+                  <div className="max-w-xl">
+
+                    <p
+                      className="text-[0.55rem] sm:text-[0.6rem] md:text-xs lg:text-sm font-bold uppercase tracking-[0.24em] mb-2 sm:mb-3"
+                      style={{
+                        color: '#ff3157'
+                      }}
+                    >
+                      WE PRESENT
+                    </p>
+
+                    <h2
+                      className="text-2xl sm:text-[2rem] md:text-[2.5rem] lg:text-7xl font-black tracking-[-0.04em] leading-none drop-shadow-2xl"
+                      style={{
+                        color: '#FFFFFF'
+                      }}
+                    >
+                      GODOX SL60W
+                    </h2>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  GODOX SPECS
+                  FRAME 652-691
+                  RIGHT
+                  ================================================= */}
+              <div
+                ref={godoxSpecsRef}
+                className="absolute inset-0 flex items-center justify-end"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pr-12 xl:pr-16 flex justify-end">
+
+                  <div className="max-w-xl">
+
+                    <div className="text-white/90 text-[0.65rem] sm:text-[0.72rem] md:text-[0.82rem] lg:text-lg leading-relaxed font-medium space-y-3">
+
+                      <p>
+                        <strong className="text-white">1.</strong>{' '}
+                        Daya Output: 60 Watt dengan kecerahan hingga 4100 Lux pada jarak 1 meter.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">2.</strong>{' '}
+                        Temperatur &amp; Akurasi Warna: 5600K (Daylight) dengan CRI &gt;93 dan TLCI &gt;95 untuk warna yang akurat.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">3.</strong>{' '}
+                        Rentang Peredupan: Kontrol kecerahan (dimming) yang dapat diatur dari 10% hingga 100%.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">4.</strong>{' '}
+                        Mounting Aksesoris: Menggunakan Bowens S-Type Mount yang kompatibel dengan berbagai jenis softbox.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">5.</strong>{' '}
+                        Kontrol &amp; Dimensi: Dilengkapi layar LCD, mendukung remote nirkabel (433MHz), dan memiliki berat 1.61 kg.
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  HOLLYLAND TITLE
+                  FRAME 692-768
+                  LEFT
+                  ================================================= */}
+              <div
+                ref={hollylandTitleRef}
+                className="absolute inset-0 flex items-center justify-start"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-12 xl:pl-16">
+
+                  <div className="max-w-xl">
+
+                    <p
+                      className="text-[0.55rem] sm:text-[0.6rem] md:text-xs lg:text-sm font-bold uppercase tracking-[0.24em] mb-2 sm:mb-3"
+                      style={{
+                        color: '#ff3157'
+                      }}
+                    >
+                      WE PRESENT
+                    </p>
+
+                    <h2
+                      className="text-2xl sm:text-[2rem] md:text-[2.5rem] lg:text-7xl font-black tracking-[-0.04em] leading-none drop-shadow-2xl"
+                      style={{
+                        color: '#FFFFFF'
+                      }}
+                    >
+                      Hollyland Pyro H
+                    </h2>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  HOLLYLAND SPECS
+                  FRAME 768-839
+                  LEFT
+                  ================================================= */}
+              <div
+                ref={hollylandSpecsRef}
+                className="absolute inset-0 flex items-center justify-start"
+                style={{
+                  opacity: 0,
+                  transform:
+                    'translate3d(0, 24px, 0) scale(0.985)',
+                  willChange:
+                    'opacity, transform'
+                }}
+              >
+                <div className="w-full px-4 sm:px-6 md:px-8 lg:pl-12 xl:pl-16">
+
+                  <div className="max-w-xl">
+
+                    <div className="text-white/90 text-[0.65rem] sm:text-[0.72rem] md:text-[0.82rem] lg:text-lg leading-relaxed font-medium space-y-3">
+
+                      <p>
+                        <strong className="text-white">1.</strong>{' '}
+                        Resolusi hingga 4K pada 30 fps.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">2.</strong>{' '}
+                        Jangkauan Transmisi Hingga 1.300 kaki (400 meter) LOS.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">3.</strong>{' '}
+                        Latensi: Sangat rendah, sekitar 60ms.
+                      </p>
+
+                      <p>
+                        <strong className="text-white">4.</strong>{' '}
+                        Dual-band 2.4 GHz dan 5 GHz.
+                      </p>
+
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+
+              {/* =================================================
+                  FINAL CTA
+                  FRAME 840-861
+                  CENTER
+                  ================================================= */}
+              <div
+                ref={ctaOverlayRef}
+                className="absolute inset-0 flex items-center justify-center px-5 text-center"
                 style={{
                   opacity: 0,
                   transform:
@@ -1313,22 +1711,57 @@ export const OurProductsPage: React.FC = () => {
                 <div className="max-w-3xl">
 
                   <h2
-                    className="text-2xl sm:text-[2rem] md:text-[2.5rem] lg:text-6xl font-black tracking-[-0.03em] leading-tight drop-shadow-2xl"
+                    className="text-3xl sm:text-[2.4rem] md:text-[3rem] lg:text-6xl font-black tracking-[-0.04em] leading-tight drop-shadow-2xl"
                     style={{
                       color: '#FFFFFF'
                     }}
                   >
-                    Membangun Standard Penyiaran
+                    Your event, our priority.
                   </h2>
 
                   <p
-                    className="mt-3 sm:mt-3 md:mt-4 lg:mt-5 text-[0.65rem] sm:text-[0.72rem] md:text-[0.8rem] lg:text-xl leading-relaxed font-medium max-w-2xl mx-auto drop-shadow-xl"
+                    className="mt-2 text-xl sm:text-2xl md:text-3xl font-semibold"
                     style={{
                       color:
-                        'rgba(255,255,255,0.9)'
+                        'rgba(255,255,255,0.95)'
                     }}
                   >
-                    Prime Broadcast memastikan setiap momen direkam menggunakan ekosistem peralatan terbaik di kelasnya untuk memberikan tayangan yang jernih, stabil, dan profesional.
+                    Trust the experts.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.location.href =
+                        PACKAGE_ROUTE;
+                    }}
+                    className="mt-6 inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm sm:text-base font-bold transition-transform duration-300 hover:scale-105 active:scale-95"
+                    style={{
+                      background:
+                        '#A40D35',
+                      color:
+                        '#FFFFFF',
+                      boxShadow:
+                        '0 10px 30px rgba(0,0,0,0.25)'
+                    }}
+                  >
+                    Order Now
+                  </button>
+
+                  {/* =================================================
+                      SMALL DISCLAIMER TEXT
+                      NO IMAGE
+                      ================================================= */}
+                  <p
+                    className="mt-4 mx-auto max-w-lg text-[8px] sm:text-[9px] md:text-[10px] leading-relaxed font-medium"
+                    style={{
+                      color:
+                        'rgba(255,255,255,0.5)'
+                    }}
+                  >
+                    Ilustrasi visual dibuat menggunakan AI.
+                    Gambar ini bukan produk yang kami jual,
+                    melainkan produk yang kami gunakan dalam produksi.
                   </p>
 
                 </div>
@@ -1337,7 +1770,30 @@ export const OurProductsPage: React.FC = () => {
             </div>
           </div>
         </section>
+
       </main>
+
+      <style>
+        {`
+          @keyframes scrollArrow {
+            0% {
+              transform: translateY(0);
+              opacity: 0.65;
+            }
+
+            50% {
+              transform: translateY(8px);
+              opacity: 1;
+            }
+
+            100% {
+              transform: translateY(0);
+              opacity: 0.65;
+            }
+          }
+        `}
+      </style>
+
     </div>
   );
 };
