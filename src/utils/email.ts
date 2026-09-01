@@ -58,9 +58,10 @@ BSI
 7304729001
 A/n Abdul Aziz
 
-Mohon simpan informasi invoice ini sebagai referensi booking Anda.
+Pembayaran Anda berhasil,
+Terima kasih sudah mempercayakan event Anda kepada kami.
 
-Terima kasih telah mempercayakan kebutuhan broadcasting kepada Prime Broadcast.
+Mohon simpan informasi invoice ini sebagai referensi booking Anda.
 
 Pesan ini dibuat otomatis oleh sistem Prime Broadcast.
 `;
