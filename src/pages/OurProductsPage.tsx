@@ -34,13 +34,18 @@ const smoothStep = (value: number) => {
 /*
  * Frame-driven animation.
  *
- * Every text block:
+ * Default behavior:
  * - fade in
  * - hold
  * - fade out
  *
- * Because the animation is based directly on frame position,
- * scrolling upward automatically reverses the animation.
+ * Special case:
+ * fadeInDuration = 0
+ * means the element is immediately visible
+ * at startFrame and only fades OUT.
+ *
+ * Because everything is driven by frame position,
+ * reverse scrolling automatically reverses the animation.
  */
 const getOverlayAnimation = (
   frame: number,
@@ -60,24 +65,35 @@ const getOverlayAnimation = (
     };
   }
 
-  const fadeInEnd = Math.min(
-    startFrame + fadeInDuration,
-    endFrame
-  );
+  const fadeInEnd =
+    fadeInDuration <= 0
+      ? startFrame
+      : Math.min(
+          startFrame + fadeInDuration,
+          endFrame
+        );
 
-  const fadeOutStart = Math.max(
-    endFrame - fadeOutDuration,
-    startFrame
-  );
+  const fadeOutStart =
+    fadeOutDuration <= 0
+      ? endFrame
+      : Math.max(
+          endFrame - fadeOutDuration,
+          startFrame
+        );
 
   let opacity = 1;
   let translateY = 0;
   let scale = 1;
 
   /*
-   * Fade in
+   * FADE IN
+   *
+   * Disabled when fadeInDuration = 0.
    */
-  if (frame < fadeInEnd) {
+  if (
+    fadeInDuration > 0 &&
+    frame < fadeInEnd
+  ) {
     const progress = smoothStep(
       (frame - startFrame) /
         Math.max(
@@ -87,17 +103,22 @@ const getOverlayAnimation = (
     );
 
     opacity = progress;
+
     translateY =
       24 * (1 - progress);
+
     scale =
       0.985 +
       0.015 * progress;
   }
 
   /*
-   * Fade out
+   * FADE OUT
    */
-  if (frame > fadeOutStart) {
+  if (
+    fadeOutDuration > 0 &&
+    frame > fadeOutStart
+  ) {
     const progress = smoothStep(
       (frame - fadeOutStart) /
         Math.max(
@@ -107,8 +128,10 @@ const getOverlayAnimation = (
     );
 
     opacity = 1 - progress;
+
     translateY =
       -20 * progress;
+
     scale =
       1 - 0.015 * progress;
   }
@@ -202,8 +225,8 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   /*
-   * Keep network concurrency low enough
-   * so scrolling remains responsive.
+   * Keep network concurrency controlled
+   * to avoid choking mobile devices.
    */
   const MAX_CONCURRENT_LOADS = 3;
 
@@ -297,7 +320,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * Crop source image as needed
-     * so the viewport is always fully filled.
+     * so the viewport stays completely filled.
      */
     if (
       imageRatio > canvasRatio
@@ -517,8 +540,8 @@ export const OurProductsPage: React.FC = () => {
               processFrameQueue();
 
               /*
-               * If this frame is currently needed,
-               * draw it immediately.
+               * Immediately render the frame
+               * if it is still the current frame.
                */
               const currentFrame =
                 getSafeFrame(
@@ -688,8 +711,8 @@ export const OurProductsPage: React.FC = () => {
     }
 
     /*
-     * Keep currently available visual
-     * instead of flashing to blank.
+     * Keep closest available frame
+     * rather than flashing blank.
      */
     const closestImage =
       findClosestLoadedFrame(
@@ -705,7 +728,7 @@ export const OurProductsPage: React.FC = () => {
     }
 
     /*
-     * Prioritize requested frame.
+     * Queue requested frame.
      */
     enqueueFrame(
       safeIndex
@@ -841,9 +864,17 @@ export const OurProductsPage: React.FC = () => {
     frame: number
   ) => {
     /*
+     * ========================================================
      * HERO
-     * FRAME 0-59
-     * CENTER
+     *
+     * Frame 0-59
+     *
+     * IMPORTANT:
+     * NO FADE IN.
+     *
+     * It is visible immediately at frame 0
+     * and only fades OUT near frame 59.
+     * ========================================================
      */
     updateOverlay(
       heroOverlayRef.current,
@@ -851,15 +882,14 @@ export const OurProductsPage: React.FC = () => {
         frame,
         0,
         59,
-        12,
+        0,
         12
       )
     );
 
     /*
      * SONY TITLE
-     * FRAME 60-179
-     * LEFT
+     * Frame 60-179
      */
     updateOverlay(
       sonyTitleRef.current,
@@ -874,8 +904,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * SONY SPECS
-     * FRAME 180-299
-     * RIGHT
+     * Frame 180-299
      */
     updateOverlay(
       sonySpecsRef.current,
@@ -890,8 +919,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * FEELWORLD TITLE
-     * FRAME 300-404
-     * LEFT
+     * Frame 300-404
      */
     updateOverlay(
       feelworldTitleRef.current,
@@ -906,8 +934,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * FEELWORLD SPECS
-     * FRAME 405-569
-     * RIGHT
+     * Frame 405-569
      */
     updateOverlay(
       feelworldSpecsRef.current,
@@ -922,8 +949,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * GODOX TITLE
-     * FRAME 619-653
-     * LEFT
+     * Frame 619-653
      */
     updateOverlay(
       godoxTitleRef.current,
@@ -938,8 +964,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * GODOX SPECS
-     * FRAME 652-691
-     * RIGHT
+     * Frame 652-691
      */
     updateOverlay(
       godoxSpecsRef.current,
@@ -954,8 +979,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * HOLLYLAND TITLE
-     * FRAME 692-768
-     * LEFT
+     * Frame 692-768
      */
     updateOverlay(
       hollylandTitleRef.current,
@@ -970,8 +994,7 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * HOLLYLAND SPECS
-     * FRAME 768-839
-     * LEFT
+     * Frame 768-839
      */
     updateOverlay(
       hollylandSpecsRef.current,
@@ -986,13 +1009,11 @@ export const OurProductsPage: React.FC = () => {
 
     /*
      * FINAL CTA
+     * Frame 840-861
      *
-     * FRAME 840-861
-     * CENTER
-     *
-     * IMPORTANT:
-     * fadeOutDuration = 0
-     * means CTA remains visible at frame 861.
+     * Fade in only.
+     * No fade out, so it remains visible
+     * through the final frame.
      */
     updateOverlay(
       ctaOverlayRef.current,
@@ -1053,7 +1074,7 @@ export const OurProductsPage: React.FC = () => {
     resizeCanvas();
 
     /*
-     * Initial frame.
+     * Load first frame only.
      */
     loadFrame(0).then(() => {
       if (!mounted) return;
@@ -1062,8 +1083,14 @@ export const OurProductsPage: React.FC = () => {
 
       drawFrame(0);
 
+      /*
+       * Hero immediately visible.
+       */
       updateTextOverlays(0);
 
+      /*
+       * Start lightweight background preload.
+       */
       preloadAhead(0);
     });
 
@@ -1116,9 +1143,9 @@ export const OurProductsPage: React.FC = () => {
       }
 
       /*
-       * Text follows smooth frame,
-       * so reverse scrolling reverses
-       * the animations naturally.
+       * Text follows smooth frame.
+       * Reverse scrolling therefore reverses
+       * every animation naturally.
        */
       updateTextOverlays(
         smoothFrameRef.current
@@ -1129,6 +1156,9 @@ export const OurProductsPage: React.FC = () => {
           smoothFrameRef.current
         );
 
+      /*
+       * Render only when the integer frame changes.
+       */
       if (
         renderFrame !==
         currentFrameRef.current
@@ -1231,14 +1261,15 @@ export const OurProductsPage: React.FC = () => {
                   HERO
                   FRAME 0-59
                   CENTER
+                  NO FADE IN
                   ================================================= */}
               <div
                 ref={heroOverlayRef}
                 className="absolute inset-0 flex items-center justify-center px-4 sm:px-5 md:px-6 text-center"
                 style={{
-                  opacity: 0,
+                  opacity: 1,
                   transform:
-                    'translate3d(0, 24px, 0) scale(0.985)',
+                    'translate3d(0, 0, 0) scale(1)',
                   willChange:
                     'opacity, transform'
                 }}
@@ -1708,6 +1739,8 @@ export const OurProductsPage: React.FC = () => {
                     'opacity, transform'
                 }}
               >
+
+                {/* ================= CTA CENTER ================= */}
                 <div className="max-w-3xl">
 
                   <h2
@@ -1748,23 +1781,24 @@ export const OurProductsPage: React.FC = () => {
                     Order Now
                   </button>
 
-                  {/* =================================================
-                      SMALL DISCLAIMER TEXT
-                      NO IMAGE
-                      ================================================= */}
-                  <p
-                    className="mt-4 mx-auto max-w-lg text-[8px] sm:text-[9px] md:text-[10px] leading-relaxed font-medium"
-                    style={{
-                      color:
-                        'rgba(255,255,255,0.5)'
-                    }}
-                  >
-                    Ilustrasi visual dibuat menggunakan AI.
-                    Gambar ini bukan produk yang kami jual,
-                    melainkan produk yang kami gunakan dalam produksi.
-                  </p>
-
                 </div>
+
+                {/* =================================================
+                    AI DISCLAIMER
+                    BOTTOM LEFT
+                    BLACK
+                    ================================================= */}
+                <p
+                  className="absolute bottom-4 left-4 sm:bottom-5 sm:left-6 md:bottom-6 md:left-8 lg:bottom-8 lg:left-10 max-w-[220px] sm:max-w-[260px] text-left text-[8px] sm:text-[9px] md:text-[10px] leading-relaxed font-medium"
+                  style={{
+                    color: 'rgba(0,0,0,0.65)'
+                  }}
+                >
+                  Ilustrasi visual dibuat menggunakan AI.
+                  Gambar ini bukan produk yang kami jual,
+                  melainkan produk yang kami gunakan dalam produksi.
+                </p>
+
               </div>
 
             </div>
