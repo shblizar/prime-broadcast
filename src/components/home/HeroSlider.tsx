@@ -130,13 +130,17 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
       onTouchEnd={handleTouchEnd}
     >
       {hasSlides ? (
-        <div className="relative w-full lg:h-[680px] xl:h-[720px] flex items-center justify-center">
-          {/* Dynamic Invisible Spacer Image to match active slide's exact aspect ratio on mobile/tablet */}
+        <div className="relative w-full flex items-center justify-center">
+          {/* Dynamic Invisible Spacer Image — sets container height to match the
+              active slide's EXACT natural aspect ratio, on every breakpoint.
+              This guarantees the visible image never gets cropped (no need for
+              object-cover crop) and never leaves empty background bars (no need
+              for object-contain letterboxing) — the box always matches the image. */}
           {currentSlide?.image_path && (
             <img
               src={getHeroSlidePublicUrl(currentSlide.image_path)}
               alt="Spacer"
-              className="w-full h-auto block opacity-0 pointer-events-none lg:hidden"
+              className="w-full h-auto block opacity-0 pointer-events-none"
             />
           )}
 
@@ -148,7 +152,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
                 <img
                   src={getHeroSlidePublicUrl(slides[previousIndex].image_path)}
                   alt="Prime Broadcast Prev"
-                  className="w-full h-full object-contain object-center"
+                  className="w-full h-full object-cover object-center"
                 />
               </div>
             )}
@@ -170,7 +174,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
                     }}
-                    className="w-full h-full object-contain object-center"
+                    className="w-full h-full object-cover object-center"
                   />
                 ) : null}
               </motion.div>
@@ -225,12 +229,12 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
           )}
         </div>
       ) : (
-        <div className="relative w-full aspect-video lg:aspect-auto lg:h-[680px] xl:h-[720px] flex items-center justify-center">
+        <div className="relative w-full aspect-video flex items-center justify-center">
           {/* Fallback Clean Hero if no slides uploaded */}
           <img
             src="https://images.unsplash.com/photo-1516280440614-37939bbacd6a?q=80&w=2070&auto=format&fit=crop"
             alt="Prime Broadcast Fallback"
-            className="w-full h-full object-contain object-center"
+            className="w-full h-full object-cover object-center"
           />
         </div>
       )}
