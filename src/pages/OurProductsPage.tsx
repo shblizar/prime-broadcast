@@ -158,6 +158,21 @@ const getOverlayAnimation = (
  */
 const OVERLAY_BUFFER_FRAMES = 20;
 
+/*
+ * ==============================================================
+ * AUTOPLAY (idle) CONFIG
+ * ==============================================================
+ * If the user stops scrolling for AUTO_PLAY_IDLE_MS, the sequence
+ * keeps advancing on its own (time-based instead of scroll-based),
+ * like a showcase reel. As soon as a real scroll event fires, this
+ * is cancelled immediately and control goes back to scroll position.
+ * When the sequence reaches the last frame during autoplay it loops
+ * back to the start.
+ * ==============================================================
+ */
+const AUTO_PLAY_IDLE_MS = 1200;
+const AUTO_PLAY_DURATION_MS = 26000;
+
 type OverlayAnimationState = {
   opacity: number;
   translateY: number;
@@ -294,6 +309,17 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   const renderLoopRef =
+    useRef<number>(0);
+
+  /*
+   * AUTOPLAY: timestamp of the last real scroll event, and the
+   * timestamp of the previous render tick (used to compute dt so
+   * autoplay speed is frame-rate independent).
+   */
+  const lastScrollTimestampRef =
+    useRef<number>(0);
+
+  const lastFrameTimestampRef =
     useRef<number>(0);
 
   /*
@@ -1132,6 +1158,13 @@ export const OurProductsPage: React.FC = () => {
    */
 
   const handleScroll = () => {
+    /*
+     * AUTOPLAY: any real scroll input immediately marks the user as
+     * "active", which cancels autoplay on the very next render tick.
+     */
+    lastScrollTimestampRef.current =
+      performance.now();
+
     if (
       scrollRequestRef.current
     ) {
@@ -1168,6 +1201,17 @@ export const OurProductsPage: React.FC = () => {
 
     targetFrameRef.current =
       0;
+
+    /*
+     * AUTOPLAY: start the idle timer from the moment the page loads,
+     * so if the user never scrolls at all, autoplay kicks in on its
+     * own after AUTO_PLAY_IDLE_MS.
+     */
+    lastScrollTimestampRef.current =
+      performance.now();
+
+    lastFrameTimestampRef.current =
+      performance.now();
 
     resizeCanvas();
 
@@ -1214,6 +1258,60 @@ export const OurProductsPage: React.FC = () => {
      */
     const renderLoop = () => {
       if (!mounted) return;
+
+      /*
+       * ======================================================
+       * AUTOPLAY
+       * ======================================================
+       * When idle (no real scroll for AUTO_PLAY_IDLE_MS), advance
+       * targetFrameRef on its own using elapsed time. A real scroll
+       * event updates lastScrollTimestampRef and this stops on the
+       * very next tick, handing control straight back to scroll.
+       */
+      const now =
+        performance.now();
+
+      const dt =
+        Math.min(
+          now -
+            lastFrameTimestampRef.current,
+          100
+        );
+
+      lastFrameTimestampRef.current =
+        now;
+
+      const isIdle =
+        now -
+          lastScrollTimestampRef.current >
+        AUTO_PLAY_IDLE_MS;
+
+      if (isIdle) {
+        const framesPerMs =
+          (productSequence.frameCount - 1) /
+          AUTO_PLAY_DURATION_MS;
+
+        let nextTarget =
+          targetFrameRef.current +
+          framesPerMs * dt;
+
+        /*
+         * Loop back to the start once the sequence finishes playing
+         * on its own, so it keeps running continuously.
+         */
+        if (
+          nextTarget >=
+          productSequence.frameCount - 1
+        ) {
+          nextTarget = 0;
+
+          smoothFrameRef.current =
+            0;
+        }
+
+        targetFrameRef.current =
+          nextTarget;
+      }
 
       const target =
         targetFrameRef.current;
