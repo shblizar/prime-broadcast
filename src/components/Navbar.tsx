@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { PrimeBroadcastLogo } from './PrimeBroadcastLogo';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Home, Info, Image, HelpCircle, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSectionAnimation } from '../contexts/SectionAnimationContext';
 
@@ -136,6 +136,7 @@ export const Navbar: React.FC = () => {
   };
 
   return (
+    <>
     <motion.header
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -251,5 +252,97 @@ export const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
     </motion.header>
+
+    {/* Mobile Fixed Bottom Navigation (Mobile Only, 5 Items) */}
+    <nav
+      aria-label="Navigasi Bawah Mobile"
+      id="mobile-bottom-navigation"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(8,26,46,0.08)] px-2 pt-1.5 pb-[max(env(safe-area-inset-bottom),0.5rem)]"
+    >
+      <div className="flex items-center justify-around max-w-md mx-auto">
+        {/* 1. Beranda */}
+        <Link
+          to="/"
+          onClick={(e) => handleNavClick(e, { label: 'Beranda', path: '/', hash: '' })}
+          id="mobile-nav-beranda"
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+            location.pathname === '/' && (!activeHash || activeHash === '#hero' || activeHash === '#')
+              ? 'text-[#A40D35] font-bold'
+              : 'text-slate-500 hover:text-[#081A2E]'
+          }`}
+          aria-label="Beranda"
+        >
+          <Home className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight font-medium">Beranda</span>
+        </Link>
+
+        {/* 2. Tentang */}
+        <Link
+          to="/#tentang"
+          onClick={(e) => handleNavClick(e, { label: 'Tentang Kami', path: '/', hash: '#tentang' })}
+          id="mobile-nav-tentang"
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+            location.pathname === '/' && activeHash === '#tentang'
+              ? 'text-[#A40D35] font-bold'
+              : 'text-slate-500 hover:text-[#081A2E]'
+          }`}
+          aria-label="Tentang Kami"
+        >
+          <Info className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight font-medium">Tentang</span>
+        </Link>
+
+        {/* 3. ORDER (Item Tengah, Ellipse/Oval, Prime Gradient, Tanpa Teks) */}
+        <Link
+          to="/paket"
+          id="mobile-nav-order"
+          className="flex flex-col items-center justify-center flex-1 py-0.5"
+          aria-label="Order Paket Siaran"
+        >
+          <div
+            className={`w-14 h-9 rounded-full flex items-center justify-center bg-gradient-to-r from-[#A40D35] via-[#850B2B] to-[#081A2E] text-white shadow-md shadow-[#A40D35]/30 border border-white/20 transition-transform active:scale-95 ${
+              location.pathname === '/paket' || location.pathname === '/checkout'
+                ? 'ring-2 ring-[#A40D35] ring-offset-2 scale-105'
+                : 'hover:scale-105'
+            }`}
+          >
+            <ShoppingCart className="w-4 h-4 stroke-[2.2]" />
+          </div>
+        </Link>
+
+        {/* 4. Galeri */}
+        <Link
+          to="/#galeri"
+          onClick={(e) => handleNavClick(e, { label: 'Galeri', path: '/', hash: '#galeri' })}
+          id="mobile-nav-galeri"
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+            location.pathname === '/' && activeHash === '#galeri'
+              ? 'text-[#A40D35] font-bold'
+              : 'text-slate-500 hover:text-[#081A2E]'
+          }`}
+          aria-label="Galeri"
+        >
+          <Image className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight font-medium">Galeri</span>
+        </Link>
+
+        {/* 5. FAQ */}
+        <Link
+          to="/#faq"
+          onClick={(e) => handleNavClick(e, { label: 'FAQ', path: '/', hash: '#faq' })}
+          id="mobile-nav-faq"
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+            location.pathname === '/' && activeHash === '#faq'
+              ? 'text-[#A40D35] font-bold'
+              : 'text-slate-500 hover:text-[#081A2E]'
+          }`}
+          aria-label="FAQ"
+        >
+          <HelpCircle className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight font-medium">FAQ</span>
+        </Link>
+      </div>
+    </nav>
+    </>
   );
 };
