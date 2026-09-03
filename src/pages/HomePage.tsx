@@ -73,7 +73,7 @@ export const HomePage: React.FC = () => {
       <div className="flex justify-center lg:hidden pt-8 pb-4 px-6 bg-white" id="mobile-cta-button">
         <Link
           to="/paket"
-          className="w-full max-w-xs text-center py-3.5 px-5 rounded-2xl text-xs sm:text-sm font-bold text-white transition-all duration-200 shadow-md bg-gradient-to-r from-[#081A2E] to-[#A40D35] hover:from-[#0b2440] hover:to-[#850B2B] shadow-slate-900/15 hover:shadow-lg active:scale-[0.99]"
+          className="w-full max-w-xs text-center py-3.5 px-5 rounded-2xl text-xs sm:text-sm font-bold text-white transition-all duration-200 shadow-md bg-gradient-to-r from-[#A40D35] via-[#850B2B] to-[#081A2E] shadow-[#A40D35]/30 ring-2 ring-[#A40D35]/40 scale-[1.01] hover:brightness-110 active:scale-[0.99]"
         >
           Pesan Sekarang
         </Link>
