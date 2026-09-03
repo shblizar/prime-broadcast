@@ -103,3 +103,22 @@
     justify-content: center !important;
   }
 }
+
+/* Prime Broadcast Gradient Card Style */
+.bg-prime-gradient {
+  background-image: linear-gradient(to right, #A40D35 0%, #850B2B 50%, #081A2E 100%);
+}
+
+.prime-card-gradient {
+  background: linear-gradient(to right, #A40D35 0%, #850B2B 50%, #081A2E 100%);
+  border-radius: 1.5rem;
+  box-shadow: 0 14px 40px rgba(164, 13, 53, 0.20), 0 4px 12px rgba(8, 26, 46, 0.20);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transition: all 0.25s ease;
+}
+
+.prime-card-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 50px rgba(164, 13, 53, 0.30), 0 6px 18px rgba(8, 26, 46, 0.25);
+}
