@@ -33,7 +33,7 @@ export const Footer: React.FC = () => {
 
   const whatsappClean = settings?.whatsapp_number
     ? normalizeWhatsAppNumber(settings.whatsapp_number)
-    : '6285150555195';
+    : '6285128051950';
 
   const instagramHref = settings?.instagram_url?.startsWith('http')
     ? settings.instagram_url
@@ -114,7 +114,7 @@ export const Footer: React.FC = () => {
                   className="flex items-center gap-2 hover:text-white transition-colors"
                 >
                   <MessageSquare className="h-4 w-4 text-emerald-400 flex-shrink-0" />
-                  <span>{settings?.whatsapp_number || '+62 851-5055-5195'}</span>
+                  <span>{settings?.whatsapp_number || '+62 851-2805-1950'}</span>
                 </a>
               </li>
               <li>
