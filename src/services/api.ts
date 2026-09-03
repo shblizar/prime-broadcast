@@ -1951,6 +1951,66 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   return orders[idx];
 }
 
+/**
+ * Hapus 1 order beserta seluruh order_items terkait.
+ */
+export async function deleteOrder(orderId: string): Promise<void> {
+  if (isSupabaseConfigured) {
+    // Hapus item dulu supaya tidak kena foreign key constraint
+    await supabase.from('order_items').delete().eq('order_id', orderId);
+    const { error } = await supabase.from('orders').delete().eq('id', orderId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+
+  const orders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
+  setLocalData(
+    STORAGE_KEYS.ORDERS,
+    orders.filter((o) => o.id !== orderId)
+  );
+  const items = getLocalData<OrderItem[]>(STORAGE_KEYS.ORDER_ITEMS, []);
+  setLocalData(
+    STORAGE_KEYS.ORDER_ITEMS,
+    items.filter((it) => it.order_id !== orderId)
+  );
+}
+
+/**
+ * Hapus semua order dengan status tertentu (misalnya bersih-bersih semua yang Cancelled sekaligus).
+ * Mengembalikan jumlah order yang berhasil dihapus.
+ */
+export async function deleteOrdersByStatus(status: OrderStatus): Promise<number> {
+  if (isSupabaseConfigured) {
+    const { data: targetOrders, error: fetchError } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('status', status);
+    if (fetchError) throw new Error(fetchError.message);
+    const ids = (targetOrders || []).map((o: { id: string }) => o.id);
+    if (ids.length === 0) return 0;
+
+    await supabase.from('order_items').delete().in('order_id', ids);
+    const { error } = await supabase.from('orders').delete().in('id', ids);
+    if (error) throw new Error(error.message);
+    return ids.length;
+  }
+
+  const orders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
+  const toDeleteIds = orders.filter((o) => o.status === status).map((o) => o.id);
+  if (toDeleteIds.length === 0) return 0;
+
+  setLocalData(
+    STORAGE_KEYS.ORDERS,
+    orders.filter((o) => o.status !== status)
+  );
+  const items = getLocalData<OrderItem[]>(STORAGE_KEYS.ORDER_ITEMS, []);
+  setLocalData(
+    STORAGE_KEYS.ORDER_ITEMS,
+    items.filter((it) => !toDeleteIds.includes(it.order_id))
+  );
+  return toDeleteIds.length;
+}
+
 /* ======================================================================
    HERO SLIDES STORAGE ARCHITECTURE
    ====================================================================== */
