@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getAllOrders, updateOrderStatus } from '../../services/api';
+import { getAllOrders, updateOrderStatus, deleteOrder, deleteOrdersByStatus } from '../../services/api';
 import { Order, OrderStatus } from '../../types';
 import { formatIDR } from '../../utils/currency';
 import { generateWhatsAppMessage, normalizeWhatsAppNumber } from '../../utils/whatsapp';
@@ -19,7 +19,8 @@ import {
   Mail,
   FileText,
   X,
-  Printer
+  Printer,
+  Trash2
 } from 'lucide-react';
 
 export const AdminOrdersPage: React.FC = () => {
@@ -28,6 +29,8 @@ export const AdminOrdersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -59,6 +62,50 @@ export const AdminOrdersPage: React.FC = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId: string, invoiceNumber: string) => {
+    if (!window.confirm(`Yakin mau hapus pesanan ${invoiceNumber}? Data ini tidak bisa dikembalikan lagi.`)) {
+      return;
+    }
+    setDeletingId(orderId);
+    try {
+      await deleteOrder(orderId);
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      if (selectedOrder && selectedOrder.id === orderId) {
+        setSelectedOrder(null);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menghapus pesanan.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleBulkDeleteCancelled = async () => {
+    const cancelledCount = orders.filter((o) => o.status === OrderStatus.CANCELLED).length;
+    if (cancelledCount === 0) {
+      alert('Tidak ada pesanan dengan status Cancelled.');
+      return;
+    }
+    if (
+      !window.confirm(
+        `Yakin mau hapus semua ${cancelledCount} pesanan berstatus Cancelled? Data ini tidak bisa dikembalikan lagi.`
+      )
+    ) {
+      return;
+    }
+    setBulkDeleting(true);
+    try {
+      await deleteOrdersByStatus(OrderStatus.CANCELLED);
+      setOrders((prev) => prev.filter((o) => o.status !== OrderStatus.CANCELLED));
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menghapus pesanan yang cancelled.');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const filteredOrders = orders.filter((o) => {
     const matchesSearch =
       o.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,6 +130,15 @@ export const AdminOrdersPage: React.FC = () => {
             Pantau seluruh data reservasi, rincian paket, dan riwayat pesanan
           </p>
         </div>
+
+        <button
+          onClick={handleBulkDeleteCancelled}
+          disabled={bulkDeleting}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 font-bold text-xs transition-colors border border-red-200 disabled:opacity-50 shrink-0"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span>{bulkDeleting ? 'Menghapus...' : 'Hapus Semua yang Cancelled'}</span>
+        </button>
       </div>
 
       {/* Filter Bar */}
@@ -234,6 +290,15 @@ export const AdminOrdersPage: React.FC = () => {
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span>Invoice</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteOrder(order.id, order.invoice_number)}
+                          disabled={deletingId === order.id}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-50 text-red-700 hover:bg-red-100 font-bold text-[11px] transition-colors disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{deletingId === order.id ? '...' : 'Hapus'}</span>
                         </button>
                       </td>
                     </tr>
