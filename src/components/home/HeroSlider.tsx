@@ -130,17 +130,13 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
       onTouchEnd={handleTouchEnd}
     >
       {hasSlides ? (
-        <div className="relative w-full flex items-center justify-center">
-          {/* Dynamic Invisible Spacer Image — sets container height to match the
-              active slide's EXACT natural aspect ratio, on every breakpoint.
-              This guarantees the visible image never gets cropped (no need for
-              object-cover crop) and never leaves empty background bars (no need
-              for object-contain letterboxing) — the box always matches the image. */}
+        <div className="relative w-full lg:h-[680px] xl:h-[720px] flex items-center justify-center">
+          {/* Dynamic Invisible Spacer Image to match active slide's exact aspect ratio on mobile/tablet */}
           {currentSlide?.image_path && (
             <img
               src={getHeroSlidePublicUrl(currentSlide.image_path)}
               alt="Spacer"
-              className="w-full h-auto block opacity-0 pointer-events-none"
+              className="w-full h-auto block opacity-0 pointer-events-none lg:hidden"
             />
           )}
 
@@ -229,7 +225,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = () => {
           )}
         </div>
       ) : (
-        <div className="relative w-full aspect-video flex items-center justify-center">
+        <div className="relative w-full aspect-video lg:aspect-auto lg:h-[680px] xl:h-[720px] flex items-center justify-center">
           {/* Fallback Clean Hero if no slides uploaded */}
           <img
             src="https://images.unsplash.com/photo-1516280440614-37939bbacd6a?q=80&w=2070&auto=format&fit=crop"

@@ -551,37 +551,47 @@ export function invalidatePublicCache(key: string): void {
 async function executeSWR<T>(
   key: string,
   networkFetcher: () => Promise<T>,
-  localFallbackFetcher: () => T
+  localFallbackFetcher: () => T,
+  forceFresh = false
 ): Promise<T> {
-  const cached = getPublicCachedData<T>(key);
+  if (!forceFresh) {
+    const cached = getPublicCachedData<T>(key);
+    // If cache hit, return immediately without firing redundant network requests
+    if (cached !== null) {
+      return cached;
+    }
+  }
 
-  // Trigger background revalidation if not already in-flight
-  if (!IN_FLIGHT_REQUESTS.has(key)) {
-    const networkPromise = (async () => {
-      try {
-        const fresh = await networkFetcher();
-        if (fresh !== null && fresh !== undefined) {
-          setPublicCachedData(key, fresh);
-        }
-        return fresh;
-      } catch (err) {
-        console.warn(`Background revalidate failed for ${key}`, err);
-        return cached ?? localFallbackFetcher();
-      } finally {
-        IN_FLIGHT_REQUESTS.delete(key);
+  // If already in-flight, await the existing request to deduplicate concurrent queries
+  if (IN_FLIGHT_REQUESTS.has(key)) {
+    try {
+      const fresh = await IN_FLIGHT_REQUESTS.get(key)!;
+      if (fresh !== null && fresh !== undefined) return fresh;
+    } catch {
+      // Error handled below
+    }
+  }
+
+  const networkPromise = (async () => {
+    try {
+      const fresh = await networkFetcher();
+      if (fresh !== null && fresh !== undefined) {
+        setPublicCachedData(key, fresh);
       }
-    })();
-    IN_FLIGHT_REQUESTS.set(key, networkPromise);
-  }
+      return fresh;
+    } catch (err) {
+      console.warn(`Fetch failed for ${key}`, err);
+      const mem = MEMORY_CACHE.get(key);
+      return (mem ? mem.data : null) ?? localFallbackFetcher();
+    } finally {
+      IN_FLIGHT_REQUESTS.delete(key);
+    }
+  })();
 
-  // If cache hit, return immediately
-  if (cached !== null) {
-    return cached;
-  }
+  IN_FLIGHT_REQUESTS.set(key, networkPromise);
 
-  // If no cache, wait for network request or fallback
   try {
-    const fresh = await IN_FLIGHT_REQUESTS.get(key)!;
+    const fresh = await networkPromise;
     if (fresh !== null && fresh !== undefined) return fresh;
   } catch (e) {
     console.warn(`Initial fetch failed for ${key}`, e);
@@ -595,39 +605,210 @@ async function executeSWR<T>(
 /* ======================================================================
    SITE SETTINGS
    ====================================================================== */
-export async function getSiteSettings(): Promise<SiteSettings> {
-  if (isSupabaseConfigured) {
-    return executeSWR(
-      'site_settings',
-      async () => {
-        const { data, error } = await supabase.from('site_settings').select('*').limit(1).single();
-        if (!error && data) return data as SiteSettings;
-        throw error || new Error('Failed to fetch site settings');
-      },
-      () => getLocalData<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SITE_SETTINGS)
-    );
+
+/**
+ * Get current site settings directly from Supabase or cache.
+ *
+ * IMPORTANT:
+ * - site_settings.id is UUID in Supabase.
+ * - Do NOT use the old "default-settings" local ID for Supabase.
+ * - Admin settings should pass forceFresh=true to read the actual database row.
+ * - Public cache is updated after successful database reads/writes.
+ */
+export async function getSiteSettings(forceFresh = false): Promise<SiteSettings> {
+  if (!forceFresh) {
+    const cached = getPublicCachedData<SiteSettings>('site_settings');
+    if (cached) return cached;
   }
-  return getLocalData<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SITE_SETTINGS);
+
+  if (isSupabaseConfigured) {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('id, site_name, company_description, whatsapp_number, instagram_url, tiktok_url, email, website_url, updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data) {
+      const settings = data as SiteSettings;
+
+      // Keep public cache synchronized with the actual DB value.
+      setPublicCachedData('site_settings', settings);
+
+      return settings;
+    }
+
+    console.error('Supabase getSiteSettings error:', error);
+
+    // Only use local fallback if the database cannot be read.
+    const localSettings = getLocalData<SiteSettings>(
+      STORAGE_KEYS.SETTINGS,
+      DEFAULT_SITE_SETTINGS
+    );
+
+    return localSettings;
+  }
+
+  return getLocalData<SiteSettings>(
+    STORAGE_KEYS.SETTINGS,
+    DEFAULT_SITE_SETTINGS
+  );
 }
 
-export async function updateSiteSettings(settings: Partial<SiteSettings>): Promise<SiteSettings> {
+
+/**
+ * Update site settings.
+ *
+ * IMPORTANT:
+ * - Never upsert using potentially stale cached data.
+ * - First fetch the real UUID from Supabase.
+ * - Then UPDATE that exact row.
+ * - Supabase errors are thrown and are NOT silently converted
+ *   into a localStorage success.
+ */
+export async function updateSiteSettings(
+  settings: Partial<SiteSettings>
+): Promise<SiteSettings> {
   invalidatePublicCache('site_settings');
+
   if (isSupabaseConfigured) {
-    try {
-      const current = await getSiteSettings();
-      const { data, error } = await supabase
-        .from('site_settings')
-        .upsert({ ...current, ...settings, updated_at: new Date().toISOString() })
-        .select()
-        .single();
-      if (!error && data) return data as SiteSettings;
-    } catch (e) {
-      console.warn('Supabase updateSiteSettings error, updating local data', e);
+    // 1. Get the actual row from Supabase.
+    const { data: current, error: fetchError } = await supabase
+      .from('site_settings')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error(
+        'Supabase get current site settings error:',
+        fetchError
+      );
+
+      throw new Error(
+        `Gagal mengambil pengaturan dari database: ${fetchError.message}`
+      );
     }
+
+    if (!current) {
+      throw new Error(
+        'Data site_settings belum tersedia di database.'
+      );
+    }
+
+    // 2. Use ONLY the real UUID from Supabase.
+    const siteSettingsId = current.id;
+
+    if (!siteSettingsId) {
+      throw new Error(
+        'ID site_settings tidak ditemukan.'
+      );
+    }
+
+    // 3. Build update payload.
+    //
+    // Do NOT send the entire old object.
+    // Only send fields that belong to the settings form.
+    const updatePayload = {
+      ...(settings.site_name !== undefined && {
+        site_name: settings.site_name.trim(),
+      }),
+
+      ...(settings.company_description !== undefined && {
+        company_description: settings.company_description.trim(),
+      }),
+
+      ...(settings.whatsapp_number !== undefined && {
+        whatsapp_number: settings.whatsapp_number.trim(),
+      }),
+
+      ...(settings.instagram_url !== undefined && {
+        instagram_url: settings.instagram_url.trim(),
+      }),
+
+      ...(settings.tiktok_url !== undefined && {
+        tiktok_url: settings.tiktok_url.trim(),
+      }),
+
+      ...(settings.email !== undefined && {
+        email: settings.email.trim(),
+      }),
+
+      ...(settings.website_url !== undefined && {
+        website_url: settings.website_url.trim(),
+      }),
+
+      updated_at: new Date().toISOString(),
+    };
+
+    // 4. Update the exact existing UUID row.
+    const { data: updated, error: updateError } = await supabase
+      .from('site_settings')
+      .update(updatePayload)
+      .eq('id', siteSettingsId)
+      .select('*')
+      .single();
+
+    if (updateError) {
+      console.error(
+        'Supabase updateSiteSettings error:',
+        updateError
+      );
+
+      throw new Error(
+        `Gagal menyimpan pengaturan ke database: ${updateError.message}`
+      );
+    }
+
+    if (!updated) {
+      throw new Error(
+        'Database tidak mengembalikan data pengaturan setelah update.'
+      );
+    }
+
+    const updatedSettings = updated as SiteSettings;
+
+    // 5. Update public cache only AFTER DB update succeeds.
+    setPublicCachedData(
+      'site_settings',
+      updatedSettings
+    );
+
+    // 6. Keep local storage synchronized as a convenience cache.
+    setLocalData(
+      STORAGE_KEYS.SETTINGS,
+      updatedSettings
+    );
+
+    return updatedSettings;
   }
-  const current = getLocalData<SiteSettings>(STORAGE_KEYS.SETTINGS, DEFAULT_SITE_SETTINGS);
-  const updated = { ...current, ...settings, updated_at: new Date().toISOString() };
-  setLocalData(STORAGE_KEYS.SETTINGS, updated);
+
+  // ================================================================
+  // LOCAL DEVELOPMENT FALLBACK
+  // ================================================================
+
+  const current = getLocalData<SiteSettings>(
+    STORAGE_KEYS.SETTINGS,
+    DEFAULT_SITE_SETTINGS
+  );
+
+  const updated: SiteSettings = {
+    ...current,
+    ...settings,
+    updated_at: new Date().toISOString(),
+  };
+
+  setLocalData(
+    STORAGE_KEYS.SETTINGS,
+    updated
+  );
+
+  setPublicCachedData(
+    'site_settings',
+    updated
+  );
+
   return updated;
 }
 
@@ -641,7 +822,7 @@ export async function getPublicPortfolio(): Promise<PortfolioItem[]> {
       async () => {
         const { data, error } = await supabase
           .from('portfolio_items')
-          .select('*')
+          .select('id, youtube_url, youtube_video_id, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
         if (!error && data) return data as PortfolioItem[];
@@ -662,7 +843,7 @@ export async function getAdminPortfolio(): Promise<PortfolioItem[]> {
     try {
       const { data, error } = await supabase
         .from('portfolio_items')
-        .select('*')
+        .select('id, youtube_url, youtube_video_id, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && data) return data as PortfolioItem[];
     } catch (e) {
@@ -760,7 +941,7 @@ export async function getPublicClientLogos(): Promise<ClientLogo[]> {
       async () => {
         const { data, error } = await supabase
           .from('client_logos')
-          .select('*')
+          .select('id, client_name, logo_path, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
         if (!error && data) return data as ClientLogo[];
@@ -781,7 +962,7 @@ export async function getAdminClientLogos(): Promise<ClientLogo[]> {
     try {
       const { data, error } = await supabase
         .from('client_logos')
-        .select('*')
+        .select('id, client_name, logo_path, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && data) return data as ClientLogo[];
     } catch (e) {
@@ -794,6 +975,16 @@ export async function getAdminClientLogos(): Promise<ClientLogo[]> {
 
 export async function uploadClientLogoFile(file: File): Promise<string> {
   if (isSupabaseConfigured) {
+    try {
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bkt = buckets?.find((b) => b.name === 'client-logos');
+      if (!bkt) {
+        await supabase.storage.createBucket('client-logos', { public: true });
+      }
+    } catch {
+      // Storage bucket check ignore
+    }
+
     const ext = file.name.split('.').pop() || 'png';
     const filePath = `logos/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
     const { error } = await supabase.storage.from('client-logos').upload(filePath, file, {
@@ -893,15 +1084,19 @@ export async function getPublicPackages(): Promise<Package[]> {
       async () => {
         const { data: pkgs, error: pkgErr } = await supabase
           .from('packages')
-          .select('*')
+          .select('id, name, slug, description, price, duration_hours, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
 
         if (!pkgErr && pkgs) {
-          const { data: feats } = await supabase
-            .from('package_features')
-            .select('*')
-            .order('display_order', { ascending: true });
+          const pkgIds = pkgs.map((p: any) => p.id);
+          const { data: feats } = pkgIds.length > 0
+            ? await supabase
+                .from('package_features')
+                .select('id, package_id, feature_text, display_order')
+                .in('package_id', pkgIds)
+                .order('display_order', { ascending: true })
+            : { data: [] };
 
           const mapped = pkgs.map((pkg: Package) => ({
             ...pkg,
@@ -941,14 +1136,18 @@ export async function getAdminPackages(): Promise<Package[]> {
     try {
       const { data: pkgs, error: pkgErr } = await supabase
         .from('packages')
-        .select('*')
+        .select('id, name, slug, description, price, duration_hours, display_order, is_active')
         .order('display_order', { ascending: true });
 
       if (!pkgErr && pkgs) {
-        const { data: feats } = await supabase
-          .from('package_features')
-          .select('*')
-          .order('display_order', { ascending: true });
+        const pkgIds = pkgs.map((p: any) => p.id);
+        const { data: feats } = pkgIds.length > 0
+          ? await supabase
+              .from('package_features')
+              .select('id, package_id, feature_text, display_order')
+              .in('package_id', pkgIds)
+              .order('display_order', { ascending: true })
+          : { data: [] };
 
         return pkgs.map((pkg: Package) => ({
           ...pkg,
@@ -980,6 +1179,7 @@ export async function createPackage(pkgData: {
   is_active?: boolean;
   features?: (string | PackageFeatureInput)[];
 }): Promise<Package> {
+  invalidatePublicCache('public_packages');
   const slug = pkgData.slug || pkgData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const displayOrder = pkgData.display_order ?? 0;
 
@@ -1070,6 +1270,7 @@ export async function updatePackage(
   id: string,
   pkgData: Omit<Partial<Package>, 'features'> & { features?: (string | PackageFeatureInput)[] }
 ): Promise<Package> {
+  invalidatePublicCache('public_packages');
   const { features, ...directUpdates } = pkgData;
 
   if (isSupabaseConfigured) {
@@ -1152,6 +1353,7 @@ export async function updatePackage(
 }
 
 export async function deletePackage(id: string): Promise<void> {
+  invalidatePublicCache('public_packages');
   if (isSupabaseConfigured) {
     const { error } = await supabase.from('packages').delete().eq('id', id);
     if (error) throw new Error(error.message);
@@ -1175,16 +1377,22 @@ export async function deletePackage(id: string): Promise<void> {
    ====================================================================== */
 export async function getPublicUpgrades(): Promise<Upgrade[]> {
   if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('upgrades')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-      if (!error && data) return data as Upgrade[];
-    } catch (e) {
-      console.warn('Supabase getPublicUpgrades error', e);
-    }
+    return executeSWR(
+      'public_upgrades',
+      async () => {
+        const { data, error } = await supabase
+          .from('upgrades')
+          .select('id, name, description, price, unit_label, allow_quantity, min_quantity, max_quantity, display_order, is_active')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+        if (!error && data) return data as Upgrade[];
+        throw error || new Error('Failed to fetch upgrades');
+      },
+      () => {
+        const items = getLocalData<Upgrade[]>(STORAGE_KEYS.UPGRADES, []);
+        return items.filter((u) => u.is_active).sort((a, b) => a.display_order - b.display_order);
+      }
+    );
   }
   const items = getLocalData<Upgrade[]>(STORAGE_KEYS.UPGRADES, []);
   return items.filter((u) => u.is_active).sort((a, b) => a.display_order - b.display_order);
@@ -1195,7 +1403,7 @@ export async function getAdminUpgrades(): Promise<Upgrade[]> {
     try {
       const { data, error } = await supabase
         .from('upgrades')
-        .select('*')
+        .select('id, name, description, price, unit_label, allow_quantity, min_quantity, max_quantity, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && data) return data as Upgrade[];
     } catch (e) {
@@ -1207,6 +1415,7 @@ export async function getAdminUpgrades(): Promise<Upgrade[]> {
 }
 
 export async function createUpgrade(data: Omit<Upgrade, 'id' | 'created_at' | 'updated_at'>): Promise<Upgrade> {
+  invalidatePublicCache('public_upgrades');
   if (isSupabaseConfigured) {
     const { data: created, error } = await supabase.from('upgrades').insert(data).select().single();
     if (error) throw new Error(error.message);
@@ -1224,6 +1433,7 @@ export async function createUpgrade(data: Omit<Upgrade, 'id' | 'created_at' | 'u
 }
 
 export async function updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade> {
+  invalidatePublicCache('public_upgrades');
   if (isSupabaseConfigured) {
     const { data, error } = await supabase
       .from('upgrades')
@@ -1243,6 +1453,7 @@ export async function updateUpgrade(id: string, updates: Partial<Upgrade>): Prom
 }
 
 export async function deleteUpgrade(id: string): Promise<void> {
+  invalidatePublicCache('public_upgrades');
   if (isSupabaseConfigured) {
     const { error } = await supabase.from('upgrades').delete().eq('id', id);
     if (error) throw new Error(error.message);
@@ -1260,17 +1471,25 @@ export async function deleteUpgrade(id: string): Promise<void> {
    ====================================================================== */
 export async function getOvertimeSettings(): Promise<OvertimeSettings> {
   if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from('overtime_settings').select('*').limit(1).single();
-      if (!error && data) return data as OvertimeSettings;
-    } catch (e) {
-      console.warn('Supabase getOvertimeSettings error', e);
-    }
+    return executeSWR(
+      'public_overtime',
+      async () => {
+        const { data, error } = await supabase
+          .from('overtime_settings')
+          .select('id, is_active, rate_percent, min_hours, max_hours, step_hours')
+          .limit(1)
+          .single();
+        if (!error && data) return data as OvertimeSettings;
+        throw error || new Error('Failed to fetch overtime settings');
+      },
+      () => getLocalData<OvertimeSettings>(STORAGE_KEYS.OVERTIME, DEFAULT_OVERTIME_SETTINGS)
+    );
   }
   return getLocalData<OvertimeSettings>(STORAGE_KEYS.OVERTIME, DEFAULT_OVERTIME_SETTINGS);
 }
 
 export async function updateOvertimeSettings(updates: Partial<OvertimeSettings>): Promise<OvertimeSettings> {
+  invalidatePublicCache('public_overtime');
   if (isSupabaseConfigured) {
     const current = await getOvertimeSettings();
     
@@ -1300,16 +1519,22 @@ export async function updateOvertimeSettings(updates: Partial<OvertimeSettings>)
    ====================================================================== */
 export async function getPublicAddons(): Promise<Addon[]> {
   if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('addons')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-      if (!error && data) return data as Addon[];
-    } catch (e) {
-      console.warn('Supabase getPublicAddons error', e);
-    }
+    return executeSWR(
+      'public_addons',
+      async () => {
+        const { data, error } = await supabase
+          .from('addons')
+          .select('id, name, description, price, unit_label, allow_quantity, min_quantity, max_quantity, display_order, is_active')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+        if (!error && data) return data as Addon[];
+        throw error || new Error('Failed to fetch addons');
+      },
+      () => {
+        const items = getLocalData<Addon[]>(STORAGE_KEYS.ADDONS, []);
+        return items.filter((a) => a.is_active).sort((a, b) => a.display_order - b.display_order);
+      }
+    );
   }
   const items = getLocalData<Addon[]>(STORAGE_KEYS.ADDONS, []);
   return items.filter((a) => a.is_active).sort((a, b) => a.display_order - b.display_order);
@@ -1320,7 +1545,7 @@ export async function getAdminAddons(): Promise<Addon[]> {
     try {
       const { data, error } = await supabase
         .from('addons')
-        .select('*')
+        .select('id, name, description, price, unit_label, allow_quantity, min_quantity, max_quantity, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && data) return data as Addon[];
     } catch (e) {
@@ -1332,6 +1557,7 @@ export async function getAdminAddons(): Promise<Addon[]> {
 }
 
 export async function createAddon(data: Omit<Addon, 'id' | 'created_at' | 'updated_at'>): Promise<Addon> {
+  invalidatePublicCache('public_addons');
   if (isSupabaseConfigured) {
     const { data: created, error } = await supabase.from('addons').insert(data).select().single();
     if (error) throw new Error(error.message);
@@ -1349,6 +1575,7 @@ export async function createAddon(data: Omit<Addon, 'id' | 'created_at' | 'updat
 }
 
 export async function updateAddon(id: string, updates: Partial<Addon>): Promise<Addon> {
+  invalidatePublicCache('public_addons');
   if (isSupabaseConfigured) {
     const { data, error } = await supabase
       .from('addons')
@@ -1368,6 +1595,7 @@ export async function updateAddon(id: string, updates: Partial<Addon>): Promise<
 }
 
 export async function deleteAddon(id: string): Promise<void> {
+  invalidatePublicCache('public_addons');
   if (isSupabaseConfigured) {
     const { error } = await supabase.from('addons').delete().eq('id', id);
     if (error) throw new Error(error.message);
@@ -1397,7 +1625,7 @@ export async function validateVoucher(code: string, subtotal: number): Promise<V
       console.log('Validating voucher code:', cleanCode);
       const { data: voucherData, error } = await supabase
         .from('vouchers')
-        .select('*')
+        .select('id, code, name, discount_type, discount_value, min_purchase_amount, minimum_transaction, maximum_discount, starts_at, expires_at, usage_limit, usage_count, is_active')
         .eq('code', cleanCode)
         .eq('is_active', true)
         .maybeSingle();
@@ -1493,7 +1721,10 @@ export async function validateVoucher(code: string, subtotal: number): Promise<V
 export async function getAdminVouchers(): Promise<Voucher[]> {
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase.from('vouchers').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('vouchers')
+        .select('id, code, name, discount_type, discount_value, min_purchase_amount, minimum_transaction, maximum_discount, starts_at, expires_at, usage_limit, usage_count, is_active, created_at, updated_at')
+        .order('created_at', { ascending: false });
       if (!error && data) return data as Voucher[];
     } catch (e) {
       console.warn('Supabase getAdminVouchers error', e);
@@ -1573,7 +1804,7 @@ export async function getPublicFaqs(): Promise<FAQ[]> {
       async () => {
         const { data, error } = await supabase
           .from('faqs')
-          .select('*')
+          .select('id, question, answer, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
         if (!error && data) return data as FAQ[];
@@ -1592,7 +1823,10 @@ export async function getPublicFaqs(): Promise<FAQ[]> {
 export async function getAdminFaqs(): Promise<FAQ[]> {
   if (isSupabaseConfigured) {
     try {
-      const { data, error } = await supabase.from('faqs').select('*').order('display_order', { ascending: true });
+      const { data, error } = await supabase
+        .from('faqs')
+        .select('id, question, answer, display_order, is_active')
+        .order('display_order', { ascending: true });
       if (!error && data) return data as FAQ[];
     } catch (e) {
       console.warn('Supabase getAdminFaqs error', e);
@@ -1897,11 +2131,19 @@ export async function getAdminOrders(): Promise<Order[]> {
         .order('created_at', { ascending: false });
 
       if (!oErr && orders) {
-        const { data: items } = await supabase.from('order_items').select('*');
-        return orders.map((o: Order) => ({
+        const orderIds = orders.map((o: any) => o.id);
+        const { data: items } = orderIds.length > 0
+          ? await supabase
+              .from('order_items')
+              .select('*')
+              .in('order_id', orderIds)
+          : { data: [] };
+
+        return orders.map((o: any) => ({
           ...o,
-          items: (items || []).filter((i: OrderItem) => i.order_id === o.id),
-        }));
+          discount_amount: o.discount_amount ?? o.voucher_discount_amount ?? 0,
+          items: (items || []).filter((i: any) => i.order_id === o.id),
+        })) as Order[];
       }
     } catch (e) {
       console.warn('Supabase getAdminOrders error', e);
@@ -1914,13 +2156,23 @@ export async function getAdminOrders(): Promise<Order[]> {
 export async function getOrderById(id: string): Promise<Order | null> {
   if (isSupabaseConfigured) {
     try {
-      const { data: order, error } = await supabase.from('orders').select('*').eq('id', id).single();
+      const { data: order, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', id)
+        .single();
+
       if (!error && order) {
-        const { data: items } = await supabase.from('order_items').select('*').eq('order_id', id);
+        const { data: items } = await supabase
+          .from('order_items')
+          .select('*')
+          .eq('order_id', id);
+
         return {
           ...order,
+          discount_amount: (order as any).discount_amount ?? (order as any).voucher_discount_amount ?? 0,
           items: items || [],
-        };
+        } as Order;
       }
     } catch (e) {
       console.warn('Supabase getOrderById error', e);
@@ -1929,6 +2181,37 @@ export async function getOrderById(id: string): Promise<Order | null> {
 
   const orders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
   return orders.find((o) => o.id === id) || null;
+}
+
+export async function getDashboardCounts(): Promise<{ orders: number; packages: number; portfolio: number; vouchers: number }> {
+  if (isSupabaseConfigured) {
+    try {
+      const [ordRes, pkgRes, portRes, voucRes] = await Promise.all([
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('packages').select('*', { count: 'exact', head: true }),
+        supabase.from('portfolio_items').select('*', { count: 'exact', head: true }),
+        supabase.from('vouchers').select('*', { count: 'exact', head: true }),
+      ]);
+      return {
+        orders: ordRes.count ?? 0,
+        packages: pkgRes.count ?? 0,
+        portfolio: portRes.count ?? 0,
+        vouchers: voucRes.count ?? 0,
+      };
+    } catch (e) {
+      console.warn('getDashboardCounts error', e);
+    }
+  }
+  const orders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
+  const packages = getLocalData<Package[]>(STORAGE_KEYS.PACKAGES, []);
+  const portfolio = getLocalData<PortfolioItem[]>(STORAGE_KEYS.PORTFOLIO, []);
+  const vouchers = getLocalData<Voucher[]>(STORAGE_KEYS.VOUCHERS, []);
+  return {
+    orders: orders.length,
+    packages: packages.length,
+    portfolio: portfolio.length,
+    vouchers: vouchers.length,
+  };
 }
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
@@ -1949,66 +2232,6 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
   orders[idx] = { ...orders[idx], status, updated_at: new Date().toISOString() };
   setLocalData(STORAGE_KEYS.ORDERS, orders);
   return orders[idx];
-}
-
-/**
- * Hapus 1 order beserta seluruh order_items terkait.
- */
-export async function deleteOrder(orderId: string): Promise<void> {
-  if (isSupabaseConfigured) {
-    // Hapus item dulu supaya tidak kena foreign key constraint
-    await supabase.from('order_items').delete().eq('order_id', orderId);
-    const { error } = await supabase.from('orders').delete().eq('id', orderId);
-    if (error) throw new Error(error.message);
-    return;
-  }
-
-  const orders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
-  setLocalData(
-    STORAGE_KEYS.ORDERS,
-    orders.filter((o) => o.id !== orderId)
-  );
-  const items = getLocalData<OrderItem[]>(STORAGE_KEYS.ORDER_ITEMS, []);
-  setLocalData(
-    STORAGE_KEYS.ORDER_ITEMS,
-    items.filter((it) => it.order_id !== orderId)
-  );
-}
-
-/**
- * Hapus semua order dengan status tertentu (misalnya bersih-bersih semua yang Cancelled sekaligus).
- * Mengembalikan jumlah order yang berhasil dihapus.
- */
-export async function deleteOrdersByStatus(status: OrderStatus): Promise<number> {
-  if (isSupabaseConfigured) {
-    const { data: targetOrders, error: fetchError } = await supabase
-      .from('orders')
-      .select('id')
-      .eq('status', status);
-    if (fetchError) throw new Error(fetchError.message);
-    const ids = (targetOrders || []).map((o: { id: string }) => o.id);
-    if (ids.length === 0) return 0;
-
-    await supabase.from('order_items').delete().in('order_id', ids);
-    const { error } = await supabase.from('orders').delete().in('id', ids);
-    if (error) throw new Error(error.message);
-    return ids.length;
-  }
-
-  const orders = getLocalData<Order[]>(STORAGE_KEYS.ORDERS, []);
-  const toDeleteIds = orders.filter((o) => o.status === status).map((o) => o.id);
-  if (toDeleteIds.length === 0) return 0;
-
-  setLocalData(
-    STORAGE_KEYS.ORDERS,
-    orders.filter((o) => o.status !== status)
-  );
-  const items = getLocalData<OrderItem[]>(STORAGE_KEYS.ORDER_ITEMS, []);
-  setLocalData(
-    STORAGE_KEYS.ORDER_ITEMS,
-    items.filter((it) => !toDeleteIds.includes(it.order_id))
-  );
-  return toDeleteIds.length;
 }
 
 /* ======================================================================
@@ -2092,7 +2315,7 @@ export async function getPublicHeroSlides(): Promise<HeroSlide[]> {
       async () => {
         const { data, error } = await supabase
           .from('hero_slides')
-          .select('*')
+          .select('id, image_path, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
         if (!error && data) {
@@ -2121,7 +2344,7 @@ export async function getAdminHeroSlides(): Promise<HeroSlide[]> {
     try {
       const { data, error } = await supabase
         .from('hero_slides')
-        .select('*')
+        .select('id, image_path, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && data) {
         return await cleanAndMigrateHeroSlides(data as HeroSlide[]);
@@ -2318,7 +2541,11 @@ export async function getAboutSettings(): Promise<AboutSettings> {
     return executeSWR(
       'about_settings',
       async () => {
-        const { data, error } = await supabase.from('about_settings').select('*').limit(1).single();
+        const { data, error } = await supabase
+          .from('about_settings')
+          .select('id, eyebrow, title, description')
+          .limit(1)
+          .single();
         if (!error && data) return data as AboutSettings;
         throw error || new Error('Failed to fetch about settings');
       },
@@ -2359,7 +2586,7 @@ export async function getPublicFounders(): Promise<FounderProfile[]> {
       async () => {
         const { data, error } = await supabase
           .from('founder_profiles')
-          .select('*')
+          .select('id, name, role, short_bio, photo_path, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
         if (!error && data) return data as FounderProfile[];
@@ -2380,7 +2607,7 @@ export async function getAdminFounders(): Promise<FounderProfile[]> {
     try {
       const { data, error } = await supabase
         .from('founder_profiles')
-        .select('*')
+        .select('id, name, role, short_bio, photo_path, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && data) return data as FounderProfile[];
     } catch (e) {
@@ -2503,17 +2730,19 @@ export async function getPublicGalleryAlbums(): Promise<GalleryAlbum[]> {
       async () => {
         const { data: albums, error } = await supabase
           .from('gallery_albums')
-          .select('*')
+          .select('id, title, cover_image_path, year, display_order, is_active')
           .eq('is_active', true)
           .order('display_order', { ascending: true });
         if (!error && albums) {
           // Fetch child images
           const albumIds = albums.map((a: any) => a.id);
-          const { data: images } = await supabase
-            .from('gallery_images')
-            .select('*')
-            .in('album_id', albumIds)
-            .order('display_order', { ascending: true });
+          const { data: images } = albumIds.length > 0
+            ? await supabase
+                .from('gallery_images')
+                .select('id, album_id, image_path, caption, display_order')
+                .in('album_id', albumIds)
+                .order('display_order', { ascending: true })
+            : { data: [] };
 
           const mapped = albums.map((album: any) => ({
             ...album,
@@ -2553,15 +2782,17 @@ export async function getAdminGalleryAlbums(): Promise<GalleryAlbum[]> {
     try {
       const { data: albums, error } = await supabase
         .from('gallery_albums')
-        .select('*')
+        .select('id, title, cover_image_path, year, display_order, is_active')
         .order('display_order', { ascending: true });
       if (!error && albums) {
         const albumIds = albums.map((a: any) => a.id);
-        const { data: images } = await supabase
-          .from('gallery_images')
-          .select('*')
-          .in('album_id', albumIds)
-          .order('display_order', { ascending: true });
+        const { data: images } = albumIds.length > 0
+          ? await supabase
+              .from('gallery_images')
+              .select('id, album_id, image_path, caption, display_order')
+              .in('album_id', albumIds)
+              .order('display_order', { ascending: true })
+          : { data: [] };
 
         return albums.map((album: any) => ({
           ...album,

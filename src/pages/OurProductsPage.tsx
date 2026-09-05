@@ -143,65 +143,6 @@ const getOverlayAnimation = (
   };
 };
 
-/*
- * ==============================================================
- * PERFORMANCE: overlay section registry
- * ==============================================================
- * Each text overlay only needs to be touched (DOM write) while the
- * scroll frame is anywhere near its active window. Outside of that
- * window (with a small safety buffer) it is already fully hidden
- * from a previous update, so there is nothing new to paint and we
- * skip it entirely. This turns "10 DOM writes every single animation
- * tick" into "1-2 DOM writes only when something is actually moving",
- * which is the main source of scroll jank/lag.
- * ==============================================================
- */
-const OVERLAY_BUFFER_FRAMES = 20;
-
-/*
- * ==============================================================
- * AUTOPLAY (idle) CONFIG
- * ==============================================================
- * If the user stops scrolling for AUTO_PLAY_IDLE_MS, the sequence
- * keeps advancing on its own (time-based instead of scroll-based),
- * like a showcase reel. As soon as a real scroll event fires, this
- * is cancelled immediately and control goes back to scroll position.
- * When the sequence reaches the last frame during autoplay it loops
- * back to the start.
- * ==============================================================
- */
-const AUTO_PLAY_IDLE_MS = 1200;
-const AUTO_PLAY_DURATION_MS = 42000;
-
-/*
- * PERFORMANCE: cap how often we actually decode + paint a new frame
- * onto the canvas. JPEG decode + drawImage is the single heaviest
- * operation in this whole component — during continuous autoplay
- * (no natural pauses like real scrolling has) trying to paint every
- * unique frame at 60fps is what causes visible lag. 24 draws/sec is
- * indistinguishable from 60 for this kind of motion but is far
- * cheaper, and applies to both scroll and autoplay.
- */
-const DRAW_INTERVAL_MS = 1000 / 24;
-
-type OverlayAnimationState = {
-  opacity: number;
-  translateY: number;
-  scale: number;
-};
-
-const isFrameNearRange = (
-  frame: number,
-  startFrame: number,
-  endFrame: number,
-  buffer: number
-) => {
-  return (
-    frame >= startFrame - buffer &&
-    frame <= endFrame + buffer
-  );
-};
-
 export const OurProductsPage: React.FC = () => {
   const containerRef =
     useRef<HTMLDivElement>(null);
@@ -246,36 +187,6 @@ export const OurProductsPage: React.FC = () => {
     useRef<HTMLDivElement>(null);
 
   /*
-   * PERFORMANCE + LOOP FIX: flat list of every overlay section except
-   * the hero. Used to force-hide everything when autoplay wraps back
-   * to frame 0, since frame 0 is far outside all of these sections'
-   * active ranges and the normal "skip if far away" optimization
-   * would otherwise leave whatever was visible right before the loop
-   * (e.g. the final CTA) stuck on screen, overlapping the hero text.
-   */
-  const getNonHeroOverlayEntries =
-    () => [
-      { key: 'sonyTitle', ref: sonyTitleRef },
-      { key: 'sonySpecs', ref: sonySpecsRef },
-      { key: 'feelworldTitle', ref: feelworldTitleRef },
-      { key: 'feelworldSpecs', ref: feelworldSpecsRef },
-      { key: 'godoxTitle', ref: godoxTitleRef },
-      { key: 'godoxSpecs', ref: godoxSpecsRef },
-      { key: 'hollylandTitle', ref: hollylandTitleRef },
-      { key: 'hollylandSpecs', ref: hollylandSpecsRef },
-      { key: 'cta', ref: ctaOverlayRef }
-    ];
-
-  /*
-   * PERFORMANCE: cache of the last value written to each overlay so
-   * we never write the exact same opacity/transform twice in a row.
-   */
-  const lastOverlayStateRef =
-    useRef<Map<string, OverlayAnimationState>>(
-      new Map()
-    );
-
-  /*
    * ==========================================================
    * IMAGE CACHE
    * ==========================================================
@@ -314,13 +225,10 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   /*
-   * Keep network concurrency controlled to avoid choking mobile
-   * devices, but high enough that fast scrolling doesn't outrun
-   * the loader and cause visible stepping/stutter. 3 was too low
-   * for a 862-frame sequence; 6 keeps things buffered without
-   * saturating slow connections.
+   * Keep network concurrency controlled
+   * to avoid choking mobile devices.
    */
-  const MAX_CONCURRENT_LOADS = 8;
+  const MAX_CONCURRENT_LOADS = 3;
 
   /*
    * ==========================================================
@@ -341,24 +249,6 @@ export const OurProductsPage: React.FC = () => {
     useRef<number>(0);
 
   const renderLoopRef =
-    useRef<number>(0);
-
-  /*
-   * AUTOPLAY: timestamp of the last real scroll event, and the
-   * timestamp of the previous render tick (used to compute dt so
-   * autoplay speed is frame-rate independent).
-   */
-  const lastScrollTimestampRef =
-    useRef<number>(0);
-
-  const lastFrameTimestampRef =
-    useRef<number>(0);
-
-  /*
-   * PERFORMANCE: last time we actually painted a new frame to the
-   * canvas, used to throttle draws to DRAW_INTERVAL_MS.
-   */
-  const lastDrawTimestampRef =
     useRef<number>(0);
 
   /*
@@ -633,82 +523,52 @@ export const OurProductsPage: React.FC = () => {
             img.decoding =
               'async';
 
-            /*
-             * PERFORMANCE (root cause of the stutter): browsers often
-             * defer the actual JPEG pixel decode until the image is
-             * first drawn, not when it finishes downloading. That
-             * means the expensive decode work was happening exactly
-             * when we tried to paint it mid-animation — the real
-             * source of the choppiness. img.decode() forces decoding
-             * to finish ahead of time (off the main thread on
-             * supporting browsers), during the idle preload window,
-             * so drawImage() at playback time is just a cheap blit.
-             */
-            const finalizeFrame =
-              () => {
-                imageCache.current.set(
-                  frame,
-                  img
-                );
-
-                loadingFrames.current.delete(
-                  frame
-                );
-
-                activeLoadsRef.current--;
-
-                resolve();
-
-                processFrameQueue();
-
-                /*
-                 * Immediately render the frame
-                 * if it is still the current frame.
-                 */
-                const currentFrame =
-                  getSafeFrame(
-                    smoothFrameRef.current
-                  );
-
-                if (
-                  currentFrame ===
-                  frame
-                ) {
-                  const canvas =
-                    canvasRef.current;
-
-                  if (!canvas) return;
-
-                  const ctx =
-                    canvas.getContext(
-                      '2d'
-                    );
-
-                  if (!ctx) return;
-
-                  drawImageCover(
-                    ctx,
-                    img,
-                    canvas
-                  );
-                }
-              };
-
             img.onload = () => {
-              if (
-                typeof img.decode ===
-                'function'
-              ) {
+              imageCache.current.set(
+                frame,
                 img
-                  .decode()
-                  .then(
-                    finalizeFrame
-                  )
-                  .catch(
-                    finalizeFrame
+              );
+
+              loadingFrames.current.delete(
+                frame
+              );
+
+              activeLoadsRef.current--;
+
+              resolve();
+
+              processFrameQueue();
+
+              /*
+               * Immediately render the frame
+               * if it is still the current frame.
+               */
+              const currentFrame =
+                getSafeFrame(
+                  smoothFrameRef.current
+                );
+
+              if (
+                currentFrame ===
+                frame
+              ) {
+                const canvas =
+                  canvasRef.current;
+
+                if (!canvas) return;
+
+                const ctx =
+                  canvas.getContext(
+                    '2d'
                   );
-              } else {
-                finalizeFrame();
+
+                if (!ctx) return;
+
+                drawImageCover(
+                  ctx,
+                  img,
+                  canvas
+                );
               }
             };
 
@@ -884,36 +744,23 @@ export const OurProductsPage: React.FC = () => {
    */
 
   const preloadAhead = (
-    currentIndex: number,
-    forwardOnly = false
+    currentIndex: number
   ) => {
     const center =
       getSafeFrame(
         currentIndex
       );
 
-    /*
-     * PERFORMANCE: during autoplay the playback direction is always
-     * forward, so there's no point spending loading slots on frames
-     * behind the current one — load further ahead instead so the
-     * decoder never runs out of ready frames.
-     */
-    const offsets = forwardOnly
-      ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-      : [
-          1,
-          -1,
-          2,
-          -2,
-          3,
-          -3,
-          4,
-          -4,
-          5,
-          -5,
-          6,
-          -6
-        ];
+    const offsets = [
+      1,
+      -1,
+      2,
+      -2,
+      3,
+      -3,
+      4,
+      -4
+    ];
 
     for (
       const offset of offsets
@@ -990,28 +837,14 @@ export const OurProductsPage: React.FC = () => {
    */
 
   const updateOverlay = (
-    key: string,
     element: HTMLDivElement | null,
-    animation: OverlayAnimationState
+    animation: {
+      opacity: number;
+      translateY: number;
+      scale: number;
+    }
   ) => {
     if (!element) return;
-
-    /*
-     * PERFORMANCE: skip the DOM write entirely if this exact value
-     * was already applied last tick. Prevents redundant style
-     * recalculation when the section is fully hidden and nothing
-     * about it is actually changing.
-     */
-    const last =
-      lastOverlayStateRef.current.get(key);
-
-    const changed =
-      !last ||
-      Math.abs(last.opacity - animation.opacity) > 0.001 ||
-      Math.abs(last.translateY - animation.translateY) > 0.05 ||
-      Math.abs(last.scale - animation.scale) > 0.0005;
-
-    if (!changed) return;
 
     element.style.opacity =
       String(
@@ -1025,84 +858,6 @@ export const OurProductsPage: React.FC = () => {
       animation.opacity > 0.01
         ? 'auto'
         : 'none';
-
-    lastOverlayStateRef.current.set(
-      key,
-      animation
-    );
-  };
-
-  /*
-   * LOOP FIX: hard-reset every non-hero overlay to fully hidden,
-   * bypassing the "skip if far from range" optimization. Call this
-   * exactly at the moment autoplay wraps back to frame 0 so nothing
-   * visible right before the loop can get stuck on screen.
-   */
-  const forceHideNonHeroOverlays =
-    () => {
-      getNonHeroOverlayEntries().forEach(
-        ({ key, ref }) => {
-          if (!ref.current) return;
-
-          ref.current.style.opacity =
-            '0';
-
-          ref.current.style.transform =
-            'translate3d(0, 24px, 0) scale(0.985)';
-
-          ref.current.style.pointerEvents =
-            'none';
-
-          lastOverlayStateRef.current.set(
-            key,
-            {
-              opacity: 0,
-              translateY: 24,
-              scale: 0.985
-            }
-          );
-        }
-      );
-    };
-
-  /*
-   * PERFORMANCE: only compute + write a section's overlay if the
-   * current frame is anywhere near its active window. Everything
-   * far outside that window was already hidden by a previous tick
-   * and needs no further work, so we skip it completely instead of
-   * touching the DOM for all 10 overlays on every single frame.
-   */
-  const updateOverlaySection = (
-    key: string,
-    element: HTMLDivElement | null,
-    frame: number,
-    startFrame: number,
-    endFrame: number,
-    fadeInDuration: number,
-    fadeOutDuration: number
-  ) => {
-    if (
-      !isFrameNearRange(
-        frame,
-        startFrame,
-        endFrame,
-        OVERLAY_BUFFER_FRAMES
-      )
-    ) {
-      return;
-    }
-
-    updateOverlay(
-      key,
-      element,
-      getOverlayAnimation(
-        frame,
-        startFrame,
-        endFrame,
-        fadeInDuration,
-        fadeOutDuration
-      )
-    );
   };
 
   const updateTextOverlays = (
@@ -1121,126 +876,135 @@ export const OurProductsPage: React.FC = () => {
      * and only fades OUT near frame 59.
      * ========================================================
      */
-    updateOverlaySection(
-      'hero',
+    updateOverlay(
       heroOverlayRef.current,
-      frame,
-      0,
-      59,
-      0,
-      12
+      getOverlayAnimation(
+        frame,
+        0,
+        59,
+        0,
+        12
+      )
     );
 
     /*
      * SONY TITLE
      * Frame 60-179
      */
-    updateOverlaySection(
-      'sonyTitle',
+    updateOverlay(
       sonyTitleRef.current,
-      frame,
-      60,
-      179,
-      14,
-      16
+      getOverlayAnimation(
+        frame,
+        60,
+        179,
+        14,
+        16
+      )
     );
 
     /*
      * SONY SPECS
      * Frame 180-299
      */
-    updateOverlaySection(
-      'sonySpecs',
+    updateOverlay(
       sonySpecsRef.current,
-      frame,
-      180,
-      299,
-      14,
-      16
+      getOverlayAnimation(
+        frame,
+        180,
+        299,
+        14,
+        16
+      )
     );
 
     /*
      * FEELWORLD TITLE
      * Frame 300-404
      */
-    updateOverlaySection(
-      'feelworldTitle',
+    updateOverlay(
       feelworldTitleRef.current,
-      frame,
-      300,
-      404,
-      14,
-      14
+      getOverlayAnimation(
+        frame,
+        300,
+        404,
+        14,
+        14
+      )
     );
 
     /*
      * FEELWORLD SPECS
      * Frame 405-569
      */
-    updateOverlaySection(
-      'feelworldSpecs',
+    updateOverlay(
       feelworldSpecsRef.current,
-      frame,
-      405,
-      569,
-      16,
-      18
+      getOverlayAnimation(
+        frame,
+        405,
+        569,
+        16,
+        18
+      )
     );
 
     /*
      * GODOX TITLE
      * Frame 619-653
      */
-    updateOverlaySection(
-      'godoxTitle',
+    updateOverlay(
       godoxTitleRef.current,
-      frame,
-      619,
-      653,
-      8,
-      8
+      getOverlayAnimation(
+        frame,
+        619,
+        653,
+        8,
+        8
+      )
     );
 
     /*
      * GODOX SPECS
      * Frame 652-691
      */
-    updateOverlaySection(
-      'godoxSpecs',
+    updateOverlay(
       godoxSpecsRef.current,
-      frame,
-      652,
-      691,
-      8,
-      8
+      getOverlayAnimation(
+        frame,
+        652,
+        691,
+        8,
+        8
+      )
     );
 
     /*
      * HOLLYLAND TITLE
      * Frame 692-768
      */
-    updateOverlaySection(
-      'hollylandTitle',
+    updateOverlay(
       hollylandTitleRef.current,
-      frame,
-      692,
-      768,
-      12,
-      12
+      getOverlayAnimation(
+        frame,
+        692,
+        768,
+        12,
+        12
+      )
     );
 
     /*
      * HOLLYLAND SPECS
      * Frame 768-839
      */
-    updateOverlaySection(
-      'hollylandSpecs',
+    updateOverlay(
       hollylandSpecsRef.current,
-      frame,
-      768,
-      839,
-      12,
-      12
+      getOverlayAnimation(
+        frame,
+        768,
+        839,
+        12,
+        12
+      )
     );
 
     /*
@@ -1251,14 +1015,15 @@ export const OurProductsPage: React.FC = () => {
      * No fade out, so it remains visible
      * through the final frame.
      */
-    updateOverlaySection(
-      'cta',
+    updateOverlay(
       ctaOverlayRef.current,
-      frame,
-      840,
-      861,
-      8,
-      0
+      getOverlayAnimation(
+        frame,
+        840,
+        861,
+        8,
+        0
+      )
     );
   };
 
@@ -1269,13 +1034,6 @@ export const OurProductsPage: React.FC = () => {
    */
 
   const handleScroll = () => {
-    /*
-     * AUTOPLAY: any real scroll input immediately marks the user as
-     * "active", which cancels autoplay on the very next render tick.
-     */
-    lastScrollTimestampRef.current =
-      performance.now();
-
     if (
       scrollRequestRef.current
     ) {
@@ -1312,17 +1070,6 @@ export const OurProductsPage: React.FC = () => {
 
     targetFrameRef.current =
       0;
-
-    /*
-     * AUTOPLAY: start the idle timer from the moment the page loads,
-     * so if the user never scrolls at all, autoplay kicks in on its
-     * own after AUTO_PLAY_IDLE_MS.
-     */
-    lastScrollTimestampRef.current =
-      performance.now();
-
-    lastFrameTimestampRef.current =
-      performance.now();
 
     resizeCanvas();
 
@@ -1370,65 +1117,6 @@ export const OurProductsPage: React.FC = () => {
     const renderLoop = () => {
       if (!mounted) return;
 
-      /*
-       * ======================================================
-       * AUTOPLAY
-       * ======================================================
-       * When idle (no real scroll for AUTO_PLAY_IDLE_MS), advance
-       * targetFrameRef on its own using elapsed time. A real scroll
-       * event updates lastScrollTimestampRef and this stops on the
-       * very next tick, handing control straight back to scroll.
-       */
-      const now =
-        performance.now();
-
-      const dt =
-        Math.min(
-          now -
-            lastFrameTimestampRef.current,
-          100
-        );
-
-      lastFrameTimestampRef.current =
-        now;
-
-      const isIdle =
-        now -
-          lastScrollTimestampRef.current >
-        AUTO_PLAY_IDLE_MS;
-
-      if (isIdle) {
-        const framesPerMs =
-          (productSequence.frameCount - 1) /
-          AUTO_PLAY_DURATION_MS;
-
-        let nextTarget =
-          targetFrameRef.current +
-          framesPerMs * dt;
-
-        /*
-         * Loop back to the start once the sequence finishes playing
-         * on its own, so it keeps running continuously.
-         */
-        if (
-          nextTarget >=
-          productSequence.frameCount - 1
-        ) {
-          nextTarget = 0;
-
-          smoothFrameRef.current =
-            0;
-
-          currentFrameRef.current =
-            -1;
-
-          forceHideNonHeroOverlays();
-        }
-
-        targetFrameRef.current =
-          nextTarget;
-      }
-
       const target =
         targetFrameRef.current;
 
@@ -1469,32 +1157,21 @@ export const OurProductsPage: React.FC = () => {
         );
 
       /*
-       * PERFORMANCE: only actually paint a new frame when the
-       * integer frame changed AND enough time has passed since the
-       * last paint (DRAW_INTERVAL_MS). This is what stops autoplay
-       * from trying to decode+draw a brand new JPEG on literally
-       * every animation tick.
+       * Render only when the integer frame changes.
        */
       if (
         renderFrame !==
-          currentFrameRef.current &&
-        now -
-          lastDrawTimestampRef.current >=
-          DRAW_INTERVAL_MS
+        currentFrameRef.current
       ) {
         currentFrameRef.current =
           renderFrame;
-
-        lastDrawTimestampRef.current =
-          now;
 
         drawFrame(
           renderFrame
         );
 
         preloadAhead(
-          renderFrame,
-          isIdle
+          renderFrame
         );
       }
 
@@ -1544,8 +1221,6 @@ export const OurProductsPage: React.FC = () => {
 
       frameQueue.current = [];
       queueSet.current.clear();
-
-      lastOverlayStateRef.current.clear();
     };
   }, []);
 

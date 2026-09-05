@@ -10,13 +10,6 @@ export const isSupabaseConfigured = Boolean(
   !supabaseAnonKey.includes('your-anon-key')
 );
 
-if (!isSupabaseConfigured) {
-  console.warn(
-    '[supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY belum di-set (atau masih placeholder). ' +
-    'Aplikasi akan jalan pakai local storage fallback, bukan database Supabase.'
-  );
-}
-
 export const supabase: SupabaseClient = createClient(
   isSupabaseConfigured ? supabaseUrl : 'https://placeholder.supabase.co',
   isSupabaseConfigured ? supabaseAnonKey : 'placeholder-key',

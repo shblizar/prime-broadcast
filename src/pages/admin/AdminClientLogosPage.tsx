@@ -4,6 +4,7 @@ import {
   createClientLogo,
   updateClientLogo,
   deleteClientLogo,
+  uploadClientLogoFile,
 } from '../../services/api';
 import { ClientLogo } from '../../types';
 import { Plus, Edit2, Trash2, Image as ImageIcon, Check } from 'lucide-react';
@@ -19,6 +20,8 @@ export const AdminClientLogosPage: React.FC = () => {
   // Fields
   const [clientName, setClientName] = useState('');
   const [logoPath, setLogoPath] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [displayOrder, setDisplayOrder] = useState<number>(1);
   const [isActive, setIsActive] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,6 +46,8 @@ export const AdminClientLogosPage: React.FC = () => {
     setEditingId(null);
     setClientName('');
     setLogoPath('');
+    setSelectedFile(null);
+    setPreviewUrl('');
     setDisplayOrder((logos.length || 0) + 1);
     setIsActive(true);
     setIsModalOpen(true);
@@ -52,42 +57,55 @@ export const AdminClientLogosPage: React.FC = () => {
     setEditingId(item.id);
     setClientName(item.client_name);
     setLogoPath(item.logo_path);
+    setSelectedFile(null);
+    setPreviewUrl(item.logo_path);
     setDisplayOrder(item.display_order);
     setIsActive(item.is_active);
     setIsModalOpen(true);
   };
 
-  // Image Upload helper (supports data URL / external URL)
+  // Image file handler for Supabase Storage upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setLogoPath(event.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+    setSelectedFile(file);
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    if (!clientName) {
+      const nameWithoutExt = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+      setClientName(nameWithoutExt);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientName.trim() || !logoPath.trim()) return;
+    if (!clientName.trim()) return;
 
     setSaving(true);
     try {
+      let finalLogoPath = logoPath.trim();
+      if (selectedFile) {
+        finalLogoPath = await uploadClientLogoFile(selectedFile);
+      }
+
+      if (!finalLogoPath) {
+        alert('File logo atau URL logo wajib diisi.');
+        setSaving(false);
+        return;
+      }
+
       if (editingId) {
         await updateClientLogo(editingId, {
           client_name: clientName.trim(),
-          logo_path: logoPath.trim(),
+          logo_path: finalLogoPath,
           display_order: displayOrder,
           is_active: isActive,
         });
       } else {
         await createClientLogo({
           client_name: clientName.trim(),
-          logo_path: logoPath.trim(),
+          logo_path: finalLogoPath,
           display_order: displayOrder,
           is_active: isActive,
         });
@@ -222,26 +240,36 @@ export const AdminClientLogosPage: React.FC = () => {
                   onChange={handleFileUpload}
                   className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#081A2E] file:text-white hover:file:bg-slate-800"
                 />
+                {selectedFile && (
+                  <p className="text-[10px] text-emerald-600 mt-1 font-medium">
+                    File terpilih: {selectedFile.name} (akan diunggah ke Supabase Storage)
+                  </p>
+                )}
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Atau Masukkan URL / Path Logo *</label>
+                <label className="block font-bold text-slate-700 mb-1">Atau Masukkan URL / Path Logo {!selectedFile && '*'}</label>
                 <input
                   type="text"
-                  required
+                  required={!selectedFile}
                   value={logoPath}
-                  onChange={(e) => setLogoPath(e.target.value)}
+                  onChange={(e) => {
+                    setLogoPath(e.target.value);
+                    if (!selectedFile) {
+                      setPreviewUrl(e.target.value);
+                    }
+                  }}
                   placeholder="https://... atau /logos/mandiri.svg"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#081A2E] outline-none"
                 />
               </div>
 
               {/* Preview */}
-              {logoPath && (
+              {(previewUrl || logoPath) && (
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-center">
                   <div className="text-[10px] text-slate-400 mb-2">Preview Logo:</div>
                   <img
-                    src={logoPath}
+                    src={previewUrl || logoPath}
                     alt="Preview"
                     className="max-h-12 max-w-full mx-auto object-contain"
                   />

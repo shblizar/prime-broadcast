@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   getAllOrders,
-  getAllPackages,
-  getAllPortfolio,
-  getPublicVouchers,
+  getDashboardCounts,
   updateOrderStatus,
 } from '../../services/api';
 import { Order, OrderStatus } from '../../types';
@@ -29,16 +27,14 @@ export const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [ord, pkgs, port, vouch] = await Promise.all([
+        const [ord, counts] = await Promise.all([
           getAllOrders(),
-          getAllPackages(),
-          getAllPortfolio(),
-          getPublicVouchers(),
+          getDashboardCounts(),
         ]);
         setOrders(ord);
-        setPackageCount(pkgs.length);
-        setPortfolioCount(port.length);
-        setVoucherCount(vouch.length);
+        setPackageCount(counts.packages);
+        setPortfolioCount(counts.portfolio);
+        setVoucherCount(counts.vouchers);
       } catch (err) {
         console.error(err);
       } finally {

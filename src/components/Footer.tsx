@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { PrimeBroadcastLogo } from './PrimeBroadcastLogo';
-import { SiteSettings } from '../types';
-import { getSiteSettings } from '../services/api';
+import { usePublicData } from '../contexts/PublicDataContext';
 import { normalizeWhatsAppNumber } from '../utils/whatsapp';
 import { Mail, ExternalLink } from 'lucide-react';
 import instagramIcon from '../assets/images/social/Instagram.png';
@@ -11,11 +10,7 @@ import whatsappIcon from '../assets/images/social/WhatsApp.png';
 import webIcon from '../assets/images/social/Web.png';
 
 export const Footer: React.FC = () => {
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-
-  useEffect(() => {
-    getSiteSettings().then(setSettings).catch(console.error);
-  }, []);
+  const { siteSettings: settings } = usePublicData();
 
   const handleFooterLinkClick = (e: React.MouseEvent, path: string, hash?: string) => {
     if (window.location.pathname === '/') {
