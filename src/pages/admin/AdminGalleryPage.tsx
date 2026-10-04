@@ -433,66 +433,95 @@ export const AdminGalleryPage: React.FC = () => {
 
   return (
     <div className="space-y-6" id="admin-gallery">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+      {/* 1. Header Card */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Camera className="w-6 h-6 text-[#A40D35]" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#081A2E]">
-              Galeri Dokumentasi & Album
-            </h1>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#081A2E]/5 text-[#081A2E] border border-[#081A2E]/10">
+              <Camera className="w-3 h-3 text-[#A40D35]" />
+              Visual Media
+            </span>
+            <span className="text-xs font-semibold text-slate-500">
+              {albums.length} album dokumentasi
+            </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Kelola album dokumentasi acara siaran langsung. Satu album dapat berisi banyak foto.
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#081A2E] tracking-tight">
+            Galeri Dokumentasi & Album
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Kelola album dokumentasi acara siaran langsung. Satu album dapat mengelompokkan banyak foto dokumentasi acara.
           </p>
         </div>
-        <button
-          onClick={openAddAlbumModal}
-          id="btn-add-album"
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#A40D35] hover:bg-[#850B2B] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all"
-        >
-          <FolderPlus className="w-4 h-4" />
-          <span>Buat Album Baru</span>
-        </button>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={fetchAlbums}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-[#081A2E] shadow-sm transition-all cursor-pointer disabled:opacity-60"
+            title="Muat ulang galeri"
+          >
+            <Loader2 className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#A40D35]' : 'text-slate-500'}`} />
+            <span>Segarkan</span>
+          </button>
+
+          <button
+            onClick={openAddAlbumModal}
+            id="btn-add-album"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#A40D35] hover:bg-[#820A2A] text-white text-xs font-bold rounded-lg shadow-sm transition-all cursor-pointer"
+          >
+            <FolderPlus className="w-4 h-4" />
+            <span>Buat Album Baru</span>
+          </button>
+        </div>
       </div>
 
-      {/* Notification */}
+      {/* 2. Notification */}
       {notification && (
         <div
-          className={`p-4 rounded-lg flex items-center justify-between gap-3 text-sm ${
+          className={`p-4 rounded-xl flex items-center justify-between gap-3 text-xs font-semibold ${
             notification.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
               : 'bg-rose-50 text-rose-800 border border-rose-200'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {notification.type === 'success' ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             )}
             <span>{notification.message}</span>
           </div>
-          <button onClick={() => setNotification(null)} className="text-xs font-semibold hover:underline opacity-80">
+          <button
+            onClick={() => setNotification(null)}
+            className="text-[11px] font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+          >
             Tutup
           </button>
         </div>
       )}
 
+      {/* 3. Albums Grid */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400 text-sm">Memuat galeri...</div>
+        <div className="py-20 text-center text-slate-400 text-xs flex flex-col items-center justify-center gap-2 bg-white rounded-xl border border-slate-200/90">
+          <Loader2 className="w-6 h-6 animate-spin text-[#A40D35]" />
+          <span>Memuat galeri album...</span>
+        </div>
       ) : albums.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-3">
-          <Images className="w-10 h-10 text-slate-300 mx-auto" />
-          <h3 className="text-base font-semibold text-slate-700">Belum Ada Album Galeri</h3>
-          <p className="text-sm text-slate-500 max-w-md mx-auto">
-            Buat album dokumentasi acara siaran langsung atau multi-camera untuk memamerkan kualitas eksekusi Prime Broadcast.
+        <div className="bg-white border border-slate-200/90 rounded-xl p-16 text-center space-y-3 shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+            <Images className="w-6 h-6" />
+          </div>
+          <h3 className="text-sm font-bold text-[#081A2E]">Belum Ada Album Galeri</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+            Buat album dokumentasi acara siaran langsung atau multi-camera untuk memamerkan kualitas eksekusi Prime Broadcast kepada klien.
           </p>
           <button
             onClick={openAddAlbumModal}
-            className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#081A2E] text-white text-xs font-semibold rounded-lg hover:bg-slate-800"
+            className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-[#A40D35] text-white text-xs font-bold rounded-lg hover:bg-[#820A2A] transition-colors cursor-pointer shadow-sm"
           >
-            <Plus className="w-4 h-4" /> Buat Album Pertama
+            <Plus className="w-4 h-4" />
+            <span>Buat Album Pertama</span>
           </button>
         </div>
       ) : (
@@ -502,8 +531,8 @@ export const AdminGalleryPage: React.FC = () => {
             return (
               <div
                 key={album.id}
-                className={`bg-white rounded-2xl border transition-all overflow-hidden flex flex-col justify-between ${
-                  album.is_active ? 'border-slate-200 shadow-sm' : 'border-slate-200 opacity-60 bg-slate-50'
+                className={`bg-white rounded-xl border transition-all overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-md ${
+                  album.is_active ? 'border-slate-200/90' : 'border-slate-200 opacity-60 bg-slate-50'
                 }`}
               >
                 <div>
@@ -514,54 +543,56 @@ export const AdminGalleryPage: React.FC = () => {
                       alt={album.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded text-white text-[11px] font-mono">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
+                    <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-md text-white text-[10px] font-mono font-bold">
                       #{album.display_order} {album.year ? `• ${album.year}` : ''}
                     </div>
                     <div className="absolute top-3 right-3">
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium backdrop-blur-md ${
-                          album.is_active ? 'bg-emerald-500/80 text-white' : 'bg-slate-600/80 text-slate-200'
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md ${
+                          album.is_active
+                            ? 'bg-emerald-500/90 text-white'
+                            : 'bg-slate-600/90 text-slate-200'
                         }`}
                       >
                         {album.is_active ? 'Aktif' : 'Nonaktif'}
                       </span>
                     </div>
                     <div className="absolute bottom-3 left-3 right-3 text-white">
-                      <h3 className="text-sm font-bold truncate">{album.title}</h3>
-                      <p className="text-[11px] text-slate-300 font-medium">
+                      <h3 className="text-sm font-extrabold truncate">{album.title}</h3>
+                      <p className="text-[11px] text-slate-300 font-medium mt-0.5">
                         {childCount} Foto di Album
                       </p>
                     </div>
                   </div>
 
                   {/* Sub info */}
-                  <div className="p-4 flex items-center justify-between text-xs text-slate-600">
+                  <div className="p-4 flex items-center justify-between text-xs text-slate-600 bg-slate-50/50">
                     <button
                       onClick={() => openImagesModal(album)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-[#A40D35] hover:bg-[#A40D35] hover:text-white rounded-lg transition-colors font-bold"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-[#A40D35] hover:bg-[#A40D35] hover:text-white rounded-lg transition-colors font-bold text-xs border border-rose-200/80 cursor-pointer"
                     >
                       <ImageIcon className="w-3.5 h-3.5" />
-                      Kelola Foto ({childCount})
+                      <span>Kelola Foto ({childCount})</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="px-4 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+                <div className="px-4 py-3 bg-white border-t border-slate-100 flex items-center justify-end gap-1.5">
                   <button
                     onClick={() => openEditAlbumModal(album)}
                     title="Edit Album"
-                    className="p-1.5 text-slate-600 hover:text-[#081A2E] hover:bg-slate-100 rounded-lg"
+                    className="p-1.5 text-slate-600 hover:text-[#081A2E] hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors cursor-pointer"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteAlbum(album)}
                     title="Hapus Album"
-                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg"
+                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -572,21 +603,27 @@ export const AdminGalleryPage: React.FC = () => {
 
       {/* Album Form Modal */}
       {isAlbumModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 my-8 max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-shrink-0">
-              <h3 className="text-lg font-bold text-[#081A2E]">
-                {editingAlbum ? 'Edit Album Galeri' : 'Buat Album Galeri Baru'}
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-2xl w-full shadow-2xl space-y-5 my-8 max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#081A2E] text-white flex-shrink-0">
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                  Konfigurasi Galeri
+                </div>
+                <h3 className="font-extrabold text-base text-white tracking-tight">
+                  {editingAlbum ? 'Edit Album Galeri' : 'Buat Album Galeri Baru'}
+                </h3>
+              </div>
               <button
                 onClick={() => setIsAlbumModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 rounded-lg hover:bg-slate-100"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Tutup form"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleSaveAlbum} className="space-y-4 overflow-y-auto pr-1">
+            <form onSubmit={handleSaveAlbum} className="p-6 space-y-4 overflow-y-auto pr-2">
               {/* Cover Photo */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
@@ -833,25 +870,31 @@ export const AdminGalleryPage: React.FC = () => {
 
       {/* Child Images Management Modal (Photo Manager) */}
       {selectedAlbum && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl space-y-5 max-h-[92vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl max-w-3xl w-full shadow-2xl max-h-[92vh] flex flex-col border border-slate-200 overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 flex-shrink-0">
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-[#081A2E]">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#081A2E] text-white flex-shrink-0">
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                  Manajer Foto Album
+                </div>
+                <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
                   Kelola Foto Album: "{selectedAlbum.title}"
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-300">
                   Total {albumImages.length} foto dalam album ini
                 </p>
               </div>
               <button
                 onClick={() => setSelectedAlbum(null)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold p-1 rounded-lg hover:bg-slate-100"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Tutup manajer foto"
               >
                 ✕
               </button>
             </div>
+
+            <div className="p-6 space-y-5 flex flex-col flex-1 overflow-y-auto">
 
             {/* Multiple Upload Section */}
             <div className="bg-rose-50/50 border border-rose-200/80 p-4 rounded-xl space-y-3 flex-shrink-0">
@@ -1027,6 +1070,7 @@ export const AdminGalleryPage: React.FC = () => {
                   ))}
                 </div>
               )}
+            </div>
             </div>
 
             {/* Footer */}

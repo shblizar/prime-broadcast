@@ -255,9 +255,9 @@ export const PackagePage: React.FC = () => {
             <section id="config-step-package" className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 pb-2">
                 <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[#081A2E]">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-[#081A2E]">
                     Pilih Paket Siaran Utama
-                  </h2>
+                  </h1>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-500">
                   Pilih paket dasar kamera & durasi yang paling tepat untuk skala acara Anda

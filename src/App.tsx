@@ -78,11 +78,14 @@ function AdminLoadingFallback() {
   );
 }
 
-// Scroll to top helper on route change
-function ScrollToTop() {
+import { applyPageSEO } from './utils/seo';
+
+// Route change helper for scroll position and page metadata (SEO, canonical, OpenGraph)
+function RouteChangeHandler() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    applyPageSEO(pathname);
   }, [pathname]);
   return null;
 }
@@ -112,7 +115,7 @@ export default function App() {
       <SectionAnimationProvider>
         <PublicDataProvider>
           <BrowserRouter>
-            <ScrollToTop />
+            <RouteChangeHandler />
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<HomePage />} />

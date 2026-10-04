@@ -7,7 +7,20 @@ import {
 } from '../../services/api';
 import { Voucher } from '../../types';
 import { formatIDR } from '../../utils/currency';
-import { Plus, Edit2, Trash2, Tag, Check, X, Percent, AlertCircle } from 'lucide-react';
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Tag,
+  Check,
+  X,
+  Percent,
+  AlertCircle,
+  RefreshCw,
+  Ticket,
+  Calendar,
+  Layers,
+} from 'lucide-react';
 
 export const AdminVouchersPage: React.FC = () => {
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
@@ -144,46 +157,87 @@ export const AdminVouchersPage: React.FC = () => {
 
   return (
     <div className="space-y-6" id="admin-vouchers-page">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#081A2E]">
+      {/* 1. Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#081A2E]/5 text-[#081A2E] border border-[#081A2E]/10">
+              <Ticket className="w-3 h-3 text-[#A40D35]" />
+              Promosi & Diskon
+            </span>
+            <span className="text-xs font-semibold text-slate-500">
+              {vouchers.length} voucher aktif / terdaftar
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#081A2E] tracking-tight">
             Voucher Diskon & Promo
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Kelola kode voucher potongan harga (Fixed Amount atau Percentage), masa berlaku, dan batas kuota pemakaian
+          <p className="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Kelola kode voucher potongan harga (Nominal Tetap atau Persentase), masa berlaku, batas kuota transaksi, dan limit potongan maksimal.
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreate}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#850B2B] shadow-sm transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Tambah Voucher
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={fetchData}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-[#081A2E] shadow-sm transition-all cursor-pointer disabled:opacity-60"
+            title="Muat ulang voucher"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#A40D35]' : 'text-slate-500'}`} />
+            <span>Segarkan</span>
+          </button>
+
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#820A2A] shadow-sm transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Voucher</span>
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* 2. Table */}
+      <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-xs text-slate-400">Memuat voucher...</div>
+          <div className="p-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+            <RefreshCw className="w-6 h-6 animate-spin text-[#A40D35]" />
+            <span>Memuat data voucher...</span>
+          </div>
         ) : vouchers.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-400">
-            Belum ada voucher yang terdaftar.
+          <div className="p-16 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <Ticket className="w-6 h-6" />
+            </div>
+            <p className="text-xs font-semibold text-slate-700">
+              Belum ada voucher yang terdaftar.
+            </p>
+            <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+              Buat kode promo diskon untuk memikat klien baru atau reward pelanggan setia live streaming.
+            </p>
+            <button
+              onClick={handleOpenCreate}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#820A2A] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Buat Voucher Sekarang</span>
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+              <thead className="bg-slate-50/80 text-slate-600 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
                 <tr>
-                  <th className="px-4 py-3">Nama / Kode</th>
-                  <th className="px-4 py-3">Tipe</th>
-                  <th className="px-4 py-3">Nilai Diskon</th>
-                  <th className="px-4 py-3">Maks. Potongan</th>
-                  <th className="px-4 py-3">Min. Belanja</th>
-                  <th className="px-4 py-3">Masa Berlaku</th>
-                  <th className="px-4 py-3">Pemakaian</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Aksi</th>
+                  <th className="px-5 py-3.5">Kode & Nama</th>
+                  <th className="px-5 py-3.5">Tipe Diskon</th>
+                  <th className="px-5 py-3.5">Nilai Diskon</th>
+                  <th className="px-5 py-3.5">Maks. Potongan</th>
+                  <th className="px-5 py-3.5">Min. Belanja</th>
+                  <th className="px-5 py-3.5">Masa Berlaku</th>
+                  <th className="px-5 py-3.5">Pemakaian</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -195,79 +249,88 @@ export const AdminVouchersPage: React.FC = () => {
                   const expiresAt = item.expires_at;
 
                   return (
-                    <tr key={item.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3">
-                        <div className="font-bold text-[#A40D35] font-mono tracking-wider">
+                    <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="font-extrabold text-[#081A2E] font-mono tracking-wider text-sm">
                           {item.code}
                         </div>
                         {item.name && (
-                          <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+                          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
                             {item.name}
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 font-semibold capitalize">
+                      <td className="px-5 py-4">
                         {type === 'percentage' ? (
-                          <span className="inline-flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[10px] font-bold">
-                            <Percent className="w-2.5 h-2.5" />
-                            Percentage
+                          <span className="inline-flex items-center gap-1 text-sky-700 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            <Percent className="w-3 h-3" />
+                            Persentase
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-[10px] font-bold">
-                            <Tag className="w-2.5 h-2.5" />
-                            Fixed Amount
+                          <span className="inline-flex items-center gap-1 text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            <Tag className="w-3 h-3" />
+                            Nominal Tetap
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 font-extrabold text-[#081A2E]">
+                      <td className="px-5 py-4 font-extrabold text-[#081A2E] text-sm">
                         {type === 'percentage' ? `${value}%` : formatIDR(value)}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td className="px-5 py-4 text-slate-600">
                         {type === 'percentage' && item.maximum_discount ? (
-                          <span className="font-semibold text-slate-700">
+                          <span className="font-semibold text-slate-800">
                             {formatIDR(item.maximum_discount)}
                           </span>
                         ) : (
-                          <span className="text-slate-400">-</span>
+                          <span className="text-slate-400 italic">Tanpa batas</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {minTx ? formatIDR(minTx) : <span className="text-slate-400">Tanpa min.</span>}
+                      <td className="px-5 py-4 text-slate-600">
+                        {minTx ? (
+                          <span className="font-medium text-slate-700">{formatIDR(minTx)}</span>
+                        ) : (
+                          <span className="text-slate-400 italic">Tanpa min.</span>
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                      <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
                         {startsAt || expiresAt ? (
-                          <div className="space-y-0.5 text-[10px]">
-                            {startsAt && <div>Mulai: {startsAt}</div>}
-                            {expiresAt && <div>Selesai: {expiresAt}</div>}
+                          <div className="space-y-0.5 text-[11px]">
+                            {startsAt && <div className="text-slate-600">Mulai: {startsAt}</div>}
+                            {expiresAt && <div className="text-rose-600 font-medium">Batas: {expiresAt}</div>}
                           </div>
                         ) : (
-                          <span className="text-slate-400">Selamanya</span>
+                          <span className="text-slate-400 italic">Selamanya</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 font-semibold">
-                        {item.usage_count} {item.usage_limit ? `/ ${item.usage_limit}` : 'kali'}
+                      <td className="px-5 py-4 text-slate-600 font-semibold">
+                        <span className="text-[#081A2E] font-bold">{item.usage_count}</span>{' '}
+                        <span className="text-slate-400">
+                          {item.usage_limit ? `/ ${item.usage_limit} kuota` : 'kali terpakai'}
+                        </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-4">
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             item.is_active
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : 'bg-slate-100 text-slate-500'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-slate-100 text-slate-500 border border-slate-200'
                           }`}
                         >
                           {item.is_active ? 'Aktif' : 'Nonaktif'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right space-x-1 whitespace-nowrap">
+                      <td className="px-5 py-4 text-right space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          className="p-1.5 text-slate-600 hover:text-[#081A2E] hover:bg-slate-100 rounded cursor-pointer"
+                          className="p-1.5 text-slate-600 hover:text-[#081A2E] hover:bg-slate-100 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                          title="Edit Voucher"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id, item.code)}
-                          className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded cursor-pointer"
+                          className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                          title="Hapus Voucher"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -281,25 +344,31 @@ export const AdminVouchersPage: React.FC = () => {
         )}
       </div>
 
-      {/* Modal */}
+      {/* 3. Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full flex flex-col border border-slate-200">
-            <div className="p-5 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-extrabold text-base text-[#081A2E]">
-                {editingId ? 'Edit Voucher' : 'Tambah Voucher Diskon'}
-              </h3>
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#081A2E] text-white">
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                  Konfigurasi Diskon & Promosi
+                </div>
+                <h3 className="font-extrabold text-base text-white tracking-tight">
+                  {editingId ? 'Edit Voucher' : 'Tambah Voucher Diskon'}
+                </h3>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold text-sm cursor-pointer p-1"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Tutup form"
               >
-                ✕
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-6 space-y-4 text-xs overflow-y-auto max-h-[80vh]">
+            <form onSubmit={handleSave} className="p-6 space-y-4 text-xs overflow-y-auto">
               {validationError && (
-                <div className="p-3.5 rounded-xl bg-rose-50 text-rose-800 border border-rose-100 flex items-start gap-2 text-xs font-semibold">
+                <div className="p-3.5 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 flex items-start gap-2 text-xs font-semibold">
                   <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span>{validationError}</span>
                 </div>
@@ -307,39 +376,43 @@ export const AdminVouchersPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Kode Voucher *</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">
+                    Kode Voucher <span className="text-[#A40D35]">*</span>
+                  </label>
                   <input
                     type="text"
                     required
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
                     placeholder="Contoh: PROMO50"
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl uppercase tracking-wider font-extrabold text-[#081A2E] focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg uppercase tracking-wider font-extrabold text-[#081A2E] focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Nama Voucher / Promo (Opsional)</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">
+                    Nama Promo (Opsional)
+                  </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Contoh: Promo Kemerdekaan"
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none"
+                    placeholder="Contoh: Diskon Kemerdekaan"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                   />
                 </div>
               </div>
 
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-4">
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/80 space-y-4">
                 <div>
                   <label className="block font-bold text-slate-700 mb-2">Tipe Diskon *</label>
-                  <div className="flex gap-3">
-                    <label className="flex-1 flex items-center justify-between p-3 border border-slate-300 bg-white rounded-xl cursor-pointer hover:border-slate-400 has-[:checked]:border-[#A40D35] has-[:checked]:bg-[#A40D35]/5 transition-all">
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex items-center justify-between p-3 border border-slate-200 bg-white rounded-lg cursor-pointer hover:border-slate-300 has-[:checked]:border-[#A40D35] has-[:checked]:bg-[#A40D35]/5 transition-all">
                       <div className="flex items-center gap-2">
-                        <Tag className="w-4 h-4 text-purple-600" />
+                        <Tag className="w-4 h-4 text-purple-600 shrink-0" />
                         <div>
-                          <span className="block font-extrabold text-[#081A2E]">Fixed Amount</span>
-                          <span className="text-[10px] text-slate-500 font-medium">Potongan nominal Rupiah tetap</span>
+                          <span className="block font-extrabold text-[#081A2E] text-xs">Nominal Tetap</span>
+                          <span className="text-[10px] text-slate-400">Potongan Rupiah</span>
                         </div>
                       </div>
                       <input
@@ -354,12 +427,12 @@ export const AdminVouchersPage: React.FC = () => {
                       />
                     </label>
 
-                    <label className="flex-1 flex items-center justify-between p-3 border border-slate-300 bg-white rounded-xl cursor-pointer hover:border-slate-400 has-[:checked]:border-[#A40D35] has-[:checked]:bg-[#A40D35]/5 transition-all">
+                    <label className="flex items-center justify-between p-3 border border-slate-200 bg-white rounded-lg cursor-pointer hover:border-slate-300 has-[:checked]:border-[#A40D35] has-[:checked]:bg-[#A40D35]/5 transition-all">
                       <div className="flex items-center gap-2">
-                        <Percent className="w-4 h-4 text-blue-600" />
+                        <Percent className="w-4 h-4 text-sky-600 shrink-0" />
                         <div>
-                          <span className="block font-extrabold text-[#081A2E]">Percentage</span>
-                          <span className="text-[10px] text-slate-500 font-medium">Potongan persentase transaksi</span>
+                          <span className="block font-extrabold text-[#081A2E] text-xs">Persentase</span>
+                          <span className="text-[10px] text-slate-400">Persen Transaksi</span>
                         </div>
                       </div>
                       <input
@@ -378,12 +451,12 @@ export const AdminVouchersPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      {discountType === 'percentage' ? 'Persentase Diskon (%) *' : 'Nominal Diskon (Rp) *'}
+                    <label className="block font-bold text-slate-700 mb-1.5">
+                      {discountType === 'percentage' ? 'Persentase Diskon (%) *' : 'Nominal Diskon (IDR) *'}
                     </label>
                     <div className="relative">
                       {discountType === 'fixed' && (
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 font-bold">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
                           Rp
                         </div>
                       )}
@@ -395,15 +468,15 @@ export const AdminVouchersPage: React.FC = () => {
                         step={discountType === 'percentage' ? 1 : 10000}
                         value={discountValue}
                         onChange={(e) => setDiscountValue(Number(e.target.value))}
-                        className={`w-full ${discountType === 'fixed' ? 'pl-9' : 'pl-3.5'} pr-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none font-bold text-sm`}
+                        className={`w-full ${discountType === 'fixed' ? 'pl-10' : 'pl-3.5'} pr-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] font-extrabold text-sm`}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Min. Transaksi (IDR)</label>
+                    <label className="block font-bold text-slate-700 mb-1.5">Min. Transaksi (IDR)</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 font-bold">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
                         Rp
                       </div>
                       <input
@@ -412,7 +485,7 @@ export const AdminVouchersPage: React.FC = () => {
                         step={50000}
                         value={minPurchaseAmount}
                         onChange={(e) => setMinPurchaseAmount(Number(e.target.value))}
-                        className="w-full pl-9 pr-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none font-bold text-sm"
+                        className="w-full pl-10 pr-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] font-extrabold text-sm"
                       />
                     </div>
                   </div>
@@ -420,9 +493,11 @@ export const AdminVouchersPage: React.FC = () => {
 
                 {discountType === 'percentage' && (
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Maksimum Potongan (Rp) (Opsional)</label>
+                    <label className="block font-bold text-slate-700 mb-1.5">
+                      Maksimum Potongan (IDR) (Opsional)
+                    </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 font-bold">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 font-bold">
                         Rp
                       </div>
                       <input
@@ -432,44 +507,46 @@ export const AdminVouchersPage: React.FC = () => {
                         value={maximumDiscount || ''}
                         onChange={(e) => setMaximumDiscount(e.target.value ? Number(e.target.value) : undefined)}
                         placeholder="Tanpa batasan nominal diskon"
-                        className="w-full pl-9 pr-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none font-semibold"
+                        className="w-full pl-10 pr-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] font-semibold"
                       />
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Berlaku Mulai Tanggal</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Mulai Tanggal</label>
                   <input
                     type="date"
                     value={startsAt}
                     onChange={(e) => setStartsAt(e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Berlaku Sampai Tanggal</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Batas Sampai Tanggal</label>
                   <input
                     type="date"
                     value={expiresAt}
                     onChange={(e) => setExpiresAt(e.target.value)}
-                    className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Batas Kuota Pemakaian (Opsional)</label>
+                <label className="block font-bold text-slate-700 mb-1.5">
+                  Batas Kuota Pemakaian (Opsional)
+                </label>
                 <input
                   type="number"
                   min={1}
                   value={usageLimit || ''}
                   onChange={(e) => setUsageLimit(e.target.value ? Number(e.target.value) : undefined)}
-                  placeholder="Kosongkan jika tanpa batas kuota"
-                  className="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#081A2E]/20 focus:border-[#081A2E] outline-none"
+                  placeholder="Contoh: 50 (Kosongkan jika tanpa kuota)"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35]"
                 />
               </div>
 
@@ -479,25 +556,25 @@ export const AdminVouchersPage: React.FC = () => {
                   id="voucher-is-active"
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
-                  className="h-4.5 w-4.5 rounded-lg border-slate-300 text-[#A40D35] focus:ring-[#A40D35]"
+                  className="h-4 w-4 rounded border-slate-300 text-[#A40D35] focus:ring-[#A40D35] cursor-pointer"
                 />
-                <label htmlFor="voucher-is-active" className="font-extrabold text-slate-700 cursor-pointer select-none">
+                <label htmlFor="voucher-is-active" className="font-bold text-slate-700 cursor-pointer">
                   Aktifkan Kode Voucher ini
                 </label>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
+              <div className="pt-5 border-t border-slate-100 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-full font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 cursor-pointer text-xs"
+                  className="px-4 py-2.5 rounded-lg text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2.5 rounded-full font-bold text-white bg-[#A40D35] hover:bg-[#850B2B] cursor-pointer text-xs"
+                  className="px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#820A2A] disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
                 >
                   {saving ? 'Menyimpan...' : 'Simpan Voucher'}
                 </button>

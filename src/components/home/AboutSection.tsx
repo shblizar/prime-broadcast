@@ -54,9 +54,9 @@ export const AboutSection: React.FC = () => {
             {aboutSettings?.eyebrow || 'Tentang Kami'}
           </p>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#081A2E] leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#081A2E] leading-tight">
             {aboutSettings?.title || 'Prime Broadcast'}
-          </h2>
+          </h1>
 
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed pt-2">
             {aboutSettings?.description || defaultDescription}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { PrimeBroadcastLogo } from '../../components/PrimeBroadcastLogo';
@@ -24,6 +24,8 @@ import {
   X,
   Database,
   ChevronRight,
+  ChevronLeft,
+  Filter,
 } from 'lucide-react';
 import { isSupabaseConfigured } from '../../lib/supabase';
 
@@ -32,7 +34,8 @@ export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -42,10 +45,6 @@ export const AdminLayout: React.FC = () => {
   const navItems = [
     { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, category: 'Utama' },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag, category: 'Utama' },
-    { label: 'Hero Slides', path: '/admin/hero-slides', icon: Sparkles, category: 'Konten' },
-    { label: 'Tentang Kami', path: '/admin/about', icon: Info, category: 'Konten' },
-    { label: 'Founders', path: '/admin/founders', icon: Users, category: 'Konten' },
-    { label: 'Galeri', path: '/admin/gallery', icon: Camera, category: 'Konten' },
     { label: 'Paket Siaran', path: '/admin/packages', icon: Layers, category: 'Layanan' },
     { label: 'Upgrades', path: '/admin/upgrades', icon: Sliders, category: 'Layanan' },
     { label: 'Overtime', path: '/admin/overtime', icon: Clock, category: 'Layanan' },
@@ -53,97 +52,154 @@ export const AdminLayout: React.FC = () => {
     { label: 'Vouchers', path: '/admin/vouchers', icon: Tag, category: 'Layanan' },
     { label: 'Portofolio', path: '/admin/portfolio', icon: Video, category: 'Media' },
     { label: 'Client Logos', path: '/admin/client-logos', icon: Image, category: 'Media' },
+    { label: 'Hero Slides', path: '/admin/hero-slides', icon: Sparkles, category: 'Konten' },
+    { label: 'Tentang Kami', path: '/admin/about', icon: Info, category: 'Konten' },
+    { label: 'Founders', path: '/admin/founders', icon: Users, category: 'Konten' },
+    { label: 'Galeri', path: '/admin/gallery', icon: Camera, category: 'Konten' },
     { label: 'FAQ', path: '/admin/faq', icon: HelpCircle, category: 'Pengaturan' },
     { label: 'Settings', path: '/admin/settings', icon: Settings, category: 'Pengaturan' },
     { label: 'Database SQL', path: '/admin/database', icon: Database, category: 'Pengaturan' },
   ];
 
-  // Derive current page title for breadcrumb
+  const categories = ['Semua', 'Utama', 'Layanan', 'Media', 'Konten', 'Pengaturan'];
+
+  // Current nav item for breadcrumb
   const currentNavItem = navItems.find((item) => item.path === location.pathname) || {
-    label: 'Admin Control Center',
+    label: 'Admin Console',
+    category: 'Sistem',
+  };
+
+  const filteredNavItems = selectedCategory === 'Semua'
+    ? navItems
+    : navItems.filter((item) => item.category === selectedCategory);
+
+  // Scroll active item into view when location changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const activeEl = scrollContainerRef.current.querySelector('[aria-current="page"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [location.pathname]);
+
+  const scrollNav = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = direction === 'left' ? -240 : 240;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5F1] flex flex-col md:flex-row text-[#081A2E]" id="admin-panel-root">
-      {/* Mobile Topbar */}
-      <div className="md:hidden bg-gradient-to-r from-[#081A2E] via-[#180C1B] to-[#2B0818] text-white p-4 flex items-center justify-between border-b border-white/10 sticky top-0 z-50">
-        <PrimeBroadcastLogo variant="light" className="h-8" />
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className="p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
-          aria-label="Toggle Sidebar"
-        >
-          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-      </div>
-
-      {/* Desktop Floating Gradient Sidebar Wrapper */}
-      <div className="hidden md:flex flex-col p-3 lg:p-4 z-40 sticky top-0 h-screen">
-        <aside
-          className="w-20 h-full rounded-3xl bg-gradient-to-b from-[#081A2E] via-[#1B0B1E] to-[#2C081A] text-white shadow-xl shadow-black/20 flex flex-col justify-between border border-white/10 overflow-hidden relative"
-          aria-label="Admin Sidebar"
-        >
-          {/* Top Brand Logo - Symbol Only, No Text */}
-          <div className="pt-6 pb-4 flex flex-col items-center justify-center border-b border-white/10">
-            <Link
-              to="/admin/dashboard"
-              className="p-1 rounded-2xl hover:bg-white/10 transition-colors flex items-center justify-center group"
-              title="Dashboard Utama"
-            >
-              <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 group-hover:scale-105 group-hover:bg-white/15 transition-all shadow-inner">
-                <svg
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-6 h-6"
-                >
-                  <path
-                    d="M24 4L40 13.5V34.5L24 44L8 34.5V13.5L24 4Z"
-                    stroke="#FFFFFF"
-                    strokeWidth="2.5"
-                    fill="none"
-                  />
-                  <path d="M18 17L30 24L18 31V17Z" fill="#A40D35" />
-                  <circle cx="33" cy="18" r="2.5" fill="#FFFFFF" />
-                </svg>
-              </div>
+    <div className="min-h-screen bg-[#F7F5F1] flex flex-col text-[#081A2E] antialiased" id="admin-panel-root">
+      {/* 1. TOP PRIMARY HEADER BAR (Navy Brand Bar) */}
+      <header className="bg-[#081A2E] text-white border-b border-white/10 sticky top-0 z-50">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+          {/* Left: Brand Logo & Admin Badge */}
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <Link to="/admin/dashboard" className="flex items-center gap-3 shrink-0 focus:outline-none focus:ring-2 focus:ring-[#A40D35] rounded-lg">
+              <PrimeBroadcastLogo variant="light" className="h-7 sm:h-8" />
             </Link>
+
+            <div className="hidden sm:block h-5 w-px bg-white/20" />
+
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-white/90 bg-white/10 px-2 py-0.5 rounded border border-white/15">
+                Admin Console
+              </span>
+              <span className="text-xs text-white/50 font-medium truncate hidden xl:inline">
+                Sistem Manajemen Siaran
+              </span>
+            </div>
           </div>
 
-          {/* Navigation Items (Icon-Only, Generous Spacing, Floating White Active Pill, Hover Tooltip) */}
-          <div className="flex-1 overflow-y-auto py-4 px-2 space-y-2.5 scrollbar-none flex flex-col items-center">
+          {/* Right: Status, View Website, User Profile, Logout & Mobile Toggle */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Supabase Status Pill */}
+            <div className="hidden md:inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[11px] font-medium text-white/80">
+              <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              <span className="truncate">{isSupabaseConfigured ? 'Supabase Live' : 'Local Storage'}</span>
+            </div>
+
+            {/* View Public Website */}
+            <Link
+              to="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-semibold text-white/90 border border-white/10 transition-colors"
+              title="Buka Website Publik (Tab Baru)"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span className="hidden lg:inline">Lihat Web</span>
+            </Link>
+
+            {/* Admin User Chip */}
+            <div className="hidden sm:inline-flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/90">
+              <div className="w-6 h-6 rounded-md bg-[#A40D35] text-white flex items-center justify-center text-xs font-bold shrink-0">
+                {user?.email?.charAt(0).toUpperCase() || 'A'}
+              </div>
+              <span className="font-medium max-w-[130px] truncate text-white/90">
+                {user?.email || 'admin@primebroadcast.net'}
+              </span>
+            </div>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-[#A40D35] text-red-200 hover:text-white text-xs font-semibold border border-red-500/25 transition-all cursor-pointer"
+              title="Keluar dari akun admin"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 rounded-lg bg-white/10 text-white hover:bg-white/15 transition-colors focus:outline-none"
+              aria-label="Menu Navigasi Mobile"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. HORIZONTAL NAVIGATION BAR (NO SIDEBAR - FULL WIDTH) */}
+      <nav className="bg-[#0c2238] border-b border-white/10 text-white sticky top-16 z-40 shadow-sm" aria-label="Menu Utama Admin">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+          {/* Left Arrow Scroll */}
+          <button
+            onClick={() => scrollNav('left')}
+            className="hidden xl:flex p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors shrink-0"
+            aria-label="Scroll Navigasi Kiri"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Horizontally Scrollable Menu Items Track */}
+          <div
+            ref={scrollContainerRef}
+            className="flex-1 flex items-center gap-1 py-2 overflow-x-auto scrollbar-none scroll-smooth"
+          >
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  onMouseEnter={() => setHoveredItem(item.label)}
-                  onMouseLeave={() => setHoveredItem(null)}
                   className={({ isActive }) =>
-                    `relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200 group ${
+                    `inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-150 shrink-0 ${
                       isActive
-                        ? 'bg-white text-[#A40D35] shadow-lg shadow-black/25 scale-100 z-10'
-                        : 'text-white/70 hover:text-white hover:bg-white/10 hover:scale-105'
+                        ? 'bg-[#A40D35] text-white shadow-sm font-bold'
+                        : 'text-white/75 hover:text-white hover:bg-white/10'
                     }`
                   }
-                  title={item.label}
                 >
                   {({ isActive }) => (
                     <>
-                      <Icon
-                        className={`w-5 h-5 transition-transform duration-200 ${
-                          isActive ? 'text-[#A40D35] scale-110' : 'text-white/80 group-hover:text-white'
-                        }`}
-                      />
-
-                      {/* Floating Tooltip on Hover */}
-                      {hoveredItem === item.label && (
-                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#081A2E] text-white text-xs font-semibold rounded-xl shadow-2xl border border-white/15 whitespace-nowrap z-50 pointer-events-none hidden md:flex items-center gap-1.5">
-                          <span>{item.label}</span>
-                          <span className="text-[10px] text-white/50 font-normal">({item.category})</span>
-                        </div>
-                      )}
+                      <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-white' : 'text-white/70'}`} />
+                      <span>{item.label}</span>
                     </>
                   )}
                 </NavLink>
@@ -151,60 +207,70 @@ export const AdminLayout: React.FC = () => {
             })}
           </div>
 
-          {/* Bottom Actions: View Site & Logout */}
-          <div className="p-3 border-t border-white/10 flex flex-col items-center gap-2.5 bg-black/20">
-            <Link
-              to="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              onMouseEnter={() => setHoveredItem('Buka Website Publik')}
-              onMouseLeave={() => setHoveredItem(null)}
-              className="relative w-11 h-11 rounded-2xl bg-white/10 text-white hover:bg-white/20 flex items-center justify-center transition-all group"
-              title="Buka Website Publik"
-            >
-              <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform text-white/80 group-hover:text-white" />
-              {hoveredItem === 'Buka Website Publik' && (
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#081A2E] text-white text-xs font-semibold rounded-xl shadow-2xl border border-white/15 whitespace-nowrap z-50 pointer-events-none hidden md:block">
-                  Buka Website Publik
-                </div>
-              )}
-            </Link>
+          {/* Right Arrow Scroll */}
+          <button
+            onClick={() => scrollNav('right')}
+            className="hidden xl:flex p-1.5 text-white/60 hover:text-white hover:bg-white/10 rounded-md transition-colors shrink-0"
+            aria-label="Scroll Navigasi Kanan"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </nav>
 
-            <button
-              onClick={handleLogout}
-              onMouseEnter={() => setHoveredItem('Keluar / Logout')}
-              onMouseLeave={() => setHoveredItem(null)}
-              className="relative w-11 h-11 rounded-2xl bg-red-500/20 text-red-300 hover:bg-red-500/30 hover:text-white flex items-center justify-center transition-all group"
-              title="Keluar / Logout"
-            >
-              <LogOut className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              {hoveredItem === 'Keluar / Logout' && (
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#081A2E] text-rose-300 text-xs font-semibold rounded-xl shadow-2xl border border-rose-500/30 whitespace-nowrap z-50 pointer-events-none hidden md:block">
-                  Keluar / Logout
-                </div>
-              )}
-            </button>
+      {/* 3. BREADCRUMB & CONTEXT UTILITY BAR */}
+      <div className="bg-white/90 border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-2.5 text-xs text-slate-500">
+        <div className="w-full max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 font-medium">
+            <Link to="/admin/dashboard" className="text-slate-500 hover:text-[#081A2E] transition-colors">
+              Prime Broadcast Admin
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-slate-400">{currentNavItem.category || 'Modul'}</span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="text-[#081A2E] font-bold">{currentNavItem.label}</span>
           </div>
-        </aside>
+
+          {/* Quick Category Filter for faster jump */}
+          <div className="hidden lg:flex items-center gap-1.5 text-[11px]">
+            <Filter className="w-3 h-3 text-slate-400 mr-0.5" />
+            <span className="text-slate-400 font-medium">Filter Kategori:</span>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-2 py-0.5 rounded transition-colors ${
+                  selectedCategory === cat
+                    ? 'bg-[#081A2E] text-white font-bold'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Mobile Drawer (When Open) */}
+      {/* 4. MOBILE DRAWER (Full navigation menu on small screens) */}
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
-          <div className="w-72 max-w-[80vw] h-full bg-gradient-to-b from-[#081A2E] via-[#1B0B1E] to-[#2C081A] text-white p-5 flex flex-col justify-between shadow-2xl overflow-y-auto">
+          <div className="w-80 max-w-[85vw] h-full bg-[#081A2E] text-white p-5 flex flex-col justify-between shadow-2xl overflow-y-auto">
             <div className="space-y-6">
+              {/* Header inside mobile drawer */}
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <PrimeBroadcastLogo variant="light" className="h-8" />
+                <PrimeBroadcastLogo variant="light" className="h-7" />
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="p-2 rounded-xl bg-white/10 text-white"
+                  className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+                  aria-label="Tutup Menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Status Badge */}
-              <div className="px-3 py-2 rounded-xl bg-white/10 border border-white/10 flex items-center gap-2 text-xs">
+              <div className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 text-xs">
                 <Database
                   className={`w-4 h-4 ${
                     isSupabaseConfigured ? 'text-emerald-400' : 'text-amber-400'
@@ -215,37 +281,47 @@ export const AdminLayout: React.FC = () => {
                 </span>
               </div>
 
-              {/* Nav Items */}
-              <nav className="space-y-1.5">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
+              {/* Nav Items Categorized */}
+              <nav className="space-y-4">
+                {categories.filter((c) => c !== 'Semua').map((cat) => {
+                  const itemsInCat = navItems.filter((i) => i.category === cat);
                   return (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setMobileOpen(false)}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all ${
-                          isActive
-                            ? 'bg-white text-[#A40D35] shadow-lg font-bold'
-                            : 'text-white/70 hover:bg-white/10 hover:text-white'
-                        }`
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <Icon className={`w-4 h-4 ${isActive ? 'text-[#A40D35]' : 'text-white/70'}`} />
-                          <span>{item.label}</span>
-                        </>
-                      )}
-                    </NavLink>
+                    <div key={cat} className="space-y-1">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-white/40 px-3 py-1">
+                        {cat}
+                      </div>
+                      {itemsInCat.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <NavLink
+                            key={item.path}
+                            to={item.path}
+                            onClick={() => setMobileOpen(false)}
+                            className={({ isActive }) =>
+                              `flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                                isActive
+                                  ? 'bg-[#A40D35] text-white shadow-sm font-bold'
+                                  : 'text-white/70 hover:bg-white/10 hover:text-white'
+                              }`
+                            }
+                          >
+                            {({ isActive }) => (
+                              <>
+                                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/70'}`} />
+                                <span>{item.label}</span>
+                              </>
+                            )}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
                   );
                 })}
               </nav>
             </div>
 
-            {/* Mobile Footer */}
-            <div className="pt-6 border-t border-white/10 space-y-3">
+            {/* Mobile Drawer Footer */}
+            <div className="pt-6 border-t border-white/10 space-y-3 mt-6">
               <div className="text-xs text-white/60 truncate">
                 {user?.email || 'admin@primebroadcast.net'}
               </div>
@@ -253,14 +329,14 @@ export const AdminLayout: React.FC = () => {
                 <Link
                   to="/"
                   target="_blank"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-white/10 text-white text-xs font-semibold hover:bg-white/15 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   Lihat Web
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2.5 rounded-xl bg-red-500/20 text-red-200 hover:bg-red-500/30 text-xs font-semibold transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-lg bg-red-500/20 text-red-200 hover:bg-[#A40D35] hover:text-white text-xs font-semibold transition-colors flex items-center gap-1.5"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   Keluar
@@ -273,61 +349,11 @@ export const AdminLayout: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        {/* Top Utility Bar */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-6 lg:px-10 py-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            {/* Breadcrumb & Section Title */}
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <Link to="/admin/dashboard" className="hover:text-[#081A2E] font-medium">
-                Admin
-              </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-[#081A2E] font-bold">{currentNavItem.label}</span>
-            </div>
-
-            {/* Right Status Badges & Quick Actions */}
-            <div className="flex items-center gap-3">
-              {/* Database status pill */}
-              <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-700 font-medium">
-                <Database
-                  className={`w-3.5 h-3.5 ${
-                    isSupabaseConfigured ? 'text-emerald-500' : 'text-amber-500'
-                  }`}
-                />
-                <span>{isSupabaseConfigured ? 'Supabase Live' : 'Local Storage Engine'}</span>
-              </div>
-
-              {/* View Public Website */}
-              <Link
-                to="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:text-[#081A2E] hover:border-slate-300 shadow-sm transition-colors"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Lihat Web</span>
-              </Link>
-
-              {/* User Profile Pill */}
-              <div className="inline-flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs text-slate-700">
-                <div className="w-6 h-6 rounded-full bg-[#081A2E] text-white flex items-center justify-center text-[10px] font-bold">
-                  {user?.email?.charAt(0).toUpperCase() || 'A'}
-                </div>
-                <span className="font-semibold hidden md:inline max-w-[150px] truncate">
-                  {user?.email || 'admin@primebroadcast.net'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Content Container */}
-        <main className="flex-1 p-5 sm:p-8 lg:p-10 max-w-7xl w-full mx-auto space-y-8">
-          <Outlet />
-        </main>
-      </div>
+      {/* 5. MAIN CONTENT VIEWPORT (UNDERNEATH TOP NAVIGATION - FULL AVAILABLE WIDTH) */}
+      <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
+        <Outlet />
+      </main>
     </div>
   );
 };
+

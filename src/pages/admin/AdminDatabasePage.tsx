@@ -265,43 +265,57 @@ TO public
 USING (is_active = true);`;
 
   return (
-    <div className="space-y-8" id="db-diagnostics-root">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#081A2E] flex items-center gap-2.5">
-            <Database className="w-6 h-6 text-[#A40D35]" />
+    <div className="space-y-6" id="db-diagnostics-root">
+      {/* 1. Page Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#081A2E]/5 text-[#081A2E] border border-[#081A2E]/10">
+              <Database className="w-3 h-3 text-[#A40D35]" />
+              Infrastruktur & Keamanan
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#081A2E] tracking-tight">
             Database & RLS Diagnostics
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Uji koneksi Supabase Anda, selidiki kebijakan Row Level Security (RLS), dan jalankan query database secara langsung.
+          <p className="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Uji integritas koneksi Supabase, periksa kebijakan Row Level Security (RLS) pengunjung publik, dan jalankan inspeksi data secara aman.
           </p>
         </div>
-        <button
-          onClick={runDiagnostics}
-          disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#081A2E] text-white hover:bg-[#1b2b3f] text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Jalankan Ulang Diagnostik
-        </button>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={runDiagnostics}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-[#081A2E] text-white hover:bg-slate-800 text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-60"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#A40D35]' : ''}`} />
+            <span>Jalankan Ulang Diagnostik</span>
+          </button>
+        </div>
       </div>
 
-      {/* Grid of Diagnostics and SQL Playbook */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Column: Diagnostics status (7 cols) */}
+      {/* 2. Grid of Diagnostics and SQL Playbook */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Diagnostics status & Query Runner (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-            <h2 className="text-sm font-bold text-[#081A2E] mb-4 flex items-center gap-2">
-              <Eye className="w-4 h-4 text-slate-500" />
-              Hasil Pemeriksaan Keamanan & Koneksi
-            </h2>
+          {/* Diagnostic Status Box */}
+          <div className="bg-white rounded-xl p-6 border border-slate-200/90 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <Eye className="w-4 h-4 text-[#A40D35]" />
+                Hasil Pemeriksaan Keamanan & Koneksi
+              </h2>
+              <span className="text-[10px] font-bold text-slate-400">
+                {results.length} Pengujian
+              </span>
+            </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {results.length === 0 ? (
-                <div className="text-center py-8 text-slate-400 text-xs">
-                  Sedang menjalankan diagnostik...
+                <div className="text-center py-10 text-slate-400 text-xs flex items-center justify-center gap-2">
+                  <RefreshCw className="w-4 h-4 animate-spin text-[#A40D35]" />
+                  <span>Sedang menjalankan diagnostik koneksi...</span>
                 </div>
               ) : (
                 results.map((r, idx) => (
@@ -309,21 +323,26 @@ USING (is_active = true);`;
                     key={idx}
                     className={`p-4 rounded-xl border flex gap-3.5 items-start ${
                       r.status === 'success'
-                        ? 'bg-emerald-50/50 border-emerald-100/80 text-emerald-900'
+                        ? 'bg-emerald-50/60 border-emerald-200 text-emerald-900'
                         : r.status === 'warning'
-                        ? 'bg-amber-50/50 border-amber-100/80 text-amber-900'
-                        : 'bg-rose-50/50 border-rose-100/80 text-rose-900'
+                        ? 'bg-amber-50/60 border-amber-200 text-amber-900'
+                        : 'bg-rose-50/60 border-rose-200 text-rose-900'
                     }`}
                   >
-                    {r.status === 'success' && <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />}
-                    {r.status === 'warning' && <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />}
-                    {r.status === 'error' && <Lock className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />}
+                    {r.status === 'success' && <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />}
+                    {r.status === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />}
+                    {r.status === 'error' && <Lock className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />}
 
-                    <div className="space-y-1">
-                      <h3 className="text-xs font-bold">{r.name}</h3>
-                      <p className="text-[11px] leading-relaxed opacity-90 font-medium">{r.message}</p>
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-extrabold">{r.name}</h3>
+                        <span className="text-[9px] font-mono uppercase font-bold px-2 py-0.5 rounded bg-white/80 border border-black/5">
+                          {r.status}
+                        </span>
+                      </div>
+                      <p className="text-xs leading-relaxed opacity-90 font-medium">{r.message}</p>
                       {r.details && (
-                        <p className="text-[10px] font-mono bg-white/60 p-2 rounded border border-black/5 mt-2 overflow-x-auto whitespace-pre-wrap max-w-full">
+                        <p className="text-[10px] font-mono bg-white/90 p-2.5 rounded-lg border border-black/5 mt-2 overflow-x-auto whitespace-pre-wrap max-w-full text-slate-700">
                           {r.details}
                         </p>
                       )}
@@ -335,14 +354,14 @@ USING (is_active = true);`;
           </div>
 
           {/* Database SQL Simulator */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-4">
-            <div>
-              <h2 className="text-sm font-bold text-[#081A2E] flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-slate-500" />
+          <div className="bg-white rounded-xl p-6 border border-slate-200/90 shadow-sm space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-[#A40D35]" />
                 SQL Query Inspector (Read-Only)
               </h2>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Jalankan kueri data langsung untuk memastikan isi tabel Anda sudah sinkron.
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Jalankan kueri data SELECT langsung untuk mengecek integritas isi tabel Supabase secara instan.
               </p>
             </div>
 
@@ -351,72 +370,73 @@ USING (is_active = true);`;
                 <textarea
                   value={sqlQuery}
                   onChange={(e) => setSqlQuery(e.target.value)}
-                  className="w-full h-24 p-3.5 bg-slate-900 text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35]/50 border-0 leading-relaxed font-mono resize-none"
+                  className="w-full h-24 p-3.5 bg-slate-900 text-emerald-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35]/50 border-0 leading-relaxed font-mono resize-none text-xs"
                   placeholder="Ketik query SELECT Anda di sini..."
                 />
                 <button
                   onClick={runSqlQuery}
                   disabled={loading || !isSupabaseConfigured}
-                  className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#A40D35] hover:bg-[#850B2B] text-white text-[11px] font-bold transition-all shadow cursor-pointer disabled:opacity-50"
+                  className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#A40D35] hover:bg-[#820A2A] text-white text-[11px] font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
                 >
                   <Play className="w-3 h-3" />
-                  Jalankan
+                  <span>Jalankan</span>
                 </button>
               </div>
 
               {/* Preset buttons */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Query Cepat:</span>
                 <button
                   onClick={() => setSqlQuery('SELECT * FROM vouchers LIMIT 10;')}
-                  className="px-2.5 py-1 text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors"
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                 >
-                  Lihat Vouchers
+                  Tabel Vouchers
                 </button>
                 <button
                   onClick={() => setSqlQuery('SELECT id, name, price, is_active FROM packages LIMIT 10;')}
-                  className="px-2.5 py-1 text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors"
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                 >
-                  Lihat Paket
+                  Tabel Paket
                 </button>
                 <button
                   onClick={() => setSqlQuery('SELECT id, customer_name, total_amount, status FROM orders LIMIT 5;')}
-                  className="px-2.5 py-1 text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded transition-colors"
+                  className="px-2.5 py-1 text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors cursor-pointer"
                 >
-                  Lihat Pesanan Terbaru
+                  Pesanan Terbaru
                 </button>
               </div>
 
               {/* Query Error Area */}
               {queryError && (
-                <div className="p-3 bg-rose-50 border border-rose-100 rounded-lg text-[11px] text-rose-700 font-mono">
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-[11px] text-rose-700 font-mono">
                   {queryError}
                 </div>
               )}
 
               {/* Query Result Table */}
               {queryResult && (
-                <div className="border border-slate-150 rounded-xl overflow-hidden bg-slate-50">
-                  <div className="px-4 py-2 bg-slate-100/80 border-b border-slate-150 flex justify-between items-center text-[10px] text-slate-500 font-semibold">
-                    <span>Hasil Query ({queryResult.length} baris)</span>
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
+                  <div className="px-4 py-2.5 bg-slate-100 border-b border-slate-200 flex justify-between items-center text-[10px] text-slate-600 font-bold">
+                    <span>Hasil Query ({queryResult.length} baris data)</span>
                     <button
                       onClick={() => handleCopy(JSON.stringify(queryResult, null, 2), 'json_result')}
-                      className="hover:text-[#081A2E] flex items-center gap-1"
+                      className="hover:text-[#081A2E] flex items-center gap-1 cursor-pointer"
                     >
-                      <Clipboard className="w-3 h-3" />
-                      {copiedText === 'json_result' ? 'Tersalin!' : 'Salin JSON'}
+                      <Clipboard className="w-3 h-3 text-slate-500" />
+                      <span>{copiedText === 'json_result' ? 'Tersalin!' : 'Salin JSON'}</span>
                     </button>
                   </div>
                   {queryResult.length === 0 ? (
-                    <div className="text-center py-6 text-slate-400 text-[11px]">
-                      Query berhasil dijalankan, namun tidak mengembalikan baris data apa pun (tabel kosong).
+                    <div className="text-center py-8 text-slate-400 text-xs">
+                      Query sukses dijalankan, namun tidak mengembalikan baris data apa pun (tabel kosong).
                     </div>
                   ) : (
-                    <div className="overflow-x-auto max-h-60 text-[11px]">
+                    <div className="overflow-x-auto max-h-64 text-xs">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="bg-white border-b border-slate-150">
+                          <tr className="bg-white border-b border-slate-200">
                             {queryFields.map((field) => (
-                              <th key={field} className="px-3 py-2 font-bold text-[#081A2E] border-r border-slate-100 last:border-0 whitespace-nowrap">
+                              <th key={field} className="px-3.5 py-2 font-bold text-[#081A2E] border-r border-slate-100 last:border-0 whitespace-nowrap text-[11px]">
                                 {field}
                               </th>
                             ))}
@@ -428,7 +448,7 @@ USING (is_active = true);`;
                               {queryFields.map((field) => {
                                 const val = row[field];
                                 return (
-                                  <td key={field} className="px-3 py-1.5 text-slate-700 border-r border-slate-100 last:border-0 max-w-xs truncate">
+                                  <td key={field} className="px-3.5 py-2 text-slate-700 border-r border-slate-100 last:border-0 max-w-xs truncate">
                                     {typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val ?? '')}
                                   </td>
                                 );
@@ -447,56 +467,56 @@ USING (is_active = true);`;
 
         {/* Right Column: SQL Fixing Playbook (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#081A2E] text-white rounded-2xl p-6 border border-slate-800 shadow-xl space-y-5">
+          <div className="bg-[#081A2E] text-white rounded-xl p-6 border border-slate-800 shadow-xl space-y-5">
             <div className="flex items-start gap-3 border-b border-white/10 pb-4">
               <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-xs uppercase font-extrabold text-amber-400 tracking-wider">
-                  Cara Memperbaiki RLS
+                <h2 className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+                  Panduan Perbaikan RLS
                 </h2>
-                <h3 className="text-sm font-black text-white mt-0.5">
+                <h3 className="text-sm font-extrabold text-white mt-0.5 tracking-tight">
                   Supabase RLS Policy Quick-Fix
                 </h3>
               </div>
             </div>
 
-            <p className="text-[11px] leading-relaxed text-slate-300">
-              Supabase secara otomatis mengaktifkan <strong>Row Level Security (RLS)</strong> demi keamanan data. 
-              Meskipun data voucher Anda terlihat di halaman Admin (karena Anda login dengan sesi Administrator), 
-              pengunjung umum di website publik akan diblokir oleh RLS sehingga query voucher selalu menghasilkan kosong.
+            <p className="text-xs leading-relaxed text-slate-300">
+              Supabase secara default mengaktifkan <strong>Row Level Security (RLS)</strong>. 
+              Meskipun data voucher terlihat di Dashboard Admin (karena login berwenang), 
+              pengunjung publik tanpa login memerlukan policy <code className="text-amber-400 bg-white/10 px-1 py-0.5 rounded font-mono">FOR SELECT TO public</code> agar dapat mengklaim diskon di checkout.
             </p>
 
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-[11px] text-slate-400 font-semibold">
-                <span>SQL SCRIPT UNTUK SUPABASE SQL EDITOR</span>
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center text-[10px] text-slate-300 font-bold tracking-wider uppercase">
+                <span>SQL SCRIPT UNTUK SUPABASE</span>
                 <button
                   onClick={() => handleCopy(rlsFixSQL, 'rls_fix')}
-                  className="inline-flex items-center gap-1 hover:text-white transition-colors cursor-pointer text-[#A40D35]"
+                  className="inline-flex items-center gap-1 text-[#ff728c] hover:text-white transition-colors cursor-pointer"
                 >
                   <Clipboard className="w-3.5 h-3.5" />
-                  {copiedText === 'rls_fix' ? 'Tersalin ke Clipboard!' : 'Salin Code'}
+                  <span>{copiedText === 'rls_fix' ? 'Tersalin ke Clipboard!' : 'Salin Script'}</span>
                 </button>
               </div>
 
-              <pre className="p-3 bg-slate-950 text-emerald-400 font-mono text-[10px] leading-relaxed rounded-xl border border-white/10 overflow-x-auto select-all max-h-48">
+              <pre className="p-3.5 bg-slate-950 text-emerald-400 font-mono text-[10px] leading-relaxed rounded-xl border border-white/10 overflow-x-auto select-all max-h-56 shadow-inner">
                 {rlsFixSQL}
               </pre>
             </div>
 
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2 text-[11px] text-slate-300">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2 text-xs text-slate-300">
               <div className="flex items-center gap-1.5 font-bold text-white">
-                <Info className="w-3.5 h-3.5 text-[#A40D35]" />
-                Langkah Eksekusi:
+                <Info className="w-3.5 h-3.5 text-[#ff728c]" />
+                <span>Langkah Eksekusi:</span>
               </div>
-              <ol className="list-decimal pl-4 space-y-1.5 leading-relaxed text-slate-300">
+              <ol className="list-decimal pl-4 space-y-1.5 leading-relaxed text-[11px] text-slate-300">
                 <li>Buka dashboard proyek Anda di <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-amber-400 underline hover:text-amber-300 font-bold">supabase.com</a></li>
-                <li>Klik menu <strong>SQL Editor</strong> di sidebar sebelah kiri (ikon <Terminal className="w-3 h-3 inline" />).</li>
-                <li>Klik tombol <strong>+ New query</strong> di bagian atas.</li>
-                <li>Tempel (Paste) kode SQL di atas ke dalam kolom editor.</li>
-                <li>Klik tombol <strong>Run</strong> (atau tekan <kbd className="bg-slate-800 text-xs px-1 rounded">Cmd + Enter</kbd> / <kbd className="bg-slate-800 text-xs px-1 rounded">Ctrl + Enter</kbd>).</li>
-                <li>Selesai! Buka tab baru, bersihkan cache jika perlu, dan coba klaim kode voucher Anda di keranjang!</li>
+                <li>Klik menu <strong>SQL Editor</strong> di sidebar sebelah kiri (ikon <Terminal className="w-3 h-3 inline text-slate-400" />).</li>
+                <li>Klik tombol <strong>+ New query</strong> di bagian atas editor.</li>
+                <li>Salin & tempel kode SQL di atas ke dalam kolom query editor.</li>
+                <li>Klik tombol <strong>Run</strong> (atau tekan <kbd className="bg-slate-800 text-[10px] px-1 py-0.5 rounded border border-slate-700">Cmd + Enter</kbd>).</li>
+                <li>Selesai! Voucher sekarang dapat digunakan oleh pembeli umum tanpa login di form pemesanan.</li>
               </ol>
             </div>
           </div>

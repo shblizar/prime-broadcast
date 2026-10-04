@@ -31,8 +31,9 @@ export const HomePage: React.FC = () => {
     }
   }, [replayCounts['portfolio'], portfolioControls]);
 
-  // Ensure the page opens and refreshes starting at the very top of the homepage
+  // Ensure the page opens and refreshes starting at the very top of the homepage and set title
   useEffect(() => {
+    document.title = 'Jasa Live Streaming Jakarta | Prime Broadcast';
     if (!window.location.hash) {
       window.scrollTo(0, 0);
     }

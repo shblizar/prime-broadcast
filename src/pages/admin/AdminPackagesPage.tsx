@@ -15,6 +15,10 @@ import {
   Clock,
   Layers,
   X,
+  ShieldCheck,
+  RefreshCw,
+  Hash,
+  AlertCircle,
 } from 'lucide-react';
 
 export const AdminPackagesPage: React.FC = () => {
@@ -155,47 +159,97 @@ export const AdminPackagesPage: React.FC = () => {
 
   return (
     <div className="space-y-6" id="admin-packages-page">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#081A2E]">
-            Paket & Fitur Siaran
+      {/* 1. Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-slate-200/90 shadow-sm">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#081A2E]/5 text-[#081A2E] border border-[#081A2E]/10">
+              <Layers className="w-3 h-3 text-[#A40D35]" />
+              Katalog Layanan Siaran
+            </span>
+            <span className="text-xs font-semibold text-slate-500">
+              {packages.length} paket terdaftar
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#081A2E] tracking-tight">
+            Paket & Penawaran Siaran
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Kelola paket live streaming utama, durasi siaran, harga dinamis, dan poin fitur
+          <p className="text-xs sm:text-sm text-slate-500 max-w-2xl leading-relaxed">
+            Kelola konfigurasi paket produksi siaran langsung, durasi jam operasional standar, tarif harga dasar, dan rincian fasilitas alat untuk klien publik.
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreate}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#A40D35] hover:bg-[#850B2B] shadow-sm transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Tambah Paket Baru</span>
-        </button>
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={fetchPackages}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-[#081A2E] shadow-sm transition-all cursor-pointer disabled:opacity-60"
+            title="Muat ulang paket"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#A40D35]' : 'text-slate-500'}`} />
+            <span>Segarkan</span>
+          </button>
+
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#820A2A] shadow-sm transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tambah Paket Baru</span>
+          </button>
+        </div>
       </div>
 
-      {/* Packages Grid */}
+      {/* 2. Packages Grid */}
       {loading ? (
-        <div className="p-12 text-center text-xs text-slate-400">Memuat paket...</div>
+        <div className="p-16 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2 bg-white rounded-xl border border-slate-200">
+          <RefreshCw className="w-6 h-6 animate-spin text-[#A40D35]" />
+          <span>Memuat seluruh paket siaran...</span>
+        </div>
       ) : packages.length === 0 ? (
-        <div className="p-12 text-center text-xs text-slate-400 bg-white rounded-2xl border border-slate-200/80">
-          Belum ada paket siaran. Klik "Tambah Paket Baru" untuk membuat paket pertama.
+        <div className="p-16 text-center space-y-3 bg-white rounded-xl border border-slate-200/90 shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+            <Layers className="w-6 h-6" />
+          </div>
+          <p className="text-xs font-semibold text-slate-700">
+            Belum ada paket siaran yang dibuat.
+          </p>
+          <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
+            Klik tombol "Tambah Paket Baru" di atas untuk menambahkan paket penyiaran pertama ke sistem.
+          </p>
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#820A2A] transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Buat Paket Sekarang</span>
+          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className={`bg-white rounded-2xl border p-6 flex flex-col justify-between shadow-sm transition-all ${
-                pkg.is_active ? 'border-slate-200/80 hover:shadow-md' : 'border-slate-200 opacity-60 bg-slate-50'
+              className={`bg-white rounded-xl border flex flex-col justify-between shadow-sm transition-all overflow-hidden ${
+                pkg.is_active ? 'border-slate-200/90 hover:border-slate-300' : 'border-slate-200 opacity-60 bg-slate-50'
               }`}
             >
-              <div>
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-[#081A2E] text-base sm:text-lg">{pkg.name}</h3>
+              <div className="p-5 sm:p-6 space-y-4">
+                {/* Header row: Order, Name, Status */}
+                <div className="flex justify-between items-start gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider inline-flex items-center gap-0.5">
+                        <Hash className="w-2.5 h-2.5" /> Urutan {pkg.display_order}
+                      </span>
+                    </div>
+                    <h3 className="font-extrabold text-[#081A2E] text-lg tracking-tight">
+                      {pkg.name}
+                    </h3>
+                  </div>
+
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
                       pkg.is_active
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : 'bg-slate-100 text-slate-500 border border-slate-200'
@@ -205,52 +259,61 @@ export const AdminPackagesPage: React.FC = () => {
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">
-                  {pkg.description || 'Tidak ada deskripsi'}
+                {/* Description */}
+                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed min-h-[32px]">
+                  {pkg.description || 'Tidak ada deskripsi rinci untuk paket ini.'}
                 </p>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold mb-4">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Durasi: {pkg.duration_hours} Jam</span>
+                {/* Duration & Specs Chip */}
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 text-xs font-semibold">
+                    <Clock className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Durasi Standar: {pkg.duration_hours} Jam</span>
+                  </span>
                 </div>
 
-                {/* Features */}
-                <div className="space-y-2 mb-6 pt-4 border-t border-slate-100">
+                {/* Features List */}
+                <div className="space-y-2 pt-4 border-t border-slate-100">
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Fitur Paket ({pkg.features?.length || 0})
+                    Fasilitas Termasuk ({pkg.features?.length || 0})
                   </div>
                   {pkg.features && pkg.features.length > 0 ? (
-                    pkg.features.map((f) => (
-                      <div key={f.id} className="flex items-start gap-2 text-xs text-slate-600">
-                        <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                        <span>{f.feature_text}</span>
-                      </div>
-                    ))
+                    <div className="space-y-1.5">
+                      {pkg.features.map((f) => (
+                        <div key={f.id} className="flex items-start gap-2 text-xs text-slate-700">
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span className="leading-snug">{f.feature_text}</span>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <div className="text-xs text-slate-400 italic">Belum ada rincian fitur</div>
+                    <div className="text-xs text-slate-400 italic">Belum ada rincian fasilitas.</div>
                   )}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+              {/* Price & Action Buttons Footer */}
+              <div className="p-4 sm:p-5 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Harga</div>
-                  <div className="text-base sm:text-lg font-bold text-[#081A2E]">
+                  <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Tarif Dasar</div>
+                  <div className="text-lg font-extrabold text-[#081A2E]">
                     {formatIDR(pkg.price)}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleOpenEdit(pkg)}
-                    className="p-2 text-slate-600 hover:text-[#081A2E] hover:bg-slate-100 rounded-xl transition-colors"
-                    title="Edit Paket"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm cursor-pointer"
+                    title="Edit Konfigurasi Paket"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Edit</span>
                   </button>
+
                   <button
                     onClick={() => handleDelete(pkg.id, pkg.name)}
-                    className="p-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-xl transition-colors"
+                    className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
                     title="Hapus Paket"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -262,25 +325,34 @@ export const AdminPackagesPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modal Create/Edit Package */}
+      {/* 3. Modal Create/Edit Package */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col border border-slate-200/80 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-base text-[#081A2E]">
-                {editingPackageId ? 'Edit Paket Siaran' : 'Tambah Paket Siaran Baru'}
-              </h3>
+          <div className="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col border border-slate-200 overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-[#081A2E] text-white">
+              <div className="space-y-0.5">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                  Formulir Konfigurasi
+                </div>
+                <h3 className="font-extrabold text-base text-white tracking-tight">
+                  {editingPackageId ? 'Edit Paket Siaran' : 'Tambah Paket Siaran Baru'}
+                </h3>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-colors font-bold"
+                className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Tutup form"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
+            {/* Modal Form */}
             <form onSubmit={handleSave} className="p-6 overflow-y-auto space-y-4 text-xs">
               {errorMessage && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-start gap-2">
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                   <div className="flex-1 font-medium">{errorMessage}</div>
                   <button
                     type="button"
@@ -294,15 +366,15 @@ export const AdminPackagesPage: React.FC = () => {
 
               <div>
                 <label className="block font-bold text-slate-700 mb-1.5">
-                  Nama Paket <span className="text-[#A40D35]">*</span>
+                  Nama Paket Siaran <span className="text-[#A40D35]">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Paket 3 Kamera Broadcast"
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
+                  placeholder="Contoh: Paket 3 Kamera Broadcast Multi-Angle"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                 />
               </div>
 
@@ -312,15 +384,15 @@ export const AdminPackagesPage: React.FC = () => {
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Deskripsi keunggulan paket untuk event tertentu"
-                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
+                  placeholder="Deskripsikan segmentasi atau rekomendasi jenis acara (misal: Wisuda, Konser, Webinar)"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">
-                    Harga Paket (IDR) <span className="text-[#A40D35]">*</span>
+                    Harga Dasar (IDR) <span className="text-[#A40D35]">*</span>
                   </label>
                   <input
                     type="number"
@@ -329,7 +401,7 @@ export const AdminPackagesPage: React.FC = () => {
                     step={50000}
                     value={price}
                     onChange={(e) => setPrice(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                   />
                   <div className="mt-1 text-[11px] text-slate-500 font-semibold">
                     Preview: {formatIDR(price)}
@@ -338,7 +410,7 @@ export const AdminPackagesPage: React.FC = () => {
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">
-                    Durasi Siaran (Jam) <span className="text-[#A40D35]">*</span>
+                    Durasi Siaran Standar (Jam) <span className="text-[#A40D35]">*</span>
                   </label>
                   <input
                     type="number"
@@ -347,12 +419,12 @@ export const AdminPackagesPage: React.FC = () => {
                     max={24}
                     value={durationHours}
                     onChange={(e) => setDurationHours(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 items-center pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center pt-2">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1.5">Urutan Tampilan</label>
                   <input
@@ -360,11 +432,11 @@ export const AdminPackagesPage: React.FC = () => {
                     min={1}
                     value={displayOrder}
                     onChange={(e) => setDisplayOrder(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
+                    className="w-full px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 pt-4">
+                <div className="flex items-center gap-2 sm:pt-4">
                   <input
                     type="checkbox"
                     id="package-is-active"
@@ -381,7 +453,7 @@ export const AdminPackagesPage: React.FC = () => {
               {/* Features Editor */}
               <div className="pt-4 border-t border-slate-100">
                 <label className="block font-bold text-slate-700 mb-2">
-                  Daftar Poin Fitur & Peralatan Paket
+                  Daftar Fasilitas & Spesifikasi Paket
                 </label>
 
                 <div className="flex gap-2 mb-3">
@@ -396,28 +468,29 @@ export const AdminPackagesPage: React.FC = () => {
                       }
                     }}
                     placeholder="Tambah poin fitur (contoh: 3x Kamera Sony FX3)"
-                    className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
+                    className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A40D35] transition-all"
                   />
                   <button
                     type="button"
                     onClick={handleAddFeature}
-                    className="px-4 py-2.5 bg-[#081A2E] text-white font-bold rounded-xl hover:bg-slate-800 text-xs transition-colors"
+                    className="px-4 py-2.5 bg-[#081A2E] text-white font-bold rounded-lg hover:bg-slate-800 text-xs transition-colors cursor-pointer"
                   >
                     Tambah
                   </button>
                 </div>
 
-                <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                <div className="space-y-1.5 max-h-44 overflow-y-auto">
                   {features.map((f, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/60 rounded-xl"
+                      className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200/70 rounded-lg"
                     >
                       <span className="font-medium text-slate-700">{f.feature_text}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveFeature(i)}
-                        className="text-slate-400 hover:text-red-600 p-1 transition-colors"
+                        className="text-slate-400 hover:text-red-600 p-1 transition-colors cursor-pointer"
+                        title="Hapus poin"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -431,14 +504,14 @@ export const AdminPackagesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition-colors"
+                  className="px-4 py-2.5 rounded-lg text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#A40D35] hover:bg-[#850B2B] disabled:opacity-50 transition-colors shadow-sm"
+                  className="px-5 py-2.5 rounded-lg text-xs font-bold text-white bg-[#A40D35] hover:bg-[#820A2A] disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
                 >
                   {saving ? 'Menyimpan...' : 'Simpan Paket'}
                 </button>
